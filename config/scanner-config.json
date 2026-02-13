@@ -1,0 +1,24 @@
+{
+  "scanner_config": {
+    "name": "Memecoin Discovery Scanner",
+    "interval_minutes": 720,
+    "cron_expression": "0 */12 * * *",
+    "created": "2026-02-13T18:07:00Z",
+    "sources": ["coingecko"],
+    "filters": {
+      "market_cap_max_usd": 100000000,
+      "volume_min_usd": 1000000,
+      "price_change_24h_min": -50,
+      "price_change_24h_max": 200,
+      "chains": ["solana", "ethereum", "base"]
+    },
+    "alerts": {
+      "flag_gains_above": 50,
+      "flag_volume_spike": true,
+      "new_listings": true
+    }
+  },
+  "last_run": null,
+  "total_runs": 0,
+  "tokens_discovered": []
+}
