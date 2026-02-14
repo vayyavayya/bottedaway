@@ -26,6 +26,11 @@ MIN_CONFIDENCE_THRESHOLD = 0.70  # 70% minimum confidence
 MIN_MARKET_VOLUME = 500000  # $500K minimum volume
 MAX_SLIPPAGE = 0.05  # 5% max price deviation from research
 
+# LIVE TRADING MODE
+LIVE_TRADING = os.getenv("LIVE_TRADING", "0") == "1"  # Set to 1 for live trades
+
+print(f"[MODE] {'🟢 LIVE TRADING' if LIVE_TRADING else '⚪ DRY RUN (set LIVE_TRADING=1 for live)'}")
+
 # Trade log
 TRADE_LOG = "/Users/pterion2910/.openclaw/workspace/memory/polyclaw-trades.json"
 
@@ -178,17 +183,58 @@ def execute_trade(trade: Dict) -> bool:
     # Build PolyClaw command
     cmd = f"cd ~/.openclaw/skills/polyclaw && uv run python scripts/polyclaw.py buy {trade['market_id']} {trade['side']} {trade['amount']}"
     
-    print(f"Command: {cmd}")
-    print("[DRY RUN - Not executing. Enable LIVE_TRADING to execute.]")
+    if not LIVE_TRADING:
+        print(f"[DRY RUN] Command: {cmd}")
+        print("[Set LIVE_TRADING=1 to execute real trades]")
+        log_trade({
+            **trade,
+            "status": "dry_run",
+            "executed": False
+        })
+        return True
     
-    # In dry run mode, just log
-    log_trade({
-        **trade,
-        "status": "dry_run",
-        "executed": False
-    })
+    # LIVE TRADING MODE
+    print(f"🟢 LIVE: {cmd}")
     
-    return True
+    import subprocess
+    try:
+        result = subprocess.run(
+            cmd,
+            shell=True,
+            capture_output=True,
+            text=True,
+            timeout=120
+        )
+        
+        if result.returncode == 0:
+            print("✅ Trade executed successfully!")
+            print(result.stdout)
+            log_trade({
+                **trade,
+                "status": "executed",
+                "executed": True,
+                "tx_output": result.stdout
+            })
+            return True
+        else:
+            print(f"❌ Trade failed: {result.stderr}")
+            log_trade({
+                **trade,
+                "status": "failed",
+                "executed": False,
+                "error": result.stderr
+            })
+            return False
+            
+    except Exception as e:
+        print(f"❌ Exception: {e}")
+        log_trade({
+            **trade,
+            "status": "error",
+            "executed": False,
+            "error": str(e)
+        })
+        return False
 
 def main():
     """Main autotrader loop."""
