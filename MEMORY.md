@@ -62,7 +62,7 @@
 
 ---
 
-## Trading Rules (from Naomi)
+## Trading Rules
 
 ### Target Criteria
 - **Market Cap:** $100K-$500K (sweet spot for growth)

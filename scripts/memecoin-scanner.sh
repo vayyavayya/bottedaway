@@ -3,7 +3,7 @@
 Multi-Source Memecoin Scanner v4
 Integrates: CoinGecko, Birdeye, DexScreener, GMGN, Solscan, BaseScan
 
-NAOMI RULES:
+TRADING RULES:
 - Target MC: $100K-$500K (sweet spot)
 - Wait for first dip, NEVER buy top
 - Liquidity must be locked
@@ -26,10 +26,10 @@ from urllib.parse import urljoin
 # Add scanner_engines to path
 sys.path.insert(0, '/Users/pterion2910/.openclaw/workspace/scanner_engines')
 
-# NAOMI CRITERIA
-NAOMI_MIN_MC = 100_000
-NAOMI_MAX_MC = 500_000
-NAOMI_MIN_LIQUIDITY = 10_000
+# TARGET CRITERIA
+TARGET_MIN_MC = 100_000
+TARGET_MAX_MC = 500_000
+MIN_LIQUIDITY = 10_000
 
 LOG_FILE = f"/Users/pterion2910/.openclaw/workspace/memory/scanner-{datetime.now().strftime('%Y-%m-%d')}.log"
 
@@ -254,7 +254,7 @@ def deduplicate_tokens(tokens: List[Dict]) -> List[Dict]:
 
 def main():
     log("=== Multi-Source Memecoin Scanner v4 ===")
-    log(f"NAOMI RULES: Target MC ${NAOMI_MIN_MC/1000:.0f}K-${NAOMI_MAX_MC/1000:.0f}K")
+    log(f"TRADING RULES: Target MC ${TARGET_MIN_MC/1000:.0f}K-${TARGET_MAX_MC/1000:.0f}K")
     log("Sources: CoinGecko, Birdeye, DexScreener, GMGN (ref), Solscan, BaseScan")
     
     all_tokens = []
@@ -276,12 +276,12 @@ def main():
     all_tokens = deduplicate_tokens(all_tokens)
     log(f"Total unique tokens found: {len(all_tokens)}")
     
-    # Filter by Naomi criteria
-    naomi_matches = [t for t in all_tokens if NAOMI_MIN_MC <= t.get('market_cap', 0) <= NAOMI_MAX_MC]
-    other_coins = [t for t in all_tokens if t.get('market_cap', 0) > 0 and not (NAOMI_MIN_MC <= t.get('market_cap', 0) <= NAOMI_MAX_MC)]
+    # Filter by target criteria
+    target_matches = [t for t in all_tokens if TARGET_MIN_MC <= t.get('market_cap', 0) <= TARGET_MAX_MC]
+    other_coins = [t for t in all_tokens if t.get('market_cap', 0) > 0 and not (TARGET_MIN_MC <= t.get('market_cap', 0) <= TARGET_MAX_MC)]
     
     # Sort by volume
-    naomi_matches.sort(key=lambda x: x.get('volume', 0), reverse=True)
+    target_matches.sort(key=lambda x: x.get('volume', 0), reverse=True)
     other_coins.sort(key=lambda x: x.get('volume', 0), reverse=True)
     
     # OUTPUT
@@ -289,16 +289,16 @@ def main():
     print("🚀 MULTI-SOURCE MEMECOIN SCANNER v4")
     print("=" * 70)
     print(f"📅 {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')}")
-    print(f"🎯 Naomi Target: ${NAOMI_MIN_MC/1000:.0f}K-${NAOMI_MAX_MC/1000:.0f}K MC")
+    print(f"🎯 Target MC: ${TARGET_MIN_MC/1000:.0f}K-${TARGET_MAX_MC/1000:.0f}K")
     print(f"📊 Sources: CoinGecko, Birdeye, DexScreener")
     print("=" * 70)
     
-    # Naomi matches
-    if naomi_matches:
-        print(f"\n✅ NAOMI SWEET SPOT ({len(naomi_matches)} tokens)")
+    # Target matches
+    if target_matches:
+        print(f"\n✅ SWEET SPOT MATCHES ({len(target_matches)} tokens)")
         print("-" * 70)
         
-        for i, coin in enumerate(naomi_matches[:10], 1):
+        for i, coin in enumerate(target_matches[:10], 1):
             change = coin.get('change_24h', 0)
             emoji = "🚀" if change > 50 else "📈" if change > 20 else "💎" if change > 0 else "📉"
             source_tag = f"[{coin['source'][:4].upper()}]"
@@ -321,19 +321,19 @@ def main():
             if change > 50:
                 print(f"   ⚠️ HIGH VOLATILITY - Wait for dip!")
     else:
-        print(f"\n❌ No Naomi sweet spot matches (${NAOMI_MIN_MC/1000:.0f}K-${NAOMI_MAX_MC/1000:.0f}K)")
+        print(f"\n❌ No sweet spot matches (${TARGET_MIN_MC/1000:.0f}K-${TARGET_MAX_MC/1000:.0f}K)")
     
     # Other coins (top 5)
     if other_coins:
         print(f"\n📋 OTHER TRENDING ({len(other_coins)} outside range)")
         print("-" * 70)
         for coin in other_coins[:5]:
-            status = "micro" if coin['market_cap'] < NAOMI_MIN_MC else "large"
+            status = "micro" if coin['market_cap'] < TARGET_MIN_MC else "large"
             print(f"• {coin['name']} (${coin['symbol']}): {coin['market_cap_str']} [{coin['source']}] ({status})")
     
-    # NAOMI CHECKLIST
+    # DUE DILIGENCE CHECKLIST
     print("\n" + "=" * 70)
-    print("⚠️ NAOMI DUE DILIGENCE CHECKLIST:")
+    print("⚠️ DUE DILIGENCE CHECKLIST:")
     print("=" * 70)
     print("   ☐ Check GMGN for smart money signals: https://gmgn.ai")
     print("   ☐ Verify on Solscan (Solana) or BaseScan (Base)")
@@ -348,7 +348,7 @@ def main():
     print("🎯 'Take profits before someone else takes them from you'")
     print("=" * 70)
     
-    log(f"Complete: {len(naomi_matches)} Naomi matches, {len(other_coins)} others")
+    log(f"Complete: {len(target_matches)} sweet spot matches, {len(other_coins)} others")
 
 if __name__ == "__main__":
     main()

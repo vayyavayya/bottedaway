@@ -1,11 +1,11 @@
 """
-Memecoin Scanner V3 - DexScreener + Birdeye + 3 Pattern Engines + Naomi Rules
+Memecoin Scanner V3 - DexScreener + Birdeye + 3 Pattern Engines
 
 DexScreener: Real-time pair discovery
 Birdeye: Historical OHLCV data for pattern detection
 Pattern Engines: A (12h), B (4h), C (1h) EMA analysis
 
-NAOMI RULES INTEGRATED:
+TRADING RULES INTEGRATED:
 - Target MC: $100K-$500K (sweet spot)
 - Wait for first dip, never buy top (Pattern B captures this)
 - Liquidity must be locked (check in discovery)
@@ -19,10 +19,10 @@ import sys
 import os
 sys.path.insert(0, '/Users/pterion2910/.openclaw/workspace/scanner_engines')
 
-# NAOMI'S TARGET CRITERIA
-NAOMI_MIN_MC = 100_000   # $100K minimum
-NAOMI_MAX_MC = 500_000   # $500K maximum (sweet spot)
-NAOMI_MIN_LIQUIDITY = 10_000  # Minimum $10K liquidity
+# TARGET CRITERIA
+TARGET_MIN_MC = 100_000   # $100K minimum
+TARGET_MAX_MC = 500_000   # $500K maximum (sweet spot)
+MIN_LIQUIDITY = 10_000  # Minimum $10K liquidity
 
 from src.patterns.engine_a import run_pattern_a
 from src.patterns.engine_b import run_pattern_b  
@@ -54,7 +54,7 @@ def analyze_token_with_engines(
     engines: list, 
     cooldown_hours: int = 72, 
     debug: bool = False,
-    enforce_naomi_rules: bool = True  # NEW: Apply Naomi's criteria
+    enforce_target_criteria: bool = True  # Apply target criteria
 ):
     """Run all enabled engines for a token using Birdeye OHLCV data."""
     state = load_state()
@@ -80,20 +80,20 @@ def analyze_token_with_engines(
     liquidity = float(market_data.get("liquidity", 0) or 0)
     
     # NAOMI RULE: Target MC $100K-$500K
-    if enforce_naomi_rules:
-        if marketcap < NAOMI_MIN_MC or marketcap > NAOMI_MAX_MC:
+    if enforce_target_criteria:
+        if marketcap < TARGET_MIN_MC or marketcap > TARGET_MAX_MC:
             if debug:
-                print(f"[Scanner] {symbol}: MC ${marketcap:,.0f} outside Naomi range (${NAOMI_MIN_MC/1000:.0f}K-${NAOMI_MAX_MC/1000:.0f}K), skipping")
+                print(f"[Scanner] {symbol}: MC ${marketcap:,.0f} outside target range (${TARGET_MIN_MC/1000:.0f}K-${TARGET_MAX_MC/1000:.0f}K), skipping")
             return []
-        if liquidity < NAOMI_MIN_LIQUIDITY:
+        if liquidity < MIN_LIQUIDITY:
             if debug:
-                print(f"[Scanner] {symbol}: Liquidity ${liquidity:,.0f} < ${NAOMI_MIN_LIQUIDITY:,.0f}, skipping")
+                print(f"[Scanner] {symbol}: Liquidity ${liquidity:,.0f} < ${MIN_LIQUIDITY:,.0f}, skipping")
             return []
     
     if debug:
         print(f"[Scanner] {symbol}: Price=${current_price:.6f}, MC=${marketcap:,.0f}, Liq=${liquidity:,.0f}")
-        if enforce_naomi_rules:
-            print(f"[Scanner] ✅ {symbol} passes Naomi criteria (${NAOMI_MIN_MC/1000:.0f}K-${NAOMI_MAX_MC/1000:.0f}K MC)")
+        if enforce_target_criteria:
+            print(f"[Scanner] ✅ {symbol} passes target criteria (${TARGET_MIN_MC/1000:.0f}K-${TARGET_MAX_MC/1000:.0f}K MC)")
     
     # Engine A - 12h EMA50 reclaim
     if "A" in engines:
@@ -162,11 +162,11 @@ def analyze_token_with_engines(
     save_state(state)
     return alerts
 
-def discover_via_dexscreener(min_liquidity: float = NAOMI_MIN_LIQUIDITY, enforce_naomi_mc: bool = True, debug: bool = False):
-    """Discover tokens via DexScreener boosted tokens. Applies Naomi rules."""
+def discover_via_dexscreener(min_liquidity: float = MIN_LIQUIDITY, enforce_target_mc: bool = True, debug: bool = False):
+    """Discover tokens via DexScreener boosted tokens. Applies target criteria."""
     print("=" * 60)
-    print("🔍 DISCOVERING TOKENS VIA DEXSCREENER (Naomi Rules)")
-    print(f"   Target MC: ${NAOMI_MIN_MC/1000:.0f}K-${NAOMI_MAX_MC/1000:.0f}K | Min Liquidity: ${min_liquidity:,.0f}")
+    print("🔍 DISCOVERING TOKENS VIA DEXSCREENER")
+    print(f"   Target MC: ${TARGET_MIN_MC/1000:.0f}K-${TARGET_MAX_MC/1000:.0f}K | Min Liquidity: ${min_liquidity:,.0f}")
     print("=" * 60)
     
     opportunities = scan_memecoins_dexscreener(
@@ -176,14 +176,14 @@ def discover_via_dexscreener(min_liquidity: float = NAOMI_MIN_LIQUIDITY, enforce
         debug=debug
     )
     
-    # Apply Naomi MC filter
-    if enforce_naomi_mc:
+    # Apply target MC filter
+    if enforce_target_mc:
         opportunities = [
             opp for opp in opportunities 
-            if NAOMI_MIN_MC <= opp.get('marketcap', 0) <= NAOMI_MAX_MC
+            if TARGET_MIN_MC <= opp.get('marketcap', 0) <= TARGET_MAX_MC
         ]
     
-    print(f"\n📊 Found {len(opportunities)} opportunities matching Naomi criteria")
+    print(f"\n📊 Found {len(opportunities)} opportunities matching criteria")
     
     # Sort by volume
     opportunities.sort(key=lambda x: x.get("volume_24h", 0), reverse=True)
@@ -196,7 +196,7 @@ def discover_via_dexscreener(min_liquidity: float = NAOMI_MIN_LIQUIDITY, enforce
         print(f"   📊 Volume 24h: ${opp['volume_24h']:,.0f}")
         print(f"   🏦 Market Cap: ${opp['marketcap']:,.0f}")
         print(f"   📈 Change 24h: {opp['price_change_24h']:+.1f}%")
-        # NAOMI DUE DILIGENCE LINKS
+        # Due diligence links
         if opp['chain'] == 'base':
             print(f"   🔍 BaseScan: https://basescan.org/token/{opp['address']}")
         elif opp['chain'] == 'solana':
@@ -205,7 +205,7 @@ def discover_via_dexscreener(min_liquidity: float = NAOMI_MIN_LIQUIDITY, enforce
     
     if opportunities:
         print("\n" + "=" * 60)
-        print("⚠️ NAOMI DUE DILIGENCE CHECKLIST:")
+        print("⚠️ DUE DILIGENCE CHECKLIST:")
         print("   ☐ Liquidity locked? (check DexScreener lock icon)")
         print("   ☐ Track whale wallets on BaseScan (for Base tokens)")
         print("   ☐ Use Bubble Maps to detect dev dumps")
