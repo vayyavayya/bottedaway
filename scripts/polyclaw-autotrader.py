@@ -25,11 +25,13 @@ MAX_DAILY_EXPOSURE = 20.00  # Maximum daily trading volume
 MIN_CONFIDENCE_THRESHOLD = 0.70  # 70% minimum confidence
 MIN_MARKET_VOLUME = 500000  # $500K minimum volume
 MAX_SLIPPAGE = 0.05  # 5% max price deviation from research
+STOP_LOSS_PERCENTAGE = 0.15  # 15% stop loss on positions
 
 # LIVE TRADING MODE
 LIVE_TRADING = os.getenv("LIVE_TRADING", "0") == "1"  # Set to 1 for live trades
 
 print(f"[MODE] {'🟢 LIVE TRADING' if LIVE_TRADING else '⚪ DRY RUN (set LIVE_TRADING=1 for live)'}")
+print(f"[RISK] Stop loss: {STOP_LOSS_PERCENTAGE:.0%}")
 
 # Trade log
 TRADE_LOG = "/Users/pterion2910/.openclaw/workspace/memory/polyclaw-trades.json"
@@ -236,6 +238,99 @@ def execute_trade(trade: Dict) -> bool:
         })
         return False
 
+def get_open_positions() -> List[Dict]:
+    """Fetch open positions from PolyClaw."""
+    try:
+        import subprocess
+        result = subprocess.run(
+            "cd ~/.openclaw/skills/polyclaw && uv run python scripts/polyclaw.py positions",
+            shell=True,
+            capture_output=True,
+            text=True,
+            timeout=30
+        )
+        if result.returncode == 0:
+            # Parse the output - this is a simple parser
+            lines = result.stdout.strip().split('\n')
+            positions = []
+            for line in lines[2:]:  # Skip header lines
+                if line.strip() and not line.startswith('-') and not line.startswith('Total'):
+                    parts = line.split()
+                    if len(parts) >= 6:
+                        positions.append({
+                            'id': parts[0],
+                            'side': parts[1],
+                            'entry': float(parts[2].replace('$', '')),
+                            'current': float(parts[3].replace('$', '')),
+                            'pnl': float(parts[4].replace('$', '').replace('+', '')),
+                            'market': ' '.join(parts[5:])
+                        })
+            return positions
+    except Exception as e:
+        print(f"[Positions Error] {e}")
+    return []
+
+def check_stop_loss(positions: List[Dict]) -> List[Dict]:
+    """Check positions against stop loss threshold."""
+    stop_loss_triggered = []
+    for pos in positions:
+        entry = pos['entry']
+        current = pos['current']
+        if entry > 0:
+            loss_pct = (current - entry) / entry
+            if loss_pct <= -STOP_LOSS_PERCENTAGE:
+                stop_loss_triggered.append(pos)
+                print(f"🛑 STOP LOSS TRIGGERED: {pos['market'][:40]}...")
+                print(f"   Entry: ${entry:.2f} | Current: ${current:.2f} | Loss: {loss_pct:.1%}")
+    return stop_loss_triggered
+
+def execute_stop_loss(position: Dict) -> bool:
+    """Sell position at market to stop loss."""
+    print(f"🚨 EXECUTING STOP LOSS: {position['id']}")
+    
+    # For now, we sell the opposite side of what we bought
+    # If we bought YES, we sell YES tokens
+    side_to_sell = position['side']
+    
+    cmd = f"cd ~/.openclaw/skills/polyclaw && uv run python scripts/polyclaw.py sell {position['id']} {side_to_sell}"
+    
+    if not LIVE_TRADING:
+        print(f"[DRY RUN] Would execute: {cmd}")
+        return True
+    
+    print(f"🟢 LIVE STOP LOSS: {cmd}")
+    
+    import subprocess
+    try:
+        result = subprocess.run(
+            cmd,
+            shell=True,
+            capture_output=True,
+            text=True,
+            timeout=120
+        )
+        
+        if result.returncode == 0:
+            print("✅ Stop loss executed!")
+            log_trade({
+                "type": "stop_loss",
+                "position_id": position['id'],
+                "market": position['market'],
+                "side": position['side'],
+                "entry": position['entry'],
+                "exit": position['current'],
+                "pnl": position['pnl'],
+                "status": "executed"
+            })
+            return True
+        else:
+            print(f"❌ Stop loss failed: {result.stderr}")
+            return False
+            
+    except Exception as e:
+        print(f"❌ Stop loss exception: {e}")
+        return False
+
 def main():
     """Main autotrader loop."""
     print("=" * 60)
@@ -243,7 +338,23 @@ def main():
     print("=" * 60)
     print(f"Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')}")
     
-    # Check daily exposure
+    # STEP 1: CHECK STOP LOSS ON EXISTING POSITIONS
+    print("\n📊 Checking existing positions for stop loss...")
+    open_positions = get_open_positions()
+    if open_positions:
+        print(f"Found {len(open_positions)} open positions")
+        stop_loss_positions = check_stop_loss(open_positions)
+        if stop_loss_positions:
+            print(f"\n🛑 {len(stop_loss_positions)} position(s) hit stop loss (-{STOP_LOSS_PERCENTAGE:.0%})")
+            for pos in stop_loss_positions:
+                execute_stop_loss(pos)
+        else:
+            print("✅ All positions within risk limits")
+    else:
+        print("No open positions")
+    
+    # STEP 2: CHECK DAILY EXPOSURE FOR NEW TRADES
+    print("\n💰 Checking daily exposure...")
     daily_exposure = get_daily_exposure()
     print(f"Daily exposure: ${daily_exposure:.2f} / ${MAX_DAILY_EXPOSURE:.2f}")
     
@@ -251,7 +362,7 @@ def main():
         print("⚠️  Daily exposure limit reached. No new trades today.")
         return
     
-    # Scan for opportunities
+    # STEP 3: SCAN FOR NEW OPPORTUNITIES
     opportunities = scan_opportunities()
     print(f"Found {len(opportunities)} markets to analyze")
     
