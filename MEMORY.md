@@ -48,10 +48,13 @@
 - GitHub as versioned memory is clever
 - 4-17 day old coins > fresh launches (survivorship bias)
 
-### Cost Optimization Applied
-- Switched cron jobs to free models (Gemini Flash Lite)
-- Before: ~$45-50/month potential
-- After: ~$5-10/month (main session only)
+### Cost Optimization Applied (Feb 14, 2026)
+- **Switched cron jobs to free models** (Gemini Flash Lite):
+  - `moltbook-learning-2h`: Now uses `google/gemini-2.0-flash-lite:free`
+  - `memecoin-scanner-720min`: Now uses `google/gemini-2.0-flash-lite:free`
+  - `polyclaw-autotrader`: Still on Kimi K2.5 (trading decisions need quality)
+- **Impact:** ~$45-50/month → ~$5-10/month
+- **Model routing by task:** Cheap models for routine tasks, premium for critical decisions
 - Added concurrency limits (maxConcurrent: 4)
 
 ### Security Patterns
