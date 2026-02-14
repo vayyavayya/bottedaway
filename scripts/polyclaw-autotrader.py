@@ -20,18 +20,24 @@ POLYCLAW_PRIVATE_KEY = os.getenv("POLYCLAW_PRIVATE_KEY", "0x0970feda196583fd5359
 PERPLEXITY_API_KEY = os.getenv("PERPLEXITY_API_KEY", "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")
 
 # RISK MANAGEMENT
-MAX_POSITION_SIZE = 5.00  # Maximum $ per trade
+MAX_POSITION_SIZE = 5.00  # Maximum $ per trade - HEDGE POSITIONS ALSO CAPPED AT $5
 MAX_DAILY_EXPOSURE = 20.00  # Maximum daily trading volume
 MIN_CONFIDENCE_THRESHOLD = 0.70  # 70% minimum confidence
 MIN_MARKET_VOLUME = 500000  # $500K minimum volume
 MAX_SLIPPAGE = 0.05  # 5% max price deviation from research
 STOP_LOSS_PERCENTAGE = 0.15  # 15% stop loss on positions
 
+# HEDGE DISCOVERY
+ENABLE_HEDGE_DISCOVERY = True  # Enable LLM-powered hedge scanning
+HEDGE_MIN_COVERAGE = 0.90  # Minimum 90% coverage for hedge trades
+HEDGE_SCAN_LIMIT = 10  # Number of markets to scan for hedges
+
 # LIVE TRADING MODE
 LIVE_TRADING = os.getenv("LIVE_TRADING", "0") == "1"  # Set to 1 for live trades
 
 print(f"[MODE] {'🟢 LIVE TRADING' if LIVE_TRADING else '⚪ DRY RUN (set LIVE_TRADING=1 for live)'}")
-print(f"[RISK] Stop loss: {STOP_LOSS_PERCENTAGE:.0%}")
+print(f"[RISK] Stop loss: {STOP_LOSS_PERCENTAGE:.0%}, Position size: ${MAX_POSITION_SIZE}")
+print(f"[HEDGE] Discovery: {'ENABLED' if ENABLE_HEDGE_DISCOVERY else 'DISABLED'}")
 
 # Trade log
 TRADE_LOG = "/Users/pterion2910/.openclaw/workspace/memory/polyclaw-trades.json"
@@ -331,6 +337,167 @@ def execute_stop_loss(position: Dict) -> bool:
         print(f"❌ Stop loss exception: {e}")
         return False
 
+def scan_hedge_opportunities() -> List[Dict]:
+    """
+    Scan for hedge opportunities using PolyClaw hedge scan.
+    Returns list of hedge trade pairs.
+    """
+    if not ENABLE_HEDGE_DISCOVERY:
+        return []
+    
+    print("\n🔍 Scanning for hedge opportunities...")
+    
+    try:
+        import subprocess
+        result = subprocess.run(
+            f"cd ~/.openclaw/skills/polyclaw && uv run python scripts/polyclaw.py hedge scan --limit {HEDGE_SCAN_LIMIT}",
+            shell=True,
+            capture_output=True,
+            text=True,
+            timeout=300  # Hedge scan can take a few minutes
+        )
+        
+        if result.returncode != 0:
+            print(f"[Hedge Scan Error] {result.stderr}")
+            return []
+        
+        # Parse hedge scan output
+        # Look for T1/T2/T3 coverage tiers
+        hedges = []
+        lines = result.stdout.split('\n')
+        
+        for line in lines:
+            # Look for coverage indicators (T1 >=95%, T2 90-95%, T3 85-90%)
+            if 'T1' in line or 'T2' in line:
+                # Extract market IDs and coverage info
+                # This is a simplified parser - actual format may vary
+                if 'coverage' in line.lower() or '%' in line:
+                    # Parse the hedge opportunity
+                    hedges.append({
+                        'raw_line': line,
+                        'output': result.stdout
+                    })
+        
+        print(f"Found {len(hedges)} potential hedge opportunities")
+        return hedges
+        
+    except Exception as e:
+        print(f"[Hedge Scan Exception] {e}")
+        return []
+
+def analyze_hedge_pair(market1_id: str, market2_id: str) -> Optional[Dict]:
+    """
+    Analyze a specific pair for hedging opportunity.
+    Returns hedge trade details or None.
+    """
+    try:
+        import subprocess
+        result = subprocess.run(
+            f"cd ~/.openclaw/skills/polyclaw && uv run python scripts/polyclaw.py hedge analyze {market1_id} {market2_id}",
+            shell=True,
+            capture_output=True,
+            text=True,
+            timeout=120
+        )
+        
+        if result.returncode != 0:
+            return None
+        
+        # Parse the analysis for coverage percentage
+        output = result.stdout
+        
+        # Look for coverage info
+        coverage = 0.0
+        if 'T1' in output:
+            coverage = 0.95  # T1 = 95%+
+        elif 'T2' in output:
+            coverage = 0.92  # T2 = 90-95%
+        elif 'T3' in output:
+            coverage = 0.87  # T3 = 85-90%
+        
+        if coverage >= HEDGE_MIN_COVERAGE:
+            return {
+                'market1_id': market1_id,
+                'market2_id': market2_id,
+                'coverage': coverage,
+                'analysis': output,
+                'type': 'hedge'
+            }
+        
+        return None
+        
+    except Exception as e:
+        print(f"[Hedge Analysis Error] {e}")
+        return None
+
+def execute_hedge_trade(hedge: Dict, daily_exposure: float) -> Tuple[bool, float]:
+    """
+    Execute a hedge trade (buy YES on one, NO on other).
+    Returns (success, amount_spent).
+    """
+    print(f"🎯 Executing hedge trade: {hedge['market1_id']} + {hedge['market2_id']}")
+    print(f"   Coverage: {hedge['coverage']:.0%}")
+    
+    # For hedges, we split the position size between both legs
+    # Each leg gets MAX_POSITION_SIZE / 2
+    leg_size = min(MAX_POSITION_SIZE / 2, (MAX_DAILY_EXPOSURE - daily_exposure) / 2)
+    
+    if leg_size < 1.0:
+        print("   ⏭️  Insufficient funds for hedge")
+        return False, 0.0
+    
+    # Execute both legs
+    success_count = 0
+    total_spent = 0.0
+    
+    for market_id, side in [(hedge['market1_id'], 'YES'), (hedge['market2_id'], 'NO')]:
+        cmd = f"cd ~/.openclaw/skills/polyclaw && uv run python scripts/polyclaw.py buy {market_id} {side} {leg_size:.2f}"
+        
+        if not LIVE_TRADING:
+            print(f"   [DRY RUN] {cmd}")
+            success_count += 1
+            total_spent += leg_size
+            continue
+        
+        print(f"   🟢 LIVE: {cmd}")
+        
+        import subprocess
+        try:
+            result = subprocess.run(
+                cmd,
+                shell=True,
+                capture_output=True,
+                text=True,
+                timeout=120
+            )
+            
+            if result.returncode == 0:
+                print(f"   ✅ Leg executed: {market_id} {side}")
+                success_count += 1
+                total_spent += leg_size
+                log_trade({
+                    'type': 'hedge_leg',
+                    'market_id': market_id,
+                    'side': side,
+                    'amount': leg_size,
+                    'hedge_pair': f"{hedge['market1_id']}-{hedge['market2_id']}",
+                    'coverage': hedge['coverage'],
+                    'status': 'executed'
+                })
+            else:
+                print(f"   ❌ Leg failed: {result.stderr}")
+                
+        except Exception as e:
+            print(f"   ❌ Leg exception: {e}")
+    
+    # Both legs must succeed for hedge to work
+    if success_count == 2:
+        print(f"   ✅ Hedge complete! Total: ${total_spent:.2f}")
+        return True, total_spent
+    else:
+        print(f"   ⚠️  Hedge incomplete ({success_count}/2 legs)")
+        return False, total_spent
+
 def main():
     """Main autotrader loop."""
     print("=" * 60)
@@ -362,7 +529,26 @@ def main():
         print("⚠️  Daily exposure limit reached. No new trades today.")
         return
     
-    # STEP 3: SCAN FOR NEW OPPORTUNITIES
+    # STEP 3: HEDGE DISCOVERY (if enabled)
+    if ENABLE_HEDGE_DISCOVERY and daily_exposure < MAX_DAILY_EXPOSURE:
+        print("\n🔍 Running hedge discovery...")
+        hedge_opportunities = scan_hedge_opportunities()
+        
+        if hedge_opportunities:
+            print(f"Found {len(hedge_opportunities)} hedge candidates")
+            # Execute hedges (simplified - would need full parsing logic)
+            # For now, just log that hedges were found
+            for hedge in hedge_opportunities[:2]:  # Limit to 2 hedges per run
+                if daily_exposure + MAX_POSITION_SIZE <= MAX_DAILY_EXPOSURE:
+                    # Note: Full hedge execution requires parsing the scan output
+                    # This is a placeholder for the actual implementation
+                    print(f"   [HEDGE FOUND] {hedge.get('raw_line', 'Details in scan output')}")
+                    # execute_hedge_trade(hedge, daily_exposure)
+        else:
+            print("No hedge opportunities found")
+    
+    # STEP 4: SCAN FOR REGULAR EDGE OPPORTUNITIES
+    print("\n🔍 Scanning for edge opportunities...")
     opportunities = scan_opportunities()
     print(f"Found {len(opportunities)} markets to analyze")
     
@@ -384,8 +570,12 @@ def main():
         else:
             print(f"⏭️  Skipping trade - would exceed daily limit")
     
-    print(f"\n✅ Completed: {executed} trades evaluated")
-    print(f"Current daily exposure: ${daily_exposure:.2f}")
+    print(f"\n{'='*60}")
+    print(f"✅ AUTOTRADER COMPLETE")
+    print(f"   Stop loss checks: {len(stop_loss_positions) if 'stop_loss_positions' in dir() else 0} triggered")
+    print(f"   Edge trades: {executed} executed")
+    print(f"   Daily exposure: ${daily_exposure:.2f} / ${MAX_DAILY_EXPOSURE:.2f}")
+    print(f"{'='*60}")
 
 if __name__ == "__main__":
     main()
