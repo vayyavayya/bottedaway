@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Memecoin Scanner - Runs every 720 minutes (12 hours)
-Scans for trending/new tokens and filters by NAOMI'S TRADING RULES
+Multi-Source Memecoin Scanner v4
+Integrates: CoinGecko, Birdeye, DexScreener, GMGN, Solscan, BaseScan
 
 NAOMI RULES:
 - Target MC: $100K-$500K (sweet spot)
@@ -16,13 +16,20 @@ NAOMI RULES:
 
 import json
 import sys
-import subprocess
+import os
+import time
+import requests
 from datetime import datetime, timezone
+from typing import List, Dict, Optional
+from urllib.parse import urljoin
+
+# Add scanner_engines to path
+sys.path.insert(0, '/Users/pterion2910/.openclaw/workspace/scanner_engines')
 
 # NAOMI CRITERIA
-NAOMI_MIN_MC = 100_000      # $100K minimum
-NAOMI_MAX_MC = 500_000      # $500K maximum (sweet spot)
-NAOMI_MIN_LIQUIDITY = 10_000  # $10K minimum liquidity
+NAOMI_MIN_MC = 100_000
+NAOMI_MAX_MC = 500_000
+NAOMI_MIN_LIQUIDITY = 10_000
 
 LOG_FILE = f"/Users/pterion2910/.openclaw/workspace/memory/scanner-{datetime.now().strftime('%Y-%m-%d')}.log"
 
@@ -34,7 +41,168 @@ def log(msg):
     with open(LOG_FILE, 'a') as f:
         f.write(line + '\n')
 
-def parse_market_cap(mc_str):
+# ==================== DATA SOURCE: COINGECKO ====================
+
+def fetch_coingecko_trending() -> List[Dict]:
+    """Fetch trending coins from CoinGecko."""
+    try:
+        resp = requests.get(
+            "https://api.coingecko.com/api/v3/search/trending",
+            headers={'User-Agent': 'Mozilla/5.0'},
+            timeout=30
+        )
+        data = resp.json()
+        coins = []
+        for coin in data.get('coins', []):
+            item = coin.get('item', {})
+            coin_data = item.get('data', {})
+            coins.append({
+                'source': 'coingecko',
+                'name': item.get('name', 'Unknown'),
+                'symbol': item.get('symbol', '???'),
+                'price': coin_data.get('price', 'N/A'),
+                'change_24h': coin_data.get('price_change_percentage_24h', {}).get('usd', 0) or 0,
+                'market_cap_str': coin_data.get('market_cap', 'N/A'),
+                'market_cap': parse_mc(coin_data.get('market_cap', 'N/A')),
+                'volume_str': coin_data.get('total_volume', 'N/A'),
+                'volume': parse_volume(coin_data.get('total_volume', 'N/A')),
+                'platform': item.get('platform_id', 'unknown'),
+                'contract': item.get('contract_address', ''),
+                'url': f"https://www.coingecko.com/en/coins/{item.get('id', '')}",
+            })
+        return coins
+    except Exception as e:
+        log(f"[CoinGecko] Error: {e}")
+        return []
+
+# ==================== DATA SOURCE: BIRDEYE ====================
+
+BIRDEYE_API_KEY = os.getenv("BIRDEYE_API_KEY", "bb463164ead7429686f982258664fdb9")
+
+def fetch_birdeye_trending(limit: int = 50) -> List[Dict]:
+    """Fetch trending tokens from Birdeye (Solana)."""
+    try:
+        headers = {"accept": "application/json", "X-API-KEY": BIRDEYE_API_KEY}
+        resp = requests.get(
+            "https://public-api.birdeye.so/defi/v2/tokens/all",
+            params={"chain": "solana", "sort_by": "v24hUSD", "sort_type": "desc", "limit": limit},
+            headers=headers,
+            timeout=30
+        )
+        data = resp.json()
+        if not data.get("success"):
+            return []
+        
+        tokens = []
+        for token in data.get("data", {}).get("tokens", []):
+            mc = float(token.get("marketCap", 0) or 0)
+            vol = float(token.get("v24hUSD", 0) or 0)
+            liq = float(token.get("liquidity", 0) or 0)
+            address = token.get("address", "")
+            
+            tokens.append({
+                'source': 'birdeye',
+                'name': token.get("name", "Unknown"),
+                'symbol': token.get("symbol", "???"),
+                'price': f"${float(token.get('price', 0) or 0):.8f}",
+                'change_24h': float(token.get("priceChange24h", 0) or 0),
+                'market_cap': mc,
+                'market_cap_str': f"${mc:,.0f}",
+                'volume': vol,
+                'volume_str': f"${vol:,.0f}",
+                'liquidity': liq,
+                'platform': 'solana',
+                'contract': address,
+                'url': f"https://birdeye.so/token/{address}?chain=solana",
+                'solscan': f"https://solscan.io/token/{address}",
+                'bubblemaps': f"https://app.bubblemaps.io/solana/token/{address}",
+            })
+        return tokens
+    except Exception as e:
+        log(f"[Birdeye] Error: {e}")
+        return []
+
+# ==================== DATA SOURCE: DEXSCREENER ====================
+
+def fetch_dexscreener_boosted() -> List[Dict]:
+    """Fetch boosted tokens from DexScreener (multi-chain)."""
+    try:
+        resp = requests.get(
+            "https://api.dexscreener.com/token-boosts/latest/v1",
+            timeout=30
+        )
+        tokens = resp.json() if isinstance(resp.json(), list) else []
+        
+        results = []
+        for token in tokens:
+            chain = token.get("chainId", "").lower()
+            if chain not in ["solana", "ethereum", "base"]:
+                continue
+            
+            token_address = token.get("tokenAddress", "")
+            if not token_address:
+                continue
+            
+            # Get pair data
+            pair_resp = requests.get(
+                f"https://api.dexscreener.com/token-pairs/v1/{chain}/{token_address}",
+                timeout=30
+            )
+            pairs = pair_resp.json() if isinstance(pair_resp.json(), list) else []
+            
+            if not pairs:
+                continue
+            
+            # Get best pair (highest liquidity)
+            best = max(pairs, key=lambda x: float(x.get("liquidity", {}).get("usd", 0) or 0))
+            
+            mc = float(best.get("marketCap", 0) or 0)
+            vol = float(best.get("volume", {}).get("h24", 0) or 0)
+            liq = float(best.get("liquidity", {}).get("usd", 0) or 0)
+            
+            results.append({
+                'source': 'dexscreener',
+                'name': best.get("baseToken", {}).get("name", "Unknown"),
+                'symbol': best.get("baseToken", {}).get("symbol", "???"),
+                'price': f"${float(best.get('priceUsd', 0)):.8f}",
+                'change_24h': float(best.get("priceChange", {}).get("h24", 0) or 0),
+                'market_cap': mc,
+                'market_cap_str': f"${mc:,.0f}",
+                'volume': vol,
+                'volume_str': f"${vol:,.0f}",
+                'liquidity': liq,
+                'platform': chain,
+                'contract': token_address,
+                'dex': best.get("dexId", ""),
+                'url': best.get("url", ""),
+                'solscan': f"https://solscan.io/token/{token_address}" if chain == "solana" else "",
+                'basescan': f"https://basescan.org/token/{token_address}" if chain == "base" else "",
+                'bubblemaps': f"https://app.bubblemaps.io/{chain}/token/{token_address}",
+            })
+        return results
+    except Exception as e:
+        log(f"[DexScreener] Error: {e}")
+        return []
+
+# ==================== DATA SOURCE: GMGN ====================
+
+def fetch_gmgn_trending() -> List[Dict]:
+    """
+    Fetch trending from GMGN.ai (web scraping approach).
+    GMGN doesn't have a public API, so we note the URL for manual check.
+    """
+    # GMGN is web-only, return placeholder with URL
+    return [{
+        'source': 'gmgn',
+        'name': 'GMGN Trending',
+        'symbol': 'WEB',
+        'note': 'Visit https://gmgn.ai for trending Solana memecoins',
+        'url': 'https://gmgn.ai',
+    }]
+
+# ==================== HELPER FUNCTIONS ====================
+
+def parse_mc(mc_str) -> float:
     """Parse market cap string to number."""
     if not mc_str or mc_str == 'N/A':
         return 0
@@ -51,7 +219,7 @@ def parse_market_cap(mc_str):
     except:
         return 0
 
-def parse_volume(vol_str):
+def parse_volume(vol_str) -> float:
     """Parse volume string to number."""
     if not vol_str or vol_str == 'N/A':
         return 0
@@ -68,140 +236,119 @@ def parse_volume(vol_str):
     except:
         return 0
 
-def fetch_trending():
-    """Fetch trending coins from CoinGecko."""
-    import urllib.request
-    try:
-        req = urllib.request.Request(
-            "https://api.coingecko.com/api/v3/search/trending",
-            headers={'User-Agent': 'Mozilla/5.0'}
-        )
-        with urllib.request.urlopen(req, timeout=30) as response:
-            return json.loads(response.read().decode('utf-8'))
-    except Exception as e:
-        log(f"✗ Failed to fetch trending data: {e}")
-        return None
+def deduplicate_tokens(tokens: List[Dict]) -> List[Dict]:
+    """Remove duplicates based on contract address."""
+    seen = {}
+    unique = []
+    for token in tokens:
+        key = f"{token.get('platform', 'unknown')}:{token.get('contract', '')}"
+        if key and key != "unknown:" and key not in seen:
+            seen[key] = True
+            unique.append(token)
+        elif not token.get('contract'):
+            # Keep tokens without contracts (like GMGN placeholder)
+            unique.append(token)
+    return unique
+
+# ==================== MAIN ====================
 
 def main():
-    log("=== Memecoin Scanner Run ===")
-    log(f"NAOMI RULES: Target MC ${NAOMI_MIN_MC/1000:.0f}K-${NAOMI_MAX_MC/1000:.0f}K | Min Liquidity ${NAOMI_MIN_LIQUIDITY:,.0f}")
+    log("=== Multi-Source Memecoin Scanner v4 ===")
+    log(f"NAOMI RULES: Target MC ${NAOMI_MIN_MC/1000:.0f}K-${NAOMI_MAX_MC/1000:.0f}K")
+    log("Sources: CoinGecko, Birdeye, DexScreener, GMGN (ref), Solscan, BaseScan")
     
-    data = fetch_trending()
-    if not data:
-        return
+    all_tokens = []
     
-    log("✓ Trending data received")
+    # Fetch from all sources
+    log("[1/4] Fetching CoinGecko trending...")
+    all_tokens.extend(fetch_coingecko_trending())
     
-    coins = data.get('coins', [])
+    log("[2/4] Fetching Birdeye Solana tokens...")
+    all_tokens.extend(fetch_birdeye_trending(limit=50))
     
+    log("[3/4] Fetching DexScreener boosted tokens...")
+    all_tokens.extend(fetch_dexscreener_boosted())
+    
+    log("[4/4] GMGN reference added...")
+    all_tokens.extend(fetch_gmgn_trending())
+    
+    # Deduplicate
+    all_tokens = deduplicate_tokens(all_tokens)
+    log(f"Total unique tokens found: {len(all_tokens)}")
+    
+    # Filter by Naomi criteria
+    naomi_matches = [t for t in all_tokens if NAOMI_MIN_MC <= t.get('market_cap', 0) <= NAOMI_MAX_MC]
+    other_coins = [t for t in all_tokens if t.get('market_cap', 0) > 0 and not (NAOMI_MIN_MC <= t.get('market_cap', 0) <= NAOMI_MAX_MC)]
+    
+    # Sort by volume
+    naomi_matches.sort(key=lambda x: x.get('volume', 0), reverse=True)
+    other_coins.sort(key=lambda x: x.get('volume', 0), reverse=True)
+    
+    # OUTPUT
     print("\n" + "=" * 70)
-    print("🚀 MEMECOIN SCANNER RESULTS (NAOMI RULES)")
+    print("🚀 MULTI-SOURCE MEMECOIN SCANNER v4")
     print("=" * 70)
-    print(f"📅 Scan Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')}")
-    print(f"🎯 Target: ${NAOMI_MIN_MC/1000:.0f}K-${NAOMI_MAX_MC/1000:.0f}K Market Cap")
+    print(f"📅 {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')}")
+    print(f"🎯 Naomi Target: ${NAOMI_MIN_MC/1000:.0f}K-${NAOMI_MAX_MC/1000:.0f}K MC")
+    print(f"📊 Sources: CoinGecko, Birdeye, DexScreener")
     print("=" * 70)
     
-    naomi_matches = []
-    other_coins = []
-    
-    for coin in coins:
-        item = coin.get('item', {})
-        name = item.get('name', 'Unknown')
-        symbol = item.get('symbol', '???')
-        
-        coin_data = item.get('data', {})
-        price = coin_data.get('price', 'N/A')
-        change_24h = coin_data.get('price_change_percentage_24h', {}).get('usd', 0) or 0
-        market_cap_str = coin_data.get('market_cap', 'N/A')
-        volume_str = coin_data.get('total_volume', 'N/A')
-        
-        market_cap = parse_market_cap(market_cap_str)
-        volume = parse_volume(volume_str)
-        
-        coin_info = {
-            'name': name,
-            'symbol': symbol,
-            'price': price,
-            'change_24h': change_24h,
-            'market_cap': market_cap,
-            'market_cap_str': market_cap_str,
-            'volume': volume,
-            'volume_str': volume_str,
-            'score': item.get('score', 'N/A'),
-            'platform': item.get('platform_id', 'unknown'),
-            'contract': item.get('contract_address', '')
-        }
-        
-        # Check Naomi criteria
-        if NAOMI_MIN_MC <= market_cap <= NAOMI_MAX_MC:
-            naomi_matches.append(coin_info)
-        else:
-            other_coins.append(coin_info)
-    
-    # Print NAOMI SWEET SPOT coins first
+    # Naomi matches
     if naomi_matches:
-        print(f"\n✅ NAOMI SWEET SPOT MATCHES ({len(naomi_matches)} coins)")
+        print(f"\n✅ NAOMI SWEET SPOT ({len(naomi_matches)} tokens)")
         print("-" * 70)
         
-        for i, coin in enumerate(naomi_matches[:5], 1):
-            change_str = f"{coin['change_24h']:+.1f}%"
-            change_emoji = "🚀" if coin['change_24h'] > 50 else "📈" if coin['change_24h'] > 0 else "📉"
+        for i, coin in enumerate(naomi_matches[:10], 1):
+            change = coin.get('change_24h', 0)
+            emoji = "🚀" if change > 50 else "📈" if change > 20 else "💎" if change > 0 else "📉"
+            source_tag = f"[{coin['source'][:4].upper()}]"
             
-            print(f"\n{i}. {coin['name']} (${coin['symbol']}) {change_emoji}")
+            print(f"\n{i}. {emoji} {coin['name']} (${coin['symbol']}) {source_tag}")
             print(f"   💰 Price: {coin['price']}")
-            print(f"   📊 24h Change: {change_str}")
-            print(f"   🏦 Market Cap: {coin['market_cap_str']} (✅ IN RANGE)")
-            print(f"   📈 Volume: {coin['volume_str']}")
+            print(f"   📊 24h: {change:+.1f}% | Vol: {coin.get('volume_str', 'N/A')}")
+            print(f"   🏦 MC: {coin['market_cap_str']} ✅")
             
             # Due diligence links
-            if coin['contract']:
-                if coin['platform'] == 'solana':
-                    print(f"   🔍 Solscan: https://solscan.io/token/{coin['contract']}")
-                elif coin['platform'] == 'base':
-                    print(f"   🔍 BaseScan: https://basescan.org/token/{coin['contract']}")
-                print(f"   📊 Bubble Maps: https://app.bubblemaps.io/{coin['platform']}/token/{coin['contract']}")
+            if coin.get('solscan'):
+                print(f"   🔍 Solscan: {coin['solscan']}")
+            if coin.get('basescan'):
+                print(f"   🔍 BaseScan: {coin['basescan']}")
+            if coin.get('bubblemaps'):
+                print(f"   📊 Bubble: {coin['bubblemaps']}")
+            if coin.get('url'):
+                print(f"   🔗 {coin['url']}")
             
-            # Flag high movers
-            if coin['change_24h'] > 50:
-                print(f"   ⚠️ FLAG: High volatility (+{coin['change_24h']:.1f}%) - Wait for dip!")
-            elif coin['change_24h'] > 20:
-                print(f"   💡 Notable gains - Monitor for entry")
+            if change > 50:
+                print(f"   ⚠️ HIGH VOLATILITY - Wait for dip!")
     else:
-        print(f"\n❌ No coins in Naomi sweet spot (${NAOMI_MIN_MC/1000:.0f}K-${NAOMI_MAX_MC/1000:.0f}K MC)")
+        print(f"\n❌ No Naomi sweet spot matches (${NAOMI_MIN_MC/1000:.0f}K-${NAOMI_MAX_MC/1000:.0f}K)")
     
-    # Print other trending coins
+    # Other coins (top 5)
     if other_coins:
-        print(f"\n📋 OTHER TRENDING COINS ({len(other_coins)} outside range)")
+        print(f"\n📋 OTHER TRENDING ({len(other_coins)} outside range)")
         print("-" * 70)
-        
-        for coin in other_coins[:3]:
-            status = "Below min" if coin['market_cap'] < NAOMI_MIN_MC else "Above max"
-            print(f"• {coin['name']} (${coin['symbol']}): {coin['market_cap_str']} ({status})")
+        for coin in other_coins[:5]:
+            status = "micro" if coin['market_cap'] < NAOMI_MIN_MC else "large"
+            print(f"• {coin['name']} (${coin['symbol']}): {coin['market_cap_str']} [{coin['source']}] ({status})")
     
-    # NAOMI DUE DILIGENCE CHECKLIST
+    # NAOMI CHECKLIST
     print("\n" + "=" * 70)
     print("⚠️ NAOMI DUE DILIGENCE CHECKLIST:")
     print("=" * 70)
-    print("   ☐ Liquidity locked? (check DexScreener/DexTools)")
-    print("   ☐ Track whale wallets on BaseScan (for Base tokens)")
-    print("   ☐ Use Bubble Maps to detect dev dumps")
-    print("   ☐ Check if CT hype is organic vs paid shills")
-    print("   ☐ Wait for first dip - NEVER buy the top!")
+    print("   ☐ Check GMGN for smart money signals: https://gmgn.ai")
+    print("   ☐ Verify on Solscan (Solana) or BaseScan (Base)")
+    print("   ☐ Liquidity locked? (DexScreener/DexTools)")
+    print("   ☐ Track whale wallets")
+    print("   ☐ Bubble Maps for dev dumps")
+    print("   ☐ CT hype: organic vs paid shills?")
+    print("   ☐ Wait for dip - NEVER buy top!")
     print("")
-    print("💡 EXIT STRATEGY:")
-    print("   • 2x → Take initial out")
-    print("   • 5x → Take more profits")  
-    print("   • 10x → Don't chase 100x greed")
-    print("")
-    print("🚨 RED FLAGS (GTFO immediately):")
-    print("   • Volume dries up suddenly")
-    print("   • Whales start dumping")
-    print("")
-    print("🎯 GOLDEN RULE:")
-    print('   "Take profits before someone else takes them from you"')
+    print("💡 EXIT: 2x → 5x → 10x (not 100x greed)")
+    print("🚨 Volume dies? Whales dump? GTFO!")
+    print("🎯 'Take profits before someone else takes them from you'")
     print("=" * 70)
     
-    log(f"Scanner complete. Found {len(naomi_matches)} Naomi matches, {len(other_coins)} other coins.")
+    log(f"Complete: {len(naomi_matches)} Naomi matches, {len(other_coins)} others")
 
 if __name__ == "__main__":
     main()
