@@ -182,6 +182,77 @@ Stored in: `scripts/polyclaw-research.py`
 - `scripts/hedge.py` - LLM hedge discovery
 - `~/.openclaw/polyclaw/positions.json` - Position storage
 
+## Full Automation (PolyClaw AutoTrader)
+
+Autonomous trading system that scans, researches, decides, and executes.
+
+### Architecture
+
+```
+┌──────────────────────────────────────────────────────────┐
+│              POLYCLAW AUTOTRADER v1                      │
+├──────────────────────────────────────────────────────────┤
+│                                                          │
+│  1. SCAN                                                │
+│     └── Fetch trending markets from Polymarket          │
+│                                                          │
+│  2. FILTER                                              │
+│     ├── Volume > $500K                                  │
+│     └── Price anomalies (edge detection)                │
+│                                                          │
+│  3. RESEARCH                                            │
+│     └── Perplexity deep analysis                        │
+│         ├── True probability estimate                   │
+│         ├── Key factors                                 │
+│         └── Confidence score                            │
+│                                                          │
+│  4. EVALUATE                                            │
+│     ├── Calculate edge vs market price                  │
+│     ├── Check risk limits                               │
+│     └── Size position (edge * confidence)               │
+│                                                          │
+│  5. EXECUTE                                             │
+│     └── PolyClaw buy/sell                               │
+│                                                          │
+│  6. MONITOR                                             │
+│     └── Track P&L, alert on targets                     │
+└──────────────────────────────────────────────────────────┘
+```
+
+### Risk Management
+
+| Parameter | Value | Description |
+|-----------|-------|-------------|
+| `MAX_POSITION_SIZE` | $5.00 | Max per trade |
+| `MAX_DAILY_EXPOSURE` | $20.00 | Daily trading limit |
+| `MIN_CONFIDENCE` | 70% | Minimum research confidence |
+| `MIN_VOLUME` | $500K | Minimum market liquidity |
+| `MIN_EDGE` | 10% | Minimum price edge to trade |
+
+### Commands
+
+```bash
+# Run autotrader (dry-run mode)
+python3 scripts/polyclaw-autotrader.py
+
+# Enable live trading (edit script)
+export LIVE_TRADING=1
+
+# View trade log
+cat memory/polyclaw-trades.json
+```
+
+### Cron Schedule
+
+```bash
+# Every 4 hours - scan for opportunities
+polyclaw-autotrader: 0 */4 * * *
+```
+
+⚠️ **Currently in DRY-RUN mode** — Set `LIVE_TRADING=1` to execute real trades.
+
+---
+
 ## Links
 
 - GitHub: https://github.com/chainstacklabs/polyclaw
