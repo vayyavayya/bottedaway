@@ -12,8 +12,9 @@ Before doing anything else:
 
 1. Read `SOUL.md` — this is who you are
 2. Read `USER.md` — this is who you're helping
-3. Read `memory/YYYY-MM-DD.md` (today + yesterday) for recent context
-4. **If in MAIN SESSION** (direct chat with your human): Also read `MEMORY.md`
+3. Read `memory/INDEX.md` — navigation map for context
+4. Read `memory/daily/YYYY-MM-DD.md` (today + yesterday) for recent context
+5. **If in MAIN SESSION** (direct chat with your human): Also read `MEMORY.md`
 
 Don't ask permission. Just do it.
 
@@ -21,12 +22,37 @@ Don't ask permission. Just do it.
 
 You wake up fresh each session. These files are your continuity:
 
-- **Daily notes:** `memory/YYYY-MM-DD.md` (create `memory/` if needed) — raw logs of what happened
-- **Long-term:** `MEMORY.md` — your curated memories, like a human's long-term memory
+### Memory Architecture
 
-Capture what matters. Decisions, context, things to remember. Skip the secrets unless asked to keep them.
+```
+memory/
+├── INDEX.md              ← Read this FIRST for navigation
+├── daily/                ← Rolling 7-day window of daily briefs
+├── projects/             ← One file per active project
+├── reference/            ← Stable docs (voice, APIs, workflows)
+├── meetings/             ← Meeting transcripts
+│   ├── agency/
+│   ├── content/
+│   ├── external/
+│   └── internal/
+└── archive/              ← Old notes, completed projects
+```
 
-### 🧠 MEMORY.md - Your Long-Term Memory
+**How each piece works:**
+
+- **INDEX.md** — The single entry point. Lists active projects, recent daily notes, key reference docs. Read this FIRST every session to orient yourself.
+
+- **Daily briefs** (`daily/[YYYY-MM-DD.md]`) — Raw logs of what happened that day. Decisions made, tasks completed, things to remember. Keep a rolling 7-day window; archive older notes.
+
+- **Projects** — One markdown file per active project. Contains status, next steps, blockers, and context. Move completed projects to archive.
+
+- **Reference** — Stable documents that don't change often. Voice guide, API docs, recurring workflows, trading rules.
+
+- **Meetings** — Transcripts organized by category: agency, content, external, internal.
+
+- **Archive** — Anything older than 7 days or completed. Dig here if you need historical context.
+
+### Long-Term Memory (MEMORY.md)
 
 - **ONLY load in main session** (direct chats with your human)
 - **DO NOT load in shared contexts** (Discord, group chats, sessions with other people)
@@ -223,10 +249,12 @@ You are free to edit `HEARTBEAT.md` with a short checklist or reminders. Keep it
 
 Periodically (every few days), use a heartbeat to:
 
-1. Read through recent `memory/YYYY-MM-DD.md` files
-2. Identify significant events, lessons, or insights worth keeping long-term
-3. Update `MEMORY.md` with distilled learnings
-4. Remove outdated info from MEMORY.md that's no longer relevant
+1. Read `memory/INDEX.md` to orient yourself
+2. Read through recent `memory/daily/YYYY-MM-DD.md` files
+3. Identify significant events, lessons, or insights worth keeping long-term
+4. Update `MEMORY.md` with distilled learnings
+5. Archive old daily notes (>7 days) to `memory/archive/`
+6. Remove outdated info from MEMORY.md that's no longer relevant
 
 Think of it like a human reviewing their journal and updating their mental model. Daily files are raw notes; MEMORY.md is curated wisdom.
 
