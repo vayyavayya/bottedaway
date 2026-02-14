@@ -32,12 +32,18 @@ ENABLE_HEDGE_DISCOVERY = True  # Enable LLM-powered hedge scanning
 HEDGE_MIN_COVERAGE = 0.90  # Minimum 90% coverage for hedge trades
 HEDGE_SCAN_LIMIT = 10  # Number of markets to scan for hedges
 
+# SMART MONEY TRACKING
+ENABLE_SMART_MONEY = True  # Enable whale wallet tracking
+SMART_MONEY_MIN_CONFIDENCE = 0.75  # Min confidence to copy whale trades
+SMART_MONEY_MAX_POSITION = 3.00  # Smaller size for copy trades
+
 # LIVE TRADING MODE
 LIVE_TRADING = os.getenv("LIVE_TRADING", "1") == "1"  # Set to 0 for dry run
 
 print(f"[MODE] {'🟢 LIVE TRADING' if LIVE_TRADING else '⚪ DRY RUN (set LIVE_TRADING=1 for live)'}")
 print(f"[RISK] Stop loss: {STOP_LOSS_PERCENTAGE:.0%}, Position size: ${MAX_POSITION_SIZE}")
 print(f"[HEDGE] Discovery: {'ENABLED' if ENABLE_HEDGE_DISCOVERY else 'DISABLED'}")
+print(f"[WHALE] Smart Money: {'ENABLED' if ENABLE_SMART_MONEY else 'DISABLED'}")
 
 # Trade log
 TRADE_LOG = "/Users/pterion2910/.openclaw/workspace/memory/polyclaw-trades.json"
@@ -498,6 +504,167 @@ def execute_hedge_trade(hedge: Dict, daily_exposure: float) -> Tuple[bool, float
         print(f"   ⚠️  Hedge incomplete ({success_count}/2 legs)")
         return False, total_spent
 
+# ==================== SMART MONEY TRACKING ====================
+
+def load_performance_data() -> List[Dict]:
+    """Load recent trade performance."""
+    perf_file = "/Users/pterion2910/.openclaw/workspace/memory/polyclaw-performance.json"
+    if os.path.exists(perf_file):
+        with open(perf_file, 'r') as f:
+            return json.load(f)
+    return []
+
+def calculate_strategy_adjustment() -> Dict:
+    """
+    Analyze recent performance and suggest strategy adjustments.
+    Like Clawdia - adapt when losing, capitalize when winning.
+    """
+    performance = load_performance_data()
+    
+    if len(performance) < 5:
+        return {
+            'adjustment': 0,
+            'message': 'Building performance baseline...',
+            'min_edge': 0.10,
+            'max_position': MAX_POSITION_SIZE,
+            'stop_loss': STOP_LOSS_PERCENTAGE
+        }
+    
+    # Last 10 trades
+    recent = performance[-10:]
+    wins = sum(1 for p in recent if p.get('pnl', 0) > 0)
+    win_rate = wins / len(recent)
+    total_pnl = sum(p.get('pnl', 0) for p in recent)
+    
+    print(f"📊 Recent Performance: {win_rate:.0%} win rate, ${total_pnl:+.2f} P&L")
+    
+    # Adaptive strategy
+    if win_rate < 0.4 or total_pnl < -30:
+        # Losing streak - tighten up like Clawdia did
+        return {
+            'adjustment': -1,
+            'message': f'🛡️ LOSING STREAK: Tightening risk (WR: {win_rate:.0%})',
+            'min_edge': 0.15,  # Need 15% edge (vs 10%)
+            'max_position': 3.00,  # Reduce to $3 (vs $5)
+            'stop_loss': 0.10,  # Tighter 10% stop
+            'action': 'conservative'
+        }
+    elif win_rate > 0.6 and total_pnl > 50:
+        # Winning streak - maintain but don't get greedy
+        return {
+            'adjustment': 1,
+            'message': f'🔥 HOT STREAK: Capitalizing (WR: {win_rate:.0%}, +${total_pnl:.0f})',
+            'min_edge': 0.08,  # Can take 8% edge
+            'max_position': MAX_POSITION_SIZE,  # Full $5
+            'stop_loss': STOP_LOSS_PERCENTAGE,
+            'action': 'aggressive'
+        }
+    else:
+        # Neutral - standard strategy
+        return {
+            'adjustment': 0,
+            'message': f'⚖️ NEUTRAL: Standard strategy (WR: {win_rate:.0%})',
+            'min_edge': 0.10,
+            'max_position': MAX_POSITION_SIZE,
+            'stop_loss': STOP_LOSS_PERCENTAGE,
+            'action': 'standard'
+        }
+
+def get_smart_money_signals() -> List[Dict]:
+    """
+    Get copy-trade signals from whale wallets.
+    Integration with polyclaw-smart-money.py
+    """
+    if not ENABLE_SMART_MONEY:
+        return []
+    
+    print("\n🐋 Checking smart money signals...")
+    
+    try:
+        # Run the smart money tracker
+        import subprocess
+        result = subprocess.run(
+            "cd ~/.openclaw/skills/polyclaw && uv run python scripts/polyclaw-smart-money.py",
+            shell=True,
+            capture_output=True,
+            text=True,
+            timeout=60
+        )
+        
+        # For now, return empty (full implementation needs Polymarket data source)
+        # In production, this would parse the output and return structured signals
+        print("   Smart money tracker run (data integration pending)")
+        return []
+        
+    except Exception as e:
+        print(f"   [Smart Money Error] {e}")
+        return []
+
+def execute_smart_money_trade(signal: Dict, daily_exposure: float) -> Tuple[bool, float]:
+    """
+    Execute a copy trade based on whale signal.
+    Uses smaller position size than edge trades.
+    """
+    confidence = signal.get('confidence', 0)
+    
+    if confidence < SMART_MONEY_MIN_CONFIDENCE:
+        print(f"   ⏭️  Whale confidence too low ({confidence:.0%})")
+        return False, 0.0
+    
+    # Smaller position for copy trades
+    position_size = min(SMART_MONEY_MAX_POSITION, (MAX_DAILY_EXPOSURE - daily_exposure))
+    
+    if position_size < 1.0:
+        print("   ⏭️  Insufficient funds for copy trade")
+        return False, 0.0
+    
+    market_id = signal.get('market_id')
+    side = signal.get('side')
+    whale = signal.get('whale_address', 'unknown')[:12]
+    
+    print(f"🐋 Copying whale {whale}...")
+    print(f"   Market: {market_id} | Side: {side}")
+    print(f"   Size: ${position_size:.2f} | Confidence: {confidence:.0%}")
+    
+    cmd = f"cd ~/.openclaw/skills/polyclaw && uv run python scripts/polyclaw.py buy {market_id} {side} {position_size:.2f}"
+    
+    if not LIVE_TRADING:
+        print(f"   [DRY RUN] {cmd}")
+        return True, position_size
+    
+    print(f"   🟢 LIVE: {cmd}")
+    
+    import subprocess
+    try:
+        result = subprocess.run(
+            cmd,
+            shell=True,
+            capture_output=True,
+            text=True,
+            timeout=120
+        )
+        
+        if result.returncode == 0:
+            print("   ✅ Copy trade executed!")
+            log_trade({
+                'type': 'smart_money',
+                'market_id': market_id,
+                'side': side,
+                'amount': position_size,
+                'whale': signal.get('whale_address'),
+                'whale_score': signal.get('whale_score'),
+                'confidence': confidence,
+                'status': 'executed'
+            })
+            return True, position_size
+        else:
+            print(f"   ❌ Copy trade failed: {result.stderr}")
+            return False, 0.0
+            
+    except Exception as e:
+        print(f"   ❌ Copy trade exception: {e}")
+        return False, 0.0
+
 def main():
     """Main autotrader loop."""
     print("=" * 60)
@@ -529,7 +696,32 @@ def main():
         print("⚠️  Daily exposure limit reached. No new trades today.")
         return
     
-    # STEP 3: HEDGE DISCOVERY (if enabled)
+    # STEP 3: STRATEGY ADAPTATION (like Clawdia - adapt to performance)
+    print("\n🧠 Adapting strategy based on performance...")
+    strategy_adj = calculate_strategy_adjustment()
+    print(f"   {strategy_adj['message']}")
+    
+    # Update dynamic thresholds based on performance
+    dynamic_min_edge = strategy_adj.get('min_edge', 0.10)
+    dynamic_max_position = strategy_adj.get('max_position', MAX_POSITION_SIZE)
+    print(f"   Settings: {dynamic_min_edge:.0%} min edge, ${dynamic_max_position} max position")
+    
+    # STEP 4: SMART MONEY COPY TRADING
+    if ENABLE_SMART_MONEY and daily_exposure < MAX_DAILY_EXPOSURE:
+        print("\n🐋 Checking smart money signals...")
+        smart_signals = get_smart_money_signals()
+        
+        if smart_signals:
+            print(f"   Found {len(smart_signals)} whale signals")
+            for signal in smart_signals[:2]:  # Limit to 2 copy trades per run
+                if daily_exposure + SMART_MONEY_MAX_POSITION <= MAX_DAILY_EXPOSURE:
+                    success, spent = execute_smart_money_trade(signal, daily_exposure)
+                    if success:
+                        daily_exposure += spent
+        else:
+            print("   No smart money signals this cycle")
+    
+    # STEP 5: HEDGE DISCOVERY (if enabled)
     if ENABLE_HEDGE_DISCOVERY and daily_exposure < MAX_DAILY_EXPOSURE:
         print("\n🔍 Running hedge discovery...")
         hedge_opportunities = scan_hedge_opportunities()
@@ -547,18 +739,24 @@ def main():
         else:
             print("No hedge opportunities found")
     
-    # STEP 4: SCAN FOR REGULAR EDGE OPPORTUNITIES
+    # STEP 6: SCAN FOR REGULAR EDGE OPPORTUNITIES
     print("\n🔍 Scanning for edge opportunities...")
     opportunities = scan_opportunities()
     print(f"Found {len(opportunities)} markets to analyze")
     
-    # Evaluate each opportunity
+    # Evaluate each opportunity with dynamic edge threshold
     trades_to_execute = []
     for opp in opportunities:
         trade = evaluate_trade(opp)
         if trade:
-            trades_to_execute.append(trade)
-            print(f"✅ Trade signal: {trade['side']} ${trade['amount']} (edge: {trade['edge']:.1%})")
+            # Apply dynamic edge threshold based on performance
+            if trade['edge'] >= dynamic_min_edge:
+                # Adjust position size based on strategy mode
+                trade['amount'] = min(trade['amount'], dynamic_max_position)
+                trades_to_execute.append(trade)
+                print(f"✅ Trade signal: {trade['side']} ${trade['amount']} (edge: {trade['edge']:.1%})")
+            else:
+                print(f"⏭️  Edge {trade['edge']:.1%} < threshold {dynamic_min_edge:.0%}")
     
     # Execute best trades
     executed = 0
@@ -572,7 +770,9 @@ def main():
     
     print(f"\n{'='*60}")
     print(f"✅ AUTOTRADER COMPLETE")
+    print(f"   Mode: {strategy_adj.get('action', 'standard').upper()}")
     print(f"   Stop loss checks: {len(stop_loss_positions) if 'stop_loss_positions' in dir() else 0} triggered")
+    print(f"   Smart money: {len(smart_signals) if 'smart_signals' in dir() else 0} signals")
     print(f"   Edge trades: {executed} executed")
     print(f"   Daily exposure: ${daily_exposure:.2f} / ${MAX_DAILY_EXPOSURE:.2f}")
     print(f"{'='*60}")
