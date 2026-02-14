@@ -33,7 +33,7 @@ HEDGE_MIN_COVERAGE = 0.90  # Minimum 90% coverage for hedge trades
 HEDGE_SCAN_LIMIT = 10  # Number of markets to scan for hedges
 
 # LIVE TRADING MODE
-LIVE_TRADING = os.getenv("LIVE_TRADING", "0") == "1"  # Set to 1 for live trades
+LIVE_TRADING = os.getenv("LIVE_TRADING", "1") == "1"  # Set to 0 for dry run
 
 print(f"[MODE] {'🟢 LIVE TRADING' if LIVE_TRADING else '⚪ DRY RUN (set LIVE_TRADING=1 for live)'}")
 print(f"[RISK] Stop loss: {STOP_LOSS_PERCENTAGE:.0%}, Position size: ${MAX_POSITION_SIZE}")
