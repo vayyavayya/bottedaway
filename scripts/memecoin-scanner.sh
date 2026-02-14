@@ -1,43 +1,38 @@
-#!/bin/bash
-# Memecoin Scanner - Runs every 720 minutes (12 hours)
-# Scans for trending/new tokens and filters by NAOMI'S TRADING RULES
-#
-# NAOMI RULES:
-# - Target MC: $100K-$500K (sweet spot)
-# - Wait for first dip, NEVER buy top
-# - Liquidity must be locked
-# - Track whale wallets on BaseScan
-# - Use Bubble Maps to detect dev dumps
-# - Check organic vs paid CT hype
-# - Exit: 2x → 5x → 10x (not 100x greed!)
-# - Golden Rule: "Take profits before someone else takes them from you"
+#!/usr/bin/env python3
+"""
+Memecoin Scanner - Runs every 720 minutes (12 hours)
+Scans for trending/new tokens and filters by NAOMI'S TRADING RULES
 
-TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-LOG_FILE="/Users/pterion2910/.openclaw/workspace/memory/scanner-$(date +%Y-%m-%d).log"
+NAOMI RULES:
+- Target MC: $100K-$500K (sweet spot)
+- Wait for first dip, NEVER buy top
+- Liquidity must be locked
+- Track whale wallets on BaseScan
+- Use Bubble Maps to detect dev dumps
+- Check organic vs paid CT hype
+- Exit: 2x → 5x → 10x (not 100x greed!)
+- Golden Rule: "Take profits before someone else takes them from you"
+"""
+
+import json
+import sys
+import subprocess
+from datetime import datetime, timezone
 
 # NAOMI CRITERIA
-NAOMI_MIN_MC=100000      # $100K minimum
-NAOMI_MAX_MC=500000      # $500K maximum (sweet spot)
-NAOMI_MIN_LIQUIDITY=10000 # $10K minimum liquidity
+NAOMI_MIN_MC = 100_000      # $100K minimum
+NAOMI_MAX_MC = 500_000      # $500K maximum (sweet spot)
+NAOMI_MIN_LIQUIDITY = 10_000  # $10K minimum liquidity
 
-echo "=== Memecoin Scanner Run: $TIMESTAMP ===" >> $LOG_FILE
-echo "NAOMI RULES: Target MC \$100K-\$500K | Min Liquidity \$10K" >> $LOG_FILE
+LOG_FILE = f"/Users/pterion2910/.openclaw/workspace/memory/scanner-{datetime.now().strftime('%Y-%m-%d')}.log"
 
-# Query CoinGecko trending coins
-echo "Fetching trending coins from CoinGecko..." >> $LOG_FILE
-
-TRENDING=$(curl -s "https://api.coingecko.com/api/v3/search/trending" 2>/dev/null)
-
-if [ $? -eq 0 ] && [ ! -z "$TRENDING" ]; then
-    echo "✓ Trending data received" >> $LOG_FILE
-    
-    # Parse top trending coins with Naomi filters
-    echo "" >> $LOG_FILE
-    echo "--- TOP TRENDING COINS (NAOMI FILTERED) ---" >> $LOG_FILE
-    
-    # Extract coin info using Python with Naomi criteria
-    python3 << PYEOF
-import json, sys, re
+def log(msg):
+    """Log to file and stdout."""
+    timestamp = datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
+    line = f"[{timestamp}] {msg}"
+    print(line)
+    with open(LOG_FILE, 'a') as f:
+        f.write(line + '\n')
 
 def parse_market_cap(mc_str):
     """Parse market cap string to number."""
@@ -73,17 +68,37 @@ def parse_volume(vol_str):
     except:
         return 0
 
-try:
-    data = json.loads('''$TRENDING''')
+def fetch_trending():
+    """Fetch trending coins from CoinGecko."""
+    import urllib.request
+    try:
+        req = urllib.request.Request(
+            "https://api.coingecko.com/api/v3/search/trending",
+            headers={'User-Agent': 'Mozilla/5.0'}
+        )
+        with urllib.request.urlopen(req, timeout=30) as response:
+            return json.loads(response.read().decode('utf-8'))
+    except Exception as e:
+        log(f"✗ Failed to fetch trending data: {e}")
+        return None
+
+def main():
+    log("=== Memecoin Scanner Run ===")
+    log(f"NAOMI RULES: Target MC ${NAOMI_MIN_MC/1000:.0f}K-${NAOMI_MAX_MC/1000:.0f}K | Min Liquidity ${NAOMI_MIN_LIQUIDITY:,.0f}")
+    
+    data = fetch_trending()
+    if not data:
+        return
+    
+    log("✓ Trending data received")
+    
     coins = data.get('coins', [])
     
-    NAOMI_MIN_MC = 100000
-    NAOMI_MAX_MC = 500000
-    
-    print("\n🚀 MEMECOIN SCANNER RESULTS (NAOMI RULES)")
+    print("\n" + "=" * 70)
+    print("🚀 MEMECOIN SCANNER RESULTS (NAOMI RULES)")
     print("=" * 70)
-    print(f"📅 Scan Time: $(date -u +"%Y-%m-%d %H:%M UTC")")
-    print(f"🎯 Target: \${NAOMI_MIN_MC/1000:.0f}K-\${NAOMI_MAX_MC/1000:.0f}K Market Cap")
+    print(f"📅 Scan Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')}")
+    print(f"🎯 Target: ${NAOMI_MIN_MC/1000:.0f}K-${NAOMI_MAX_MC/1000:.0f}K Market Cap")
     print("=" * 70)
     
     naomi_matches = []
@@ -94,16 +109,16 @@ try:
         name = item.get('name', 'Unknown')
         symbol = item.get('symbol', '???')
         
-        data = item.get('data', {})
-        price = data.get('price', 'N/A')
-        change_24h = data.get('price_change_percentage_24h', {}).get('usd', 0) or 0
-        market_cap_str = data.get('market_cap', 'N/A')
-        volume_str = data.get('total_volume', 'N/A')
+        coin_data = item.get('data', {})
+        price = coin_data.get('price', 'N/A')
+        change_24h = coin_data.get('price_change_percentage_24h', {}).get('usd', 0) or 0
+        market_cap_str = coin_data.get('market_cap', 'N/A')
+        volume_str = coin_data.get('total_volume', 'N/A')
         
         market_cap = parse_market_cap(market_cap_str)
         volume = parse_volume(volume_str)
         
-        coin_data = {
+        coin_info = {
             'name': name,
             'symbol': symbol,
             'price': price,
@@ -119,9 +134,9 @@ try:
         
         # Check Naomi criteria
         if NAOMI_MIN_MC <= market_cap <= NAOMI_MAX_MC:
-            naomi_matches.append(coin_data)
+            naomi_matches.append(coin_info)
         else:
-            other_coins.append(coin_data)
+            other_coins.append(coin_info)
     
     # Print NAOMI SWEET SPOT coins first
     if naomi_matches:
@@ -152,7 +167,7 @@ try:
             elif coin['change_24h'] > 20:
                 print(f"   💡 Notable gains - Monitor for entry")
     else:
-        print("\n❌ No coins in Naomi sweet spot (\$100K-\$500K MC)")
+        print(f"\n❌ No coins in Naomi sweet spot (${NAOMI_MIN_MC/1000:.0f}K-${NAOMI_MAX_MC/1000:.0f}K MC)")
     
     # Print other trending coins
     if other_coins:
@@ -185,17 +200,8 @@ try:
     print("🎯 GOLDEN RULE:")
     print('   "Take profits before someone else takes them from you"')
     print("=" * 70)
-        
-except Exception as e:
-    print(f"Error parsing data: {e}")
-    import traceback
-    traceback.print_exc()
-PYEOF
+    
+    log(f"Scanner complete. Found {len(naomi_matches)} Naomi matches, {len(other_coins)} other coins.")
 
-else
-    echo "✗ Failed to fetch trending data" >> $LOG_FILE
-fi
-
-echo "" >> $LOG_FILE
-echo "=== Scanner Complete ===" >> $LOG_FILE
-echo "" >> $LOG_FILE
+if __name__ == "__main__":
+    main()
