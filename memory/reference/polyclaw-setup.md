@@ -105,6 +105,67 @@ Uses LLM-powered **contrapositive analysis**:
 
 Example: If Market A (Trump wins) → Market B (Republican president), then YES on A + NO on B = hedge.
 
+## Perplexity Deep Research Integration
+
+For high-confidence trading decisions, use Perplexity AI research BEFORE executing trades.
+
+### Research Script
+
+`scripts/polyclaw-research.py` — Deep research on Polymarket trends
+
+**Commands:**
+
+```bash
+# Research a specific market before trading
+python3 scripts/polyclaw-research.py --research "Will Trump nominate Judy Shelton as Fed chair?" --price 0.02 --volume "$4.6M"
+
+# Get trending news affecting prediction markets
+python3 scripts/polyclaw-research.py --news
+
+# Compare two markets for hedging
+python3 scripts/polyclaw-research.py --compare "Market A question" "Market B question"
+```
+
+### Trading Workflow with Research
+
+```bash
+# 1. Browse markets
+polyclaw markets trending
+
+# 2. Deep research before trading
+python3 scripts/polyclaw-research.py \
+  --research "Will the government shutdown on Saturday?" \
+  --price 0.02 \
+  --volume "$3.6M"
+
+# 3. Review analysis (check citations, confidence, risks)
+
+# 4. Execute trade if conviction is high
+polyclaw buy <market_id> YES 50
+
+# 5. Track position
+polyclaw positions
+```
+
+### Research Output Includes
+
+- Current news/events affecting outcome
+- Historical precedents
+- Expert predictions/consensus
+- Key swing factors
+- Timeline of critical events
+- Confidence assessment
+- Risk factors and unknowns
+- Citations for verification
+
+### API Key
+
+Stored in: `scripts/polyclaw-research.py`
+- Key: `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`
+- Model: `sonar-pro` (best for research with citations)
+
+---
+
 ## Risk Management
 
 - Trade only what you can afford to lose
