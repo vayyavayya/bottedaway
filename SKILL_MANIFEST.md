@@ -49,6 +49,7 @@ SKILL INVENTORY:
 /automation/
 ------------
 [✓] cron-manager        - OpenClaw cron job management
+[✓] scanner-watchlist-bridge - Auto-add scanner finds to watchlist (NEW)
 [✗] git-sync            - TODO: Automated commit/push workflow
 [✗] heartbeat-checker   - TODO: Rotating system checks
 
@@ -73,9 +74,10 @@ ACTIVE CRON JOBS:
 
 CURRENT WATCHLIST:
 ==================
-- $ME (5 days, $336K MC, -38% dip)
-- $Seedance (7 days, $175K MC, -19% dip)
-- $PUP (4 days, $131K MC, +7% steady)
+- $ME (5 days, $209K MC, -54% dip)
+- $Seedance (7 days, $174K MC, -29% dip)
+- $PUP (4 days, $131K MC, +9% steady)
+- $LEO (4-10 days, $364K MC, +2685% parabolic) [NEW]
 
 OPEN POSITIONS:
 ===============
