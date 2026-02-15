@@ -5,6 +5,7 @@ Integrates: CoinGecko, Birdeye, DexScreener, GMGN, Solscan, BaseScan
 
 TRADING RULES:
 - Target MC: $100K-$500K (sweet spot)
+- Minimum 4 days old (avoid fresh launches, survivorship bias)
 - Wait for first dip, NEVER buy top
 - Liquidity must be locked
 - Track whale wallets on BaseScan
@@ -19,8 +20,8 @@ import sys
 import os
 import time
 import requests
-from datetime import datetime, timezone
-from typing import List, Dict, Optional
+from datetime import datetime, timezone, timedelta
+from typing import List, Dict, Optional, Tuple
 from urllib.parse import urljoin
 
 # Add scanner_engines to path
@@ -30,6 +31,7 @@ sys.path.insert(0, '/Users/pterion2910/.openclaw/workspace/scanner_engines')
 TARGET_MIN_MC = 100_000
 TARGET_MAX_MC = 500_000
 MIN_LIQUIDITY = 10_000
+MIN_COIN_AGE_DAYS = 4  # NEW: Minimum 4 days old (survivorship bias from Moltbook)
 
 LOG_FILE = f"/Users/pterion2910/.openclaw/workspace/memory/scanner-{datetime.now().strftime('%Y-%m-%d')}.log"
 
@@ -175,6 +177,7 @@ def fetch_dexscreener_boosted() -> List[Dict]:
                 'contract': token_address,
                 'dex': best.get("dexId", ""),
                 'url': best.get("url", ""),
+                'pairCreatedAt': best.get("pairCreatedAt"),  # For age checking
                 'solscan': f"https://solscan.io/token/{token_address}" if chain == "solana" else "",
                 'basescan': f"https://basescan.org/token/{token_address}" if chain == "base" else "",
                 'bubblemaps': f"https://app.bubblemaps.io/{chain}/token/{token_address}",
@@ -236,6 +239,59 @@ def parse_volume(vol_str) -> float:
     except:
         return 0
 
+def parse_volume(vol_str) -> float:
+    """Parse volume string to number."""
+    if not vol_str or vol_str == 'N/A':
+        return 0
+    vol_str = str(vol_str).replace('$', '').replace(',', '')
+    multipliers = {'K': 1e3, 'M': 1e6, 'B': 1e9}
+    for suffix, mult in multipliers.items():
+        if suffix in vol_str:
+            try:
+                return float(vol_str.replace(suffix, '')) * mult
+            except:
+                return 0
+    try:
+        return float(vol_str)
+    except:
+        return 0
+
+def check_coin_age(token: Dict) -> Tuple[bool, int]:
+    """
+    Check if coin is at least MIN_COIN_AGE_DAYS old.
+    Returns (qualifies, age_days)
+    """
+    # Try to get creation date from various sources
+    age_days = None
+    
+    # For DexScreener pairs, check pairCreatedAt
+    if 'pairCreatedAt' in token:
+        try:
+            created = token['pairCreatedAt']
+            if isinstance(created, (int, float)):
+                age_seconds = time.time() - (created / 1000 if created > 1e10 else created)
+                age_days = int(age_seconds / 86400)
+        except:
+            pass
+    
+    # If no age data, try to estimate from volume/market cap ratio
+    # or assume it's old enough if MC is stable
+    if age_days is None:
+        # Check if we have historical data indication
+        vol = token.get('volume', 0)
+        mc = token.get('market_cap', 0)
+        
+        # High volume relative to MC suggests established coin
+        if mc > 0 and vol / mc > 0.1:  # 10%+ daily volume to MC ratio
+            # Likely at least a few days old
+            age_days = MIN_COIN_AGE_DAYS + 1  # Assume qualifies
+        else:
+            # Unknown age - conservative: don't qualify
+            age_days = 0
+    
+    qualifies = age_days >= MIN_COIN_AGE_DAYS
+    return qualifies, age_days
+
 def deduplicate_tokens(tokens: List[Dict]) -> List[Dict]:
     """Remove duplicates based on contract address."""
     seen = {}
@@ -254,7 +310,7 @@ def deduplicate_tokens(tokens: List[Dict]) -> List[Dict]:
 
 def main():
     log("=== Multi-Source Memecoin Scanner v4 ===")
-    log(f"TRADING RULES: Target MC ${TARGET_MIN_MC/1000:.0f}K-${TARGET_MAX_MC/1000:.0f}K")
+    log(f"TRADING RULES: Target MC ${TARGET_MIN_MC/1000:.0f}K-${TARGET_MAX_MC/1000:.0f}K, Min {MIN_COIN_AGE_DAYS} days old")
     log("Sources: CoinGecko, Birdeye, DexScreener, GMGN (ref), Solscan, BaseScan")
     
     all_tokens = []
@@ -276,6 +332,22 @@ def main():
     all_tokens = deduplicate_tokens(all_tokens)
     log(f"Total unique tokens found: {len(all_tokens)}")
     
+    # Filter by age (minimum 4 days old)
+    aged_tokens = []
+    fresh_tokens = []
+    for token in all_tokens:
+        qualifies, age_days = check_coin_age(token)
+        if qualifies:
+            aged_tokens.append(token)
+        else:
+            fresh_tokens.append(token)
+    
+    if fresh_tokens:
+        log(f"Filtered out {len(fresh_tokens)} tokens < {MIN_COIN_AGE_DAYS} days old")
+    
+    all_tokens = aged_tokens
+    log(f"Tokens {MIN_COIN_AGE_DAYS}+ days old: {len(all_tokens)}")
+    
     # Filter by target criteria
     target_matches = [t for t in all_tokens if TARGET_MIN_MC <= t.get('market_cap', 0) <= TARGET_MAX_MC]
     other_coins = [t for t in all_tokens if t.get('market_cap', 0) > 0 and not (TARGET_MIN_MC <= t.get('market_cap', 0) <= TARGET_MAX_MC)]
@@ -289,7 +361,7 @@ def main():
     print("🚀 MULTI-SOURCE MEMECOIN SCANNER v4")
     print("=" * 70)
     print(f"📅 {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')}")
-    print(f"🎯 Target MC: ${TARGET_MIN_MC/1000:.0f}K-${TARGET_MAX_MC/1000:.0f}K")
+    print(f"🎯 Target MC: ${TARGET_MIN_MC/1000:.0f}K-${TARGET_MAX_MC/1000:.0f}K | Min Age: {MIN_COIN_AGE_DAYS}+ days")
     print(f"📊 Sources: CoinGecko, Birdeye, DexScreener")
     print("=" * 70)
     
@@ -335,6 +407,7 @@ def main():
     print("\n" + "=" * 70)
     print("⚠️ DUE DILIGENCE CHECKLIST:")
     print("=" * 70)
+    print(f"   ☐ Coin is {MIN_COIN_AGE_DAYS}+ days old (survivorship bias)")
     print("   ☐ Check GMGN for smart money signals: https://gmgn.ai")
     print("   ☐ Verify on Solscan (Solana) or BaseScan (Base)")
     print("   ☐ Liquidity locked? (DexScreener/DexTools)")
