@@ -8,6 +8,7 @@ Navigation map for agent orientation. Read this FIRST every session.
 
 | Date | File | Summary |
 |------|------|---------|
+| 2026-02-15 | [daily/2026-02-15.md](daily/2026-02-15.md) | Fed trade loss (-93%), risk management overhaul, multi-agent system built |
 | 2026-02-13 | [daily/2026-02-13.md](daily/2026-02-13.md) | First day online, 9 skills created, 3-engine scanner built |
 
 > **Rule:** Keep only last 7 days in `daily/`. Archive older to `archive/`.
@@ -18,6 +19,8 @@ Navigation map for agent orientation. Read this FIRST every session.
 
 | Project | Status | File |
 |---------|--------|------|
+| Fed Trade Post-Mortem | ✅ Complete | [projects/fed-trade-postmortem.md](projects/fed-trade-postmortem.md) |
+| Multi-Agent System | 🟢 Active | Supabase backend, agent coordination |
 | Memecoin Scanner v4 | 🟢 Active | See scanner architecture in code |
 | Trading Rules Integration | 🟢 Complete | Rules hardcoded in scanner |
 | Multi-Source Data Feed | 🟢 Active | CoinGecko + Birdeye + DexScreener + GMGN |
@@ -53,10 +56,10 @@ Navigation map for agent orientation. Read this FIRST every session.
 ## ⚡ Quick Stats
 
 - **Skills Created:** 9
-- **Cron Jobs:** 2 active
+- **Cron Jobs:** 4 active
 - **Data Sources:** 6 (CoinGecko, Birdeye, DexScreener, GMGN, Solscan, BaseScan)
-- **Last System Update:** 2026-02-14
+- **Last System Update:** 2026-02-15
 
 ---
 
-*This INDEX is updated automatically. Last refreshed: 2026-02-14*
+*This INDEX is updated automatically. Last refreshed: 2026-02-15*
