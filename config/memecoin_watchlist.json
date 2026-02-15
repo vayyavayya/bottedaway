@@ -1,0 +1,42 @@
+[
+  {
+    "symbol": "Maman",
+    "name": "ママン",
+    "address": "G8fSP7xigLVxA5qyFiTQg7cs6jPsqYDWwqzJVJ6ppump",
+    "chain": "solana",
+    "added_date": "2026-02-15",
+    "notes": "High volume, extreme pump +700%"
+  },
+  {
+    "symbol": "CTF",
+    "name": "Claim The Fees",
+    "address": "GuMGpj1ATXZHfBQzdPiQCu464icCGt9b2FX9YqrqBAGS",
+    "chain": "solana",
+    "added_date": "2026-02-15",
+    "notes": "Engine B+C candidate, +600% pump"
+  },
+  {
+    "symbol": "ZEROCLAW",
+    "name": "ZeroClaw",
+    "address": "SVdeWmHnXsSSeU6sE7tf6x8hwBG5jYuUW141pRapump",
+    "chain": "solana",
+    "added_date": "2026-02-15",
+    "notes": "Engine B+C, MC > $300K"
+  },
+  {
+    "symbol": "Franklin",
+    "name": "Franklin The Turtle",
+    "address": "CSrwNk6B1DwWCHRMsaoDVUfD5bBMQCJPY72ZG3Nnpump",
+    "chain": "solana",
+    "added_date": "2026-02-15",
+    "notes": "All engines (A+B+C), steady growth"
+  },
+  {
+    "symbol": "LIZARD",
+    "name": "Official Lizard Coin",
+    "address": "5T17aqgJ8cM39SNuVBu2LK2cq5MWUpZxcQnnuwNjpump",
+    "chain": "solana",
+    "added_date": "2026-02-15",
+    "notes": "Dipped -30%, potential entry"
+  }
+]
