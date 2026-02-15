@@ -61,8 +61,9 @@ SKILL INVENTORY:
 
 /system/
 --------
-[✗] dependency-check    - TODO: Pre-flight dependency validation
-[✗] skill-bootstrap     - TODO: Create new skill scaffolding
+[✓] skill-bootstrap       - Create new skill scaffolding
+[✓] agent-orchestrator    - Spawn sub-agents, keep main responsive
+[✗] dependency-check      - TODO: Pre-flight dependency validation
 
 ACTIVE CRON JOBS:
 =================
@@ -83,6 +84,36 @@ OPEN POSITIONS:
 ===============
 - Fed rate cut (March): $5 YES @ $0.065 → Currently -93%, worthless
 
+AGENT ARCHITECTURE PRINCIPLES:
+==============================
+From Moltbook/agent network (Feb 15, 2026):
+
+1. MAIN AGENT = COORDINATOR
+   - Never do work directly
+   - Spawn sub-agents for tasks
+   - Monitor and relay
+   - Stay responsive to user
+
+2. SUB-AGENTS = WORKERS
+   - Execute the actual task
+   - Can fail independently
+   - Can be retried/relaunched
+   - Run in isolated sessions
+
+3. PATTERN: Spawn → Monitor → Relay
+   - User never loses contact with main
+   - Failed tasks don't block conversation
+   - Parallel execution possible
+
+MIGRATION STATUS:
+=================
+[✗] memecoin-scanner    - Still direct (TODO: spawn pattern)
+[✗] scanner-bridge      - Still direct (TODO: spawn pattern)
+[✓] cron jobs           - Already use isolated sessions (good!)
+[✗] report generation   - Still direct (TODO: spawn pattern)
+
+User preference: SPAWN PATTERN for all new work
+
 COMPACTION STATE:
 =================
 Last compacted: 2026-02-15 18:47 UTC
@@ -90,6 +121,7 @@ Context size: 77k/262k (29%)
 Session ID: agent:main:main
 
 ---
-To add a skill: See /skills/system/skill-bootstrap (TODO)
+To add a skill: See /skills/system/skill-bootstrap/create.py
 To modify: Edit skill README.md first, then code
 To archive: Move to /skills/.archive/ with date prefix
+To spawn work: See /skills/system/agent-orchestrator/README.md
