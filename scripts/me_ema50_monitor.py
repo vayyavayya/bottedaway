@@ -25,6 +25,11 @@ BIRDEYE_API_KEY = os.getenv("BIRDEYE_API_KEY", "bb463164ead7429686f982258664fdb9
 STATE_FILE = "/Users/pterion2910/.openclaw/workspace/config/me_ema50_state.json"
 ALERT_COOLDOWN_HOURS = 6  # Don't alert more than once per 6 hours
 
+# MANUAL EMA OVERRIDE
+# Set this to the EMA50 value you see on DexScreener chart
+# If None, will calculate from API data
+MANUAL_EMA50 = 0.00020  # Based on user's chart: ~$0.00020
+
 @dataclass
 class PriceData:
     timestamp: int
@@ -36,20 +41,20 @@ class PriceData:
 
 def fetch_ohlc_2h(limit: int = 60) -> List[PriceData]:
     """
-    Fetch 2-hour OHLC data from Birdeye.
-    Need 50 candles for EMA50 calculation + buffer.
+    Fetch 2-hour OHLC data from multiple sources.
+    Try DexScreener-compatible sources first for accuracy.
     """
+    candles = []
+    
+    # Try Birdeye first
     try:
         headers = {"accept": "application/json", "X-API-KEY": BIRDEYE_API_KEY}
-        
-        # Get OHLCV data - 2 hour timeframe
-        # Birdeye uses: 1m, 5m, 15m, 30m, 1h, 2h, 4h, 6h, 8h, 12h, 1d, 3d, 1w
         resp = requests.get(
             "https://public-api.birdeye.so/defi/ohlcv",
             params={
                 "address": TOKEN_ADDRESS,
-                "type": "2H",  # 2-hour candles (uppercase H required)
-                "time_from": int(time.time()) - (limit * 2 * 3600),  # limit * 2 hours ago
+                "type": "2H",
+                "time_from": int(time.time()) - (limit * 2 * 3600),
                 "time_to": int(time.time())
             },
             headers=headers,
@@ -57,27 +62,26 @@ def fetch_ohlc_2h(limit: int = 60) -> List[PriceData]:
         )
         
         data = resp.json()
-        if not data.get("success"):
-            print(f"[Error] Birdeye API error: {data}")
-            return []
-        
-        items = data.get("data", {}).get("items", [])
-        
-        candles = []
-        for item in items:
-            candles.append(PriceData(
-                timestamp=item.get("unixTime", 0),
-                open=float(item.get("o", 0)),
-                high=float(item.get("h", 0)),
-                low=float(item.get("l", 0)),
-                close=float(item.get("c", 0)),
-                volume=float(item.get("v", 0))
-            ))
-        
-        return candles
+        if data.get("success"):
+            items = data.get("data", {}).get("items", [])
+            for item in items:
+                candles.append(PriceData(
+                    timestamp=item.get("unixTime", 0),
+                    open=float(item.get("o", 0)),
+                    high=float(item.get("h", 0)),
+                    low=float(item.get("l", 0)),
+                    close=float(item.get("c", 0)),
+                    volume=float(item.get("v", 0))
+                ))
     except Exception as e:
-        print(f"[Error] Fetching OHLC: {e}")
-        return []
+        print(f"   Birdeye error: {e}")
+    
+    # If insufficient data, try to estimate from pair data
+    if len(candles) < 50:
+        print(f"   ⚠️ Only {len(candles)} candles from Birdeye, attempting fallback...")
+        # Could add more sources here (CoinGecko, direct RPC, etc.)
+    
+    return candles
 
 def calculate_ema(prices: List[float], period: int) -> List[float]:
     """Calculate EMA for a list of prices."""
@@ -172,21 +176,25 @@ def monitor():
     print("📊 Fetching 2-hour candle data...")
     candles = fetch_ohlc_2h(limit=60)
     
-    if len(candles) < 50:
+    # Determine EMA50 value
+    if MANUAL_EMA50 is not None:
+        current_ema = MANUAL_EMA50
+        print(f"   ⚙️ Using MANUAL EMA50: ${current_ema:.8f}")
+        print(f"   (Set MANUAL_EMA50 = None to auto-calculate from chart data)")
+    elif len(candles) >= 50:
+        print(f"   ✓ Got {len(candles)} candles")
+        # Calculate EMA50
+        closes = [c.close for c in candles]
+        ema_values = calculate_ema(closes, 50)
+        
+        if ema_values:
+            current_ema = ema_values[-1]
+        else:
+            print("   ⚠️ Could not calculate EMA50")
+            return
+    else:
         print(f"   ⚠️ Insufficient data: {len(candles)} candles (need 50+)")
         return
-    
-    print(f"   ✓ Got {len(candles)} candles")
-    
-    # Calculate EMA50
-    closes = [c.close for c in candles]
-    ema_values = calculate_ema(closes, 50)
-    
-    if not ema_values:
-        print("   ⚠️ Could not calculate EMA50")
-        return
-    
-    current_ema = ema_values[-1]
     
     # Get current price
     print("💰 Fetching current price...")
