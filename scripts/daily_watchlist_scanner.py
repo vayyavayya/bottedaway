@@ -198,6 +198,14 @@ def analyze_watchlist() -> List[Dict]:
         # Calculate age
         age_days = calculate_age_days(data.get('pairCreatedAt'))
         
+        # Filter by age window (4-10 days sweet spot)
+        if age_days < 4:
+            print(f"   ⚠️ Too fresh ({age_days} days) - skipped\n")
+            continue
+        elif age_days > 10:
+            print(f"   ⚠️ Too old ({age_days} days) - skipped\n")
+            continue
+        
         # Run engine analysis
         engine_a, score_a, reason_a = detect_engine_a(
             data.get('change_24h', 0), age_days
@@ -348,6 +356,7 @@ def main():
     """Main function for daily watchlist analysis."""
     print("=" * 70)
     print("🕗 DAILY WATCHLIST ENGINE SCANNER")
+    print("   Age Window: 4-10 days | MC: $100K-$500K")
     print("=" * 70)
     print(f"Time: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')}")
     print()
