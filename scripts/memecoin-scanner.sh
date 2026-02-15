@@ -9,10 +9,11 @@ IMPROVEMENTS v5:
 - Increased Birdeye limit from 50 to 100 tokens
 - Added manual token lookup function for user-discovered coins
 - Better coverage of $100K-$500K MC range
+- Age window: 4-10 days (sweet spot, not too fresh, not too old)
 
 TRADING RULES:
 - Target MC: $100K-$500K (sweet spot)
-- Minimum 4 days old (avoid fresh launches, survivorship bias)
+- Age: 4-10 days old (past rug risk, before pump exhaustion)
 - Wait for first dip, NEVER buy top
 - Liquidity must be locked
 - Track whale wallets on BaseScan
@@ -38,7 +39,8 @@ sys.path.insert(0, '/Users/pterion2910/.openclaw/workspace/scanner_engines')
 TARGET_MIN_MC = 100_000
 TARGET_MAX_MC = 500_000
 MIN_LIQUIDITY = 10_000
-MIN_COIN_AGE_DAYS = 4  # NEW: Minimum 4 days old (survivorship bias from Moltbook)
+MIN_COIN_AGE_DAYS = 4  # Minimum 4 days old (survivorship bias)
+MAX_COIN_AGE_DAYS = 10  # Maximum 10 days old (sweet spot window)
 
 LOG_FILE = f"/Users/pterion2910/.openclaw/workspace/memory/scanner-{datetime.now().strftime('%Y-%m-%d')}.log"
 
@@ -436,10 +438,10 @@ def parse_volume(vol_str) -> float:
     except:
         return 0
 
-def check_coin_age(token: Dict) -> Tuple[bool, int]:
+def check_coin_age(token: Dict) -> Tuple[bool, int, str]:
     """
-    Check if coin is at least MIN_COIN_AGE_DAYS old.
-    Returns (qualifies, age_days)
+    Check if coin is between MIN_COIN_AGE_DAYS and MAX_COIN_AGE_DAYS old.
+    Returns (qualifies, age_days, reason)
     """
     # Try to get creation date from various sources
     age_days = None
@@ -455,7 +457,6 @@ def check_coin_age(token: Dict) -> Tuple[bool, int]:
             pass
     
     # If no age data, try to estimate from volume/market cap ratio
-    # or assume it's old enough if MC is stable
     if age_days is None:
         # Check if we have historical data indication
         vol = token.get('volume', 0)
@@ -463,14 +464,17 @@ def check_coin_age(token: Dict) -> Tuple[bool, int]:
         
         # High volume relative to MC suggests established coin
         if mc > 0 and vol / mc > 0.1:  # 10%+ daily volume to MC ratio
-            # Likely at least a few days old
             age_days = MIN_COIN_AGE_DAYS + 1  # Assume qualifies
         else:
-            # Unknown age - conservative: don't qualify
             age_days = 0
     
-    qualifies = age_days >= MIN_COIN_AGE_DAYS
-    return qualifies, age_days
+    # Check if within target window
+    if age_days < MIN_COIN_AGE_DAYS:
+        return False, age_days, "too_fresh"
+    elif age_days > MAX_COIN_AGE_DAYS:
+        return False, age_days, "too_old"
+    else:
+        return True, age_days, "sweet_spot"
 
 def deduplicate_tokens(tokens: List[Dict]) -> List[Dict]:
     """Remove duplicates based on contract address."""
@@ -490,7 +494,7 @@ def deduplicate_tokens(tokens: List[Dict]) -> List[Dict]:
 
 def main():
     log("=== Multi-Source Memecoin Scanner v5 ===")
-    log(f"TRADING RULES: Target MC ${TARGET_MIN_MC/1000:.0f}K-${TARGET_MAX_MC/1000:.0f}K, Min {MIN_COIN_AGE_DAYS} days old")
+    log(f"TRADING RULES: Target MC ${TARGET_MIN_MC/1000:.0f}K-${TARGET_MAX_MC/1000:.0f}K, Age: {MIN_COIN_AGE_DAYS}-{MAX_COIN_AGE_DAYS} days")
     log("Sources: CoinGecko, Birdeye, DexScreener [Boosted, Latest, Volume], GMGN (ref), Solscan, BaseScan")
     
     all_tokens = []
@@ -518,21 +522,27 @@ def main():
     all_tokens = deduplicate_tokens(all_tokens)
     log(f"Total unique tokens found: {len(all_tokens)}")
     
-    # Filter by age (minimum 4 days old)
-    aged_tokens = []
+    # Filter by age (4-10 days window)
+    sweet_spot_tokens = []
     fresh_tokens = []
+    old_tokens = []
+    
     for token in all_tokens:
-        qualifies, age_days = check_coin_age(token)
+        qualifies, age_days, reason = check_coin_age(token)
         if qualifies:
-            aged_tokens.append(token)
-        else:
+            sweet_spot_tokens.append(token)
+        elif reason == "too_fresh":
             fresh_tokens.append(token)
+        else:  # too_old
+            old_tokens.append(token)
     
     if fresh_tokens:
-        log(f"Filtered out {len(fresh_tokens)} tokens < {MIN_COIN_AGE_DAYS} days old")
+        log(f"Filtered out {len(fresh_tokens)} tokens < {MIN_COIN_AGE_DAYS} days (too fresh)")
+    if old_tokens:
+        log(f"Filtered out {len(old_tokens)} tokens > {MAX_COIN_AGE_DAYS} days (too old)")
     
-    all_tokens = aged_tokens
-    log(f"Tokens {MIN_COIN_AGE_DAYS}+ days old: {len(all_tokens)}")
+    all_tokens = sweet_spot_tokens
+    log(f"Tokens in sweet spot ({MIN_COIN_AGE_DAYS}-{MAX_COIN_AGE_DAYS} days): {len(all_tokens)}")
     
     # Filter by target criteria
     target_matches = [t for t in all_tokens if TARGET_MIN_MC <= t.get('market_cap', 0) <= TARGET_MAX_MC]
@@ -547,7 +557,7 @@ def main():
     print("🚀 MULTI-SOURCE MEMECOIN SCANNER v5")
     print("=" * 70)
     print(f"📅 {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')}")
-    print(f"🎯 Target MC: ${TARGET_MIN_MC/1000:.0f}K-${TARGET_MAX_MC/1000:.0f}K | Min Age: {MIN_COIN_AGE_DAYS}+ days")
+    print(f"🎯 Target MC: ${TARGET_MIN_MC/1000:.0f}K-${TARGET_MAX_MC/1000:.0f}K | Age: {MIN_COIN_AGE_DAYS}-{MAX_COIN_AGE_DAYS} days")
     print(f"📊 Sources: CoinGecko, Birdeye, DexScreener [Boosted, Latest, Volume]")
     print("=" * 70)
     
@@ -593,7 +603,7 @@ def main():
     print("\n" + "=" * 70)
     print("⚠️ DUE DILIGENCE CHECKLIST:")
     print("=" * 70)
-    print(f"   ☐ Coin is {MIN_COIN_AGE_DAYS}+ days old (survivorship bias)")
+    print(f"   ☐ Coin is {MIN_COIN_AGE_DAYS}-{MAX_COIN_AGE_DAYS} days old (sweet spot)")
     print("   ☐ Check GMGN for smart money signals: https://gmgn.ai")
     print("   ☐ Verify on Solscan (Solana) or BaseScan (Base)")
     print("   ☐ Liquidity locked? (DexScreener/DexTools)")
@@ -641,11 +651,16 @@ if __name__ == "__main__":
             print()
             
             # Check if it qualifies
-            qualifies, age_days = check_coin_age(token)
+            qualifies, age_days, reason = check_coin_age(token)
             in_range = TARGET_MIN_MC <= token['market_cap'] <= TARGET_MAX_MC
             
             print("🎯 TARGET ANALYSIS:")
-            print(f"   Age: {age_days} days {'✅' if qualifies else '❌'}")
+            if qualifies:
+                print(f"   Age: {age_days} days ✅ (sweet spot: {MIN_COIN_AGE_DAYS}-{MAX_COIN_AGE_DAYS})")
+            elif reason == "too_fresh":
+                print(f"   Age: {age_days} days ❌ (too fresh, min {MIN_COIN_AGE_DAYS})")
+            else:
+                print(f"   Age: {age_days} days ❌ (too old, max {MAX_COIN_AGE_DAYS})")
             print(f"   MC in range (${TARGET_MIN_MC/1000:.0f}K-${TARGET_MAX_MC/1000:.0f}K): {'✅' if in_range else '❌'}")
             
             if qualifies and in_range:
