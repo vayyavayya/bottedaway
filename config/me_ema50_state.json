@@ -1,8 +1,8 @@
 {
   "last_alert_time": 0,
-  "last_price": 0.0002943,
+  "last_price": 0.0002247,
   "last_ema": 0.0002,
-  "above_ema_count": 2,
+  "above_ema_count": 3,
   "below_ema_count": 0,
   "history": [
     {
@@ -14,6 +14,12 @@
     {
       "time": 1771175857,
       "price": 0.0002943,
+      "ema": 0.0002,
+      "above": true
+    },
+    {
+      "time": 1771182083,
+      "price": 0.0002247,
       "ema": 0.0002,
       "above": true
     }

@@ -22,5 +22,13 @@
     "chain": "solana",
     "added_date": "2026-02-15",
     "notes": "4 days old | +9% steady | $140K MC | Just qualified"
+  },
+  {
+    "symbol": "LEO",
+    "name": "the unexpected runner",
+    "address": "HrypEy7ua5edjeQiEZJdBiqbpWcLKzVN9XwTwi47pump",
+    "chain": "solana",
+    "added_date": "2026-02-15",
+    "notes": "4-10 days (scanner verified) | +2685.0% | MC $364K | Auto-added from scanner"
   }
 ]
