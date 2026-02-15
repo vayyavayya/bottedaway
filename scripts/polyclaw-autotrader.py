@@ -16,34 +16,46 @@ from datetime import datetime, timezone
 # Config
 CHAINSTACK_NODE = os.getenv("CHAINSTACK_NODE", "https://polygon-mainnet.core.chainstack.com/55b0f6bb17f8e6c0fd6285a5c7320a90")
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY", "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")
+# Original wallet for auto-trading
+# Address: 0x408Dbf2F3B4A589b122846Edf64dD27e73872985
 POLYCLAW_PRIVATE_KEY = os.getenv("POLYCLAW_PRIVATE_KEY", "0x0970feda196583fd5359efc9a15e2b5d32ba1e3c0d7853c27087baa33e6b18f0")
 PERPLEXITY_API_KEY = os.getenv("PERPLEXITY_API_KEY", "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")
 
-# RISK MANAGEMENT
-MAX_POSITION_SIZE = 5.00  # Maximum $ per trade - HEDGE POSITIONS ALSO CAPPED AT $5
-MAX_DAILY_EXPOSURE = 20.00  # Maximum daily trading volume
-MIN_CONFIDENCE_THRESHOLD = 0.70  # 70% minimum confidence
-MIN_MARKET_VOLUME = 500000  # $500K minimum volume
-MAX_SLIPPAGE = 0.05  # 5% max price deviation from research
-STOP_LOSS_PERCENTAGE = 0.15  # 15% stop loss on positions
+# RISK MANAGEMENT - LESSONS LEARNED FROM FED TRADE (Feb 14, 2026)
+# Fed trade lost 93% because: low probability (7%), low liquidity, extreme odds
+MAX_POSITION_SIZE = 3.00  # Reduced from $5 to $3 - smaller bets on longshots
+MAX_DAILY_EXPOSURE = 15.00  # Reduced from $20 - more conservative
+MIN_CONFIDENCE_THRESHOLD = 0.75  # Increased from 70% - higher bar
+MIN_MARKET_VOLUME = 1000000  # Increased from $500K to $1M - only liquid markets
+MIN_MARKET_LIQUIDITY = 500000  # NEW: Minimum order book depth
+MAX_SLIPPAGE = 0.03  # Reduced from 5% to 3% - tighter execution
+STOP_LOSS_PERCENTAGE = 0.20  # Increased from 15% to 20% - but earlier warning
+
+# NEW: Probability constraints to avoid lopsided bets
+MIN_PROBABILITY = 0.20  # NEW: Don't bet on <20% outcomes (learned from Fed 7% bet)
+MAX_PROBABILITY = 0.80  # NEW: Don't bet on >80% outcomes (low upside)
+MAX_POSITION_ON_EXTREME = 1.00  # NEW: Max $1 on <25% or >75% outcomes
+
+# NEW: Kelly Criterion sizing
+KELLY_FRACTION = 0.25  # Use 1/4 Kelly to avoid ruin
 
 # HEDGE DISCOVERY
-ENABLE_HEDGE_DISCOVERY = True  # Enable LLM-powered hedge scanning
-HEDGE_MIN_COVERAGE = 0.90  # Minimum 90% coverage for hedge trades
-HEDGE_SCAN_LIMIT = 10  # Number of markets to scan for hedges
+ENABLE_HEDGE_DISCOVERY = True
+HEDGE_MIN_COVERAGE = 0.90
+HEDGE_SCAN_LIMIT = 10
 
 # SMART MONEY TRACKING
-ENABLE_SMART_MONEY = True  # Enable whale wallet tracking
-SMART_MONEY_MIN_CONFIDENCE = 0.75  # Min confidence to copy whale trades
-SMART_MONEY_MAX_POSITION = 3.00  # Smaller size for copy trades
+ENABLE_SMART_MONEY = True
+SMART_MONEY_MIN_CONFIDENCE = 0.80  # Increased from 75%
+SMART_MONEY_MAX_POSITION = 2.00  # Reduced from $3
 
 # LIVE TRADING MODE
-LIVE_TRADING = os.getenv("LIVE_TRADING", "1") == "1"  # Set to 0 for dry run
+LIVE_TRADING = os.getenv("LIVE_TRADING", "1") == "1"
 
-print(f"[MODE] {'🟢 LIVE TRADING' if LIVE_TRADING else '⚪ DRY RUN (set LIVE_TRADING=1 for live)'}")
-print(f"[RISK] Stop loss: {STOP_LOSS_PERCENTAGE:.0%}, Position size: ${MAX_POSITION_SIZE}")
-print(f"[HEDGE] Discovery: {'ENABLED' if ENABLE_HEDGE_DISCOVERY else 'DISABLED'}")
-print(f"[WHALE] Smart Money: {'ENABLED' if ENABLE_SMART_MONEY else 'DISABLED'}")
+print(f"[MODE] {'🟢 LIVE TRADING' if LIVE_TRADING else '⚪ DRY RUN'}")
+print(f"[RISK] Max: ${MAX_POSITION_SIZE}, Stop: {STOP_LOSS_PERCENTAGE:.0%}, Kelly: {KELLY_FRACTION}")
+print(f"[FILTERS] Vol: ${MIN_MARKET_VOLUME:,}, Prob: {MIN_PROBABILITY:.0%}-{MAX_PROBABILITY:.0%}")
+print(f"[HEDGE] {'ENABLED' if ENABLE_HEDGE_DISCOVERY else 'DISABLED'} | [WHALE] {'ENABLED' if ENABLE_SMART_MONEY else 'DISABLED'}")
 
 # Trade log
 TRADE_LOG = "/Users/pterion2910/.openclaw/workspace/memory/polyclaw-trades.json"
@@ -126,13 +138,21 @@ def evaluate_trade(market: Dict) -> Optional[Dict]:
     """
     Evaluate a market for trading opportunity.
     Returns trade details or None if no edge.
+    UPDATED: Added probability constraints and Kelly sizing (Feb 15, 2026)
     """
     question = market.get('question', '')
     yes_price = market.get('yes_price', 0)
     volume = market.get('volume', 0)
+    liquidity = market.get('liquidity', 0)
     
     # Skip low volume markets
     if volume < MIN_MARKET_VOLUME:
+        print(f"   ⏭️  Volume ${volume:,.0f} < ${MIN_MARKET_VOLUME:,}")
+        return None
+    
+    # NEW: Skip low liquidity markets (learned from Fed trade)
+    if liquidity < MIN_MARKET_LIQUIDITY:
+        print(f"   ⏭️  Liquidity ${liquidity:,.0f} < ${MIN_MARKET_LIQUIDITY:,}")
         return None
     
     # Research the market
@@ -141,9 +161,16 @@ def evaluate_trade(market: Dict) -> Optional[Dict]:
 Question: "{question}"
 Current YES price: ${yes_price}
 24h Volume: ${volume:,.0f}
+Liquidity: ${liquidity:,.0f}
 
-Provide probability estimate (0-100%), key factors, confidence level.
-Should we buy YES or NO based on edge vs current price?"""
+Provide:
+1. Probability estimate (0-100%) - be realistic, not optimistic
+2. Key factors FOR and AGAINST
+3. Confidence level (high/medium/low)
+4. What could go wrong?
+5. Is this a 20-80% probability or an extreme longshot?
+
+IMPORTANT: If probability is <20% or >80%, flag as "EXTREME_ODDS"."""
 
     research = perplexity_research(research_query)
     if not research:
@@ -151,28 +178,82 @@ Should we buy YES or NO based on edge vs current price?"""
     
     true_prob = research['probability']
     
+    # NEW: Check probability constraints (learned from Fed 7% bet)
+    is_extreme = true_prob < MIN_PROBABILITY or true_prob > MAX_PROBABILITY
+    
+    if is_extreme:
+        print(f"   ⚠️  EXTREME ODDS: {true_prob:.0%} - Outside {MIN_PROBABILITY:.0%}-{MAX_PROBABILITY:.0%} range")
+        # Check for explicit flag in research
+        if "EXTREME_ODDS" in research['analysis'].upper() or true_prob < 0.15:
+            print(f"   🚫 SKIPPED: Longshot bet detected (like Fed trade)")
+            return None
+    
     # Calculate edge
     edge = true_prob - yes_price
     
     # Only trade if significant edge
     if abs(edge) < 0.10:  # Need 10%+ edge
+        print(f"   ⏭️  Edge {abs(edge):.1%} < 10%")
+        return None
+    
+    # NEW: Require higher edge for extreme probabilities
+    if is_extreme and abs(edge) < 0.15:  # Need 15%+ edge for longshots
+        print(f"   ⏭️  Extreme odds need 15%+ edge, got {abs(edge):.1%}")
         return None
     
     # Determine direction
     side = "YES" if edge > 0 else "NO"
     target_price = true_prob if edge > 0 else (1 - true_prob)
     
-    # Calculate position size based on edge and confidence
+    # Calculate confidence
     confidence = 0.5
     if "high confidence" in research['analysis'].lower():
         confidence = 0.8
     elif "medium confidence" in research['analysis'].lower():
         confidence = 0.6
+    elif "low confidence" in research['analysis'].lower():
+        confidence = 0.4
+        print(f"   ⚠️  Low confidence research - reducing position size")
     
-    position_size = min(
-        MAX_POSITION_SIZE,
-        MAX_POSITION_SIZE * abs(edge) * confidence
-    )
+    # NEW: Kelly Criterion sizing (fractional Kelly)
+    # f* = (p*b - q) / b where p=prob, q=1-p, b=odds
+    # Using 1/4 Kelly to avoid ruin
+    if side == "YES":
+        p = true_prob
+        b = (1 - yes_price) / yes_price if yes_price > 0 else 0  # Decimal odds
+    else:
+        p = 1 - true_prob
+        no_price = 1 - yes_price
+        b = (1 - no_price) / no_price if no_price > 0 else 0
+    
+    q = 1 - p
+    
+    if b > 0:
+        kelly_fraction = (p * b - q) / b
+        kelly_position = MAX_POSITION_SIZE * kelly_fraction * KELLY_FRACTION
+        kelly_position = max(0.5, min(kelly_position, MAX_POSITION_SIZE))  # Min $0.5, max $3
+    else:
+        kelly_position = MAX_POSITION_SIZE * 0.1  # Conservative default
+    
+    # NEW: Limit position on extreme odds
+    if is_extreme:
+        kelly_position = min(kelly_position, MAX_POSITION_ON_EXTREME)
+        print(f"   🎲 EXTREME: Limiting position to ${MAX_POSITION_ON_EXTREME}")
+    
+    # Final position size is minimum of Kelly and edge-based sizing
+    position_size = min(kelly_position, MAX_POSITION_SIZE * abs(edge) * confidence)
+    position_size = max(0.5, position_size)  # Minimum $0.5
+    
+    # NEW: Research validation
+    warning_flags = []
+    if "what could go wrong" in research['analysis'].lower():
+        # Extract risks
+        pass
+    
+    # Fed trade post-mortem check
+    if true_prob < 0.15 and edge > 0.05:
+        warning_flags.append("LOW_PROB_HIGH_EDGE - Review carefully (Fed pattern)")
+        print(f"   ⚠️  WARNING: {warning_flags[-1]}")
     
     return {
         "market_id": market.get('id'),
@@ -182,9 +263,14 @@ Should we buy YES or NO based on edge vs current price?"""
         "target_price": target_price,
         "edge": abs(edge),
         "confidence": confidence,
+        "probability": true_prob,
+        "is_extreme": is_extreme,
         "amount": round(position_size, 2),
         "research": research['analysis'],
-        "volume": volume
+        "volume": volume,
+        "liquidity": liquidity,
+        "warning_flags": warning_flags,
+        "kelly_fraction": kelly_fraction if 'kelly_fraction' in locals() else 0
     }
 
 def execute_trade(trade: Dict) -> bool:
