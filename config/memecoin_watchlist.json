@@ -38,5 +38,13 @@
     "chain": "solana",
     "added_date": "2026-02-15",
     "notes": "Dipped -30%, potential entry"
+  },
+  {
+    "symbol": "ME",
+    "name": "In a world full of",
+    "address": "3wshHmD3aBx3wfHPeGWq2o38BNpVaEf7iFf3gYgRpump",
+    "chain": "solana",
+    "added_date": "2026-02-15",
+    "notes": "User found, -50% dip, $269K MC"
   }
 ]
