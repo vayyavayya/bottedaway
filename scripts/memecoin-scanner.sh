@@ -1,7 +1,14 @@
 #!/usr/bin/env python3
 """
-Multi-Source Memecoin Scanner v4
-Integrates: CoinGecko, Birdeye, DexScreener, GMGN, Solscan, BaseScan
+Multi-Source Memecoin Scanner v5
+Integrates: CoinGecko, Birdeye, DexScreener [Boosted, Latest, Top Volume], GMGN, Solscan, BaseScan
+
+IMPROVEMENTS v5:
+- Added DexScreener "Latest Pairs" (catches non-boosted new coins)
+- Added DexScreener "Top Volume" scan (catches high-volume unboosted coins)
+- Increased Birdeye limit from 50 to 100 tokens
+- Added manual token lookup function for user-discovered coins
+- Better coverage of $100K-$500K MC range
 
 TRADING RULES:
 - Target MC: $100K-$500K (sweet spot)
@@ -184,8 +191,181 @@ def fetch_dexscreener_boosted() -> List[Dict]:
             })
         return results
     except Exception as e:
-        log(f"[DexScreener] Error: {e}")
+        log(f"[DexScreener Boosted] Error: {e}")
         return []
+
+def fetch_dexscreener_latest() -> List[Dict]:
+    """
+    Fetch LATEST pairs from DexScreener (newly created).
+    This catches coins that aren't boosted but have recent activity.
+    """
+    try:
+        resp = requests.get(
+            "https://api.dexscreener.com/token-profiles/latest/v1",
+            timeout=30
+        )
+        tokens = resp.json() if isinstance(resp.json(), list) else []
+        
+        results = []
+        for token in tokens:
+            chain = token.get("chainId", "").lower()
+            if chain not in ["solana", "ethereum", "base"]:
+                continue
+            
+            token_address = token.get("tokenAddress", "")
+            if not token_address:
+                continue
+            
+            # Get pair data
+            pair_resp = requests.get(
+                f"https://api.dexscreener.com/token-pairs/v1/{chain}/{token_address}",
+                timeout=30
+            )
+            pairs = pair_resp.json() if isinstance(pair_resp.json(), list) else []
+            
+            if not pairs:
+                continue
+            
+            # Get best pair
+            best = max(pairs, key=lambda x: float(x.get("liquidity", {}).get("usd", 0) or 0))
+            
+            mc = float(best.get("marketCap", 0) or 0)
+            vol = float(best.get("volume", {}).get("h24", 0) or 0)
+            liq = float(best.get("liquidity", {}).get("usd", 0) or 0)
+            
+            # Skip if MC is way outside range
+            if mc < 10000 or mc > 2000000:
+                continue
+            
+            results.append({
+                'source': 'dexscreener_latest',
+                'name': best.get("baseToken", {}).get("name", "Unknown"),
+                'symbol': best.get("baseToken", {}).get("symbol", "???"),
+                'price': f"${float(best.get('priceUsd', 0)):.8f}",
+                'change_24h': float(best.get("priceChange", {}).get("h24", 0) or 0),
+                'market_cap': mc,
+                'market_cap_str': f"${mc:,.0f}",
+                'volume': vol,
+                'volume_str': f"${vol:,.0f}",
+                'liquidity': liq,
+                'platform': chain,
+                'contract': token_address,
+                'dex': best.get("dexId", ""),
+                'url': best.get("url", ""),
+                'pairCreatedAt': best.get("pairCreatedAt"),
+                'solscan': f"https://solscan.io/token/{token_address}" if chain == "solana" else "",
+                'basescan': f"https://basescan.org/token/{token_address}" if chain == "base" else "",
+                'bubblemaps': f"https://app.bubblemaps.io/{chain}/token/{token_address}",
+            })
+        return results
+    except Exception as e:
+        log(f"[DexScreener Latest] Error: {e}")
+        return []
+
+def fetch_dexscreener_top_volume() -> List[Dict]:
+    """
+    Fetch TOP VOLUME pairs from DexScreener.
+    Catches high-volume coins regardless of trending/boosted status.
+    """
+    try:
+        # Get pairs from major DEXs on Solana with volume
+        resp = requests.get(
+            "https://api.dexscreener.com/latest/dex/search?q=solana+pump",
+            timeout=30
+        )
+        data = resp.json()
+        pairs = data.get("pairs", []) if isinstance(data, dict) else []
+        
+        results = []
+        seen = set()
+        
+        for pair in pairs[:100]:  # Top 100 pairs
+            chain = pair.get("chainId", "").lower()
+            if chain != "solana":
+                continue
+            
+            token_address = pair.get("baseToken", {}).get("address", "")
+            if not token_address or token_address in seen:
+                continue
+            seen.add(token_address)
+            
+            mc = float(pair.get("marketCap", 0) or 0)
+            vol = float(pair.get("volume", {}).get("h24", 0) or 0)
+            liq = float(pair.get("liquidity", {}).get("usd", 0) or 0)
+            
+            # Focus on target MC range
+            if mc < 50000 or mc > 1000000:
+                continue
+            
+            results.append({
+                'source': 'dexscreener_volume',
+                'name': pair.get("baseToken", {}).get("name", "Unknown"),
+                'symbol': pair.get("baseToken", {}).get("symbol", "???"),
+                'price': f"${float(pair.get('priceUsd', 0)):.8f}",
+                'change_24h': float(pair.get("priceChange", {}).get("h24", 0) or 0),
+                'market_cap': mc,
+                'market_cap_str': f"${mc:,.0f}",
+                'volume': vol,
+                'volume_str': f"${vol:,.0f}",
+                'liquidity': liq,
+                'platform': chain,
+                'contract': token_address,
+                'dex': pair.get("dexId", ""),
+                'url': pair.get("url", ""),
+                'pairCreatedAt': pair.get("pairCreatedAt"),
+                'solscan': f"https://solscan.io/token/{token_address}",
+                'bubblemaps': f"https://app.bubblemaps.io/solana/token/{token_address}",
+            })
+        return results
+    except Exception as e:
+        log(f"[DexScreener Volume] Error: {e}")
+        return []
+
+def lookup_token_by_address(address: str, chain: str = "solana") -> Optional[Dict]:
+    """
+    Lookup a specific token by contract address.
+    Use this to manually check coins found by user.
+    """
+    try:
+        resp = requests.get(
+            f"https://api.dexscreener.com/tokens/v1/{chain}/{address}",
+            timeout=30
+        )
+        pairs = resp.json() if isinstance(resp.json(), list) else []
+        
+        if not pairs:
+            return None
+        
+        # Get best pair
+        best = max(pairs, key=lambda x: float(x.get("liquidity", {}).get("usd", 0) or 0))
+        
+        mc = float(best.get("marketCap", 0) or 0)
+        vol = float(best.get("volume", {}).get("h24", 0) or 0)
+        liq = float(best.get("liquidity", {}).get("usd", 0) or 0)
+        
+        return {
+            'source': 'manual_lookup',
+            'name': best.get("baseToken", {}).get("name", "Unknown"),
+            'symbol': best.get("baseToken", {}).get("symbol", "???"),
+            'price': f"${float(best.get('priceUsd', 0)):.8f}",
+            'change_24h': float(best.get("priceChange", {}).get("h24", 0) or 0),
+            'market_cap': mc,
+            'market_cap_str': f"${mc:,.0f}",
+            'volume': vol,
+            'volume_str': f"${vol:,.0f}",
+            'liquidity': liq,
+            'platform': chain,
+            'contract': address,
+            'dex': best.get("dexId", ""),
+            'url': best.get("url", ""),
+            'pairCreatedAt': best.get("pairCreatedAt"),
+            'solscan': f"https://solscan.io/token/{address}" if chain == "solana" else "",
+            'basescan': f"https://basescan.org/token/{address}" if chain == "base" else "",
+            'bubblemaps': f"https://app.bubblemaps.io/{chain}/token/{address}",
+        }
+    except Exception as e:
+        log(f"[Lookup] Error: {e}")
+        return None
 
 # ==================== DATA SOURCE: GMGN ====================
 
@@ -309,23 +489,29 @@ def deduplicate_tokens(tokens: List[Dict]) -> List[Dict]:
 # ==================== MAIN ====================
 
 def main():
-    log("=== Multi-Source Memecoin Scanner v4 ===")
+    log("=== Multi-Source Memecoin Scanner v5 ===")
     log(f"TRADING RULES: Target MC ${TARGET_MIN_MC/1000:.0f}K-${TARGET_MAX_MC/1000:.0f}K, Min {MIN_COIN_AGE_DAYS} days old")
-    log("Sources: CoinGecko, Birdeye, DexScreener, GMGN (ref), Solscan, BaseScan")
+    log("Sources: CoinGecko, Birdeye, DexScreener [Boosted, Latest, Volume], GMGN (ref), Solscan, BaseScan")
     
     all_tokens = []
     
     # Fetch from all sources
-    log("[1/4] Fetching CoinGecko trending...")
+    log("[1/6] Fetching CoinGecko trending...")
     all_tokens.extend(fetch_coingecko_trending())
     
-    log("[2/4] Fetching Birdeye Solana tokens...")
-    all_tokens.extend(fetch_birdeye_trending(limit=50))
+    log("[2/6] Fetching Birdeye Solana tokens (top 100)...")
+    all_tokens.extend(fetch_birdeye_trending(limit=100))  # Increased from 50
     
-    log("[3/4] Fetching DexScreener boosted tokens...")
+    log("[3/6] Fetching DexScreener boosted tokens...")
     all_tokens.extend(fetch_dexscreener_boosted())
     
-    log("[4/4] GMGN reference added...")
+    log("[4/6] Fetching DexScreener latest pairs...")
+    all_tokens.extend(fetch_dexscreener_latest())
+    
+    log("[5/6] Fetching DexScreener top volume pairs...")
+    all_tokens.extend(fetch_dexscreener_top_volume())
+    
+    log("[6/6] GMGN reference added...")
     all_tokens.extend(fetch_gmgn_trending())
     
     # Deduplicate
@@ -358,11 +544,11 @@ def main():
     
     # OUTPUT
     print("\n" + "=" * 70)
-    print("🚀 MULTI-SOURCE MEMECOIN SCANNER v4")
+    print("🚀 MULTI-SOURCE MEMECOIN SCANNER v5")
     print("=" * 70)
     print(f"📅 {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')}")
     print(f"🎯 Target MC: ${TARGET_MIN_MC/1000:.0f}K-${TARGET_MAX_MC/1000:.0f}K | Min Age: {MIN_COIN_AGE_DAYS}+ days")
-    print(f"📊 Sources: CoinGecko, Birdeye, DexScreener")
+    print(f"📊 Sources: CoinGecko, Birdeye, DexScreener [Boosted, Latest, Volume]")
     print("=" * 70)
     
     # Target matches
@@ -422,6 +608,52 @@ def main():
     print("=" * 70)
     
     log(f"Complete: {len(target_matches)} sweet spot matches, {len(other_coins)} others")
+    
+    return target_matches, other_coins
 
 if __name__ == "__main__":
-    main()
+    import sys
+    
+    # Check if user wants to lookup a specific address
+    if len(sys.argv) > 1:
+        address = sys.argv[1]
+        chain = sys.argv[2] if len(sys.argv) > 2 else "solana"
+        
+        print(f"🔍 Looking up token: {address}")
+        print(f"   Chain: {chain}")
+        print()
+        
+        token = lookup_token_by_address(address, chain)
+        
+        if token:
+            print("=" * 70)
+            print(f"✅ FOUND: {token['name']} (${token['symbol']})")
+            print("=" * 70)
+            print(f"   💰 Price: {token['price']}")
+            print(f"   📊 24h Change: {token['change_24h']:+.1f}%")
+            print(f"   🏦 Market Cap: {token['market_cap_str']}")
+            print(f"   📈 Volume 24h: {token['volume_str']}")
+            print(f"   💧 Liquidity: ${token['liquidity']:,.0f}")
+            print()
+            print(f"   🔗 Solscan: {token['solscan']}")
+            print(f"   📊 Bubble Maps: {token['bubblemaps']}")
+            print(f"   🔗 DexScreener: {token['url']}")
+            print()
+            
+            # Check if it qualifies
+            qualifies, age_days = check_coin_age(token)
+            in_range = TARGET_MIN_MC <= token['market_cap'] <= TARGET_MAX_MC
+            
+            print("🎯 TARGET ANALYSIS:")
+            print(f"   Age: {age_days} days {'✅' if qualifies else '❌'}")
+            print(f"   MC in range (${TARGET_MIN_MC/1000:.0f}K-${TARGET_MAX_MC/1000:.0f}K): {'✅' if in_range else '❌'}")
+            
+            if qualifies and in_range:
+                print("   🚀 This token QUALIFIES for the watchlist!")
+            else:
+                print("   ⚠️ This token does NOT qualify")
+        else:
+            print(f"❌ Token not found: {address}")
+            print(f"   Make sure the address is correct for chain: {chain}")
+    else:
+        main()
