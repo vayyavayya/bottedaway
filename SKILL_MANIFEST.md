@@ -155,3 +155,18 @@ To add a skill: See /skills/system/skill-bootstrap/create.py
 To modify: Edit skill README.md first, then code
 To archive: Move to /skills/.archive/ with date prefix
 To spawn work: See /skills/system/agent-orchestrator/README.md
+
+ENGINE PATTERN LIBRARY (6 Patterns):
+=====================================
+1. SELFCLAW - EMA50 hold → reclaim higher
+2. $ME - EMA50 break → collapse (avoid)
+3. 114514 - Volume compression → breakout
+4. Trophy Tomato - Multiple EMA50 holds (5+)
+5. WhiteWhale - Multiple fakeouts → accumulation
+6. 丙午 (BingWu) - Double top breakdown → AVOID ⚠️
+
+丙午 Pattern Details (Engine A):
+- Two peaks, lower second high = weakness
+- Breaking below EMA50 after distribution = exit signal
+- High volume on red candles = whales leaving
+- Penalty: -0.6 score | Action: AVOID
