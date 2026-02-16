@@ -48,10 +48,11 @@ SKILL INVENTORY:
 
 /automation/
 ------------
-[✓] cron-manager        - OpenClaw cron job management
-[✓] scanner-watchlist-bridge - Auto-add scanner finds to watchlist (NEW)
-[✗] git-sync            - TODO: Automated commit/push workflow
-[✗] heartbeat-checker   - TODO: Rotating system checks
+[✓] cron-manager              - OpenClaw cron job management
+[✓] scanner-watchlist-bridge  - Auto-add scanner finds to watchlist
+[✓] morning-briefing          - Daily 8 AM crypto briefing (NEW)
+[✗] git-sync                  - TODO: Automated commit/push workflow
+[✗] heartbeat-checker         - TODO: Rotating system checks
 
 /data/
 ------
@@ -70,11 +71,12 @@ ACTIVE CRON JOBS:
 =================
 1. memecoin-scanner-720min   - Every 12h → @pumpepump
 2. polyclaw-autotrader       - DISABLED
-3. daily-watchlist-8am       - Daily 8am → @sasimestri
-4. me-ema50-monitor-2h       - DISABLED (position worthless)
-5. moltbook-learning-24h     - Daily midnight (MiniMax M2.5)
-6. diary-telegram-update     - Daily 9am → @sasimestri
-7. git-auto-backup-2h        - Every 2h (NEW) [FIXED]
+3. morning-briefing-8am      - Daily 8am → @sasimestri (NEW)
+4. daily-watchlist-8am       - Daily 8am → @sasimestri
+5. me-ema50-monitor-2h       - DISABLED (position worthless)
+6. moltbook-learning-24h     - Daily midnight (MiniMax M2.5)
+7. diary-telegram-update     - Daily 9am → @sasimestri
+8. git-auto-backup-2h        - Every 2h [FIXED]
 
 CURRENT WATCHLIST:
 ==================
