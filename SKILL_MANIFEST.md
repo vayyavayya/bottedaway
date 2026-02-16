@@ -100,7 +100,7 @@ Alert Types:
 - 📊 VOLUME_SPIKE: $500K+ volume with >1.5x buy pressure
 - 💰 EXCHANGE_FLOW: Large inflows (bearish) / outflows (bullish)
 
-Cron: smart-money-monitor-2h (every 2 hours)
+Cron: smart-money-monitor-2h (every 2 hours) → @pumpepump
 Config: config/smart_money_config.json
 
 SCRIPTS:

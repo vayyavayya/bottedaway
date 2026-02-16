@@ -14,8 +14,8 @@ EXIT_CODE=$?
 if [ $EXIT_CODE -eq 42 ]; then
     if [ -f "$ALERT_FILE" ]; then
         MESSAGE=$(cat "$ALERT_FILE")
-        # Send via OpenClaw message tool
-        cd "$WORKSPACE" && openclaw message send --target "@sasimestri" --message "$MESSAGE" 2>/dev/null || echo "ALERT: $MESSAGE"
+        # Send via OpenClaw message tool to @pumpepump
+        cd "$WORKSPACE" && openclaw message send --target "@pumpepump" --message "$MESSAGE" 2>/dev/null || echo "ALERT: $MESSAGE"
         rm -f "$ALERT_FILE"
     fi
 fi
