@@ -52,12 +52,18 @@ def fetch_token_data(address: str, chain: str) -> Dict:
     
     return {}
 
-def detect_engine_a(change_24h: float, age_days: int) -> Tuple[bool, float, str]:
+def detect_engine_a(change_24h: float, age_days: int, price_vs_high: float = 1.0, volume_trend: str = "neutral") -> Tuple[bool, float, str]:
     """
     Engine A: 12h EMA50 Reclaim Pattern
     - 12h timeframe
     - Price reclaims EMA50
     - Slow, reliable
+    
+    LESSONS FROM 丙午 (Feb 16, 2026):
+    - Double top breakdown = distribution, not accumulation
+    - Two peaks with lower second high = weakness
+    - Breaking below EMA50 after distribution = AVOID
+    - High volume on dump = whales exiting
     """
     score = 0.0
     signals = []
@@ -79,6 +85,17 @@ def detect_engine_a(change_24h: float, age_days: int) -> Tuple[bool, float, str]
     if change_24h > 0:
         score += 0.2
         signals.append("Positive momentum")
+    
+    # 丙午 PATTERN: Double top breakdown detection (AVOID)
+    # If price is down >30% from highs with high volume = distribution
+    if price_vs_high < 0.7 and volume_trend == "high":
+        score -= 0.6  # Heavy penalty
+        signals.append("⚠️ Double top breakdown pattern (丙午) - AVOID")
+    
+    # If price breaking down with accelerating losses
+    if change_24h < -30:
+        score -= 0.4
+        signals.append("⚠️ Accelerating decline - distribution phase")
     
     qualifies = score >= 0.5
     reason = " | ".join(signals) if signals else "Insufficient data"
@@ -291,7 +308,9 @@ def analyze_watchlist() -> List[Dict]:
         
         # Run engine analysis
         engine_a, score_a, reason_a = detect_engine_a(
-            data.get('change_24h', 0), age_days
+            data.get('change_24h', 0), age_days,
+            data.get('price_vs_high', 1.0),  # 丙午 pattern - double top detection
+            data.get('volume_trend', 'neutral')  # Volume analysis
         )
         engine_b, score_b, reason_b = detect_engine_b(
             data.get('change_24h', 0), data.get('volume_24h', 0), age_days,
