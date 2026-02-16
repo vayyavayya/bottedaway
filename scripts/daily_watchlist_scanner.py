@@ -120,13 +120,19 @@ def detect_engine_b(change_24h: float, volume: float, age_days: int) -> Tuple[bo
     reason = " | ".join(signals) if signals else "Insufficient data"
     return qualifies, score, reason
 
-def detect_engine_c(change_24h: float, market_cap: float, age_days: int) -> Tuple[bool, float, str]:
+def detect_engine_c(change_24h: float, market_cap: float, age_days: int, volume: float = 0) -> Tuple[bool, float, str]:
     """
     Engine C: 1h EMA50 Hold After Pump (MC ≥ $300K)
     - 1h timeframe
     - EMA50 holds as support
     - MC threshold ≥ $300K
     - Fast, aggressive
+    
+    LESSON FROM SELFCLAW (Feb 16, 2026):
+    Successful pattern: Pump → Pullback to EMA50 → HOLD support → Reclaim higher
+    Failed pattern ($ME): Pump → Break below EMA50 → Keep falling
+    
+    Key difference: Holding EMA50 support during consolidation vs breaking it
     """
     score = 0.0
     signals = []
@@ -139,7 +145,7 @@ def detect_engine_c(change_24h: float, market_cap: float, age_days: int) -> Tupl
         score += 0.2
         signals.append(f"MC ≥$200K (${market_cap/1000:.0f}K)")
     
-    # Pump activity
+    # Pump activity (must have pumped to need EMA50 support)
     if change_24h > 100:
         score += 0.3
         signals.append(f"Strong pump (+{change_24h:.0f}%)")
@@ -147,17 +153,32 @@ def detect_engine_c(change_24h: float, market_cap: float, age_days: int) -> Tupl
         score += 0.2
         signals.append(f"Good pump (+{change_24h:.0f}%)")
     
-    # Holding gains (not extreme dump)
+    # SELFCLAW PATTERN: Holding gains after pump (not breaking down)
+    # This is the critical difference vs $ME which broke support
     if 0 < change_24h < 800:
         score += 0.2
-        signals.append("Holding gains")
+        signals.append("Holding gains (SELFCLAW pattern)")
     
-    # Age check
+    # SELFCLAW PATTERN: Volume confirmation during consolidation
+    # High volume on reclaim = institutional interest
+    if volume > 500000:  # $500K+ volume = strong interest
+        score += 0.3
+        signals.append(f"High volume reclaim (${volume/1000:.0f}K)")
+    elif volume > 100000:
+        score += 0.2
+        signals.append(f"Good volume (${volume/1000:.0f}K)")
+    
+    # Age check (need history to see EMA50 hold)
     if age_days >= 4:
         score += 0.1
-        signals.append("4+ days old")
+        signals.append("4+ days old (EMA50 established)")
     
-    qualifies = score >= 0.6
+    # SELFCLAW PATTERN: Not too old (pump exhaustion risk)
+    if age_days <= 10:
+        score += 0.1
+        signals.append("Fresh momentum (<10 days)")
+    
+    qualifies = score >= 0.7  # Raised threshold for quality
     reason = " | ".join(signals) if signals else "Insufficient data"
     return qualifies, score, reason
 
@@ -214,7 +235,8 @@ def analyze_watchlist() -> List[Dict]:
             data.get('change_24h', 0), data.get('volume_24h', 0), age_days
         )
         engine_c, score_c, reason_c = detect_engine_c(
-            data.get('change_24h', 0), data.get('market_cap', 0), age_days
+            data.get('change_24h', 0), data.get('market_cap', 0), age_days,
+            data.get('volume_24h', 0)  # SELFCLAW pattern: volume matters
         )
         
         total_score = score_a + score_b + score_c
