@@ -19,7 +19,6 @@ OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY", "")
 # Original wallet for auto-trading
 # Address: 0x408Dbf2F3B4A589b122846Edf64dD27e73872985
 POLYCLAW_PRIVATE_KEY = os.getenv("POLYCLAW_PRIVATE_KEY", "")
-PERPLEXITY_API_KEY = os.getenv("PERPLEXITY_API_KEY", "")
 
 # RISK MANAGEMENT - LESSONS LEARNED FROM FED TRADE (Feb 14, 2026)
 # Fed trade lost 93% because: low probability (7%), low liquidity, extreme odds
@@ -88,7 +87,7 @@ def perplexity_research(query: str) -> Optional[Dict]:
         resp = requests.post(
             "https://api.perplexity.ai/chat/completions",
             headers={
-                "Authorization": f"Bearer {PERPLEXITY_API_KEY}",
+                "Authorization": f"Bearer {os.getenv('PERPLEXITY_API_KEY', '')}",
                 "Content-Type": "application/json"
             },
             json={
