@@ -69,9 +69,10 @@ ACTIVE CRON JOBS:
 =================
 1. memecoin-scanner-720min   - Every 12h → @pumpepump
 2. polyclaw-autotrader       - DISABLED
-3. daily-watchlist-8am       - Daily 8am → @pumpepump
+3. daily-watchlist-8am       - Daily 8am → @sasimestri (FIXED)
 4. me-ema50-monitor-2h       - DISABLED (position worthless)
-5. moltbook-learning-24h     - Daily midnight (MiniMax M2.5) [FIXED]
+5. moltbook-learning-24h     - Daily midnight (MiniMax M2.5)
+6. diary-telegram-update     - Daily 9am → @sasimestri (FIXED) [FIXED]
 
 CURRENT WATCHLIST:
 ==================
