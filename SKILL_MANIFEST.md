@@ -85,7 +85,8 @@ CURRENT WATCHLIST:
 - $Seedance (7 days, $174K MC, -29% dip)
 - $PUP (4 days, $166K MC, +42% steady — Engine A)
 - $LEO (4-10 days, $364K MC, +378% parabolic — Engine B+C)
-- $114514 (Solana, $364K MC, +26% — Volume compression pattern) [NEW]
+- $114514 (Solana, $364K MC, +26% — Volume compression pattern)
+- $TROPHY (Solana, $2M MC, -33% pullback — Multiple EMA50 holds) [NEW]
 
 OPEN POSITIONS:
 ===============
