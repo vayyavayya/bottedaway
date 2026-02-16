@@ -74,16 +74,18 @@ ACTIVE CRON JOBS:
 3. morning-briefing-8am      - Daily 8am → @sasimestri (NEW)
 4. daily-watchlist-8am       - Daily 8am → @sasimestri
 5. me-ema50-monitor-2h       - DISABLED (position worthless)
-6. moltbook-learning-24h     - Daily midnight (MiniMax M2.5)
-7. diary-telegram-update     - Daily 9am → @sasimestri
-8. git-auto-backup-2h        - Every 2h [FIXED]
+6. selfclaw-ema50-monitor-2h - Every 2h → @sasimestri (NEW)
+7. moltbook-learning-24h     - Daily midnight (MiniMax M2.5)
+8. diary-telegram-update     - Daily 9am → @sasimestri
+9. git-auto-backup-2h        - Every 2h [FIXED]
 
 CURRENT WATCHLIST:
 ==================
-- $ME (5 days, $209K MC, -54% dip)
+- $ME (5 days, $209K MC, -76% loss — lesson learned)
 - $Seedance (7 days, $174K MC, -29% dip)
-- $PUP (4 days, $131K MC, +9% steady)
-- $LEO (4-10 days, $364K MC, +2685% parabolic) [NEW]
+- $PUP (4 days, $166K MC, +42% steady — Engine A)
+- $LEO (4-10 days, $364K MC, +378% parabolic — Engine B+C)
+- $SELFCLAW (Base, $1.54M MC, +19% — EMA50 reclaim pattern) [NEW]
 
 OPEN POSITIONS:
 ===============

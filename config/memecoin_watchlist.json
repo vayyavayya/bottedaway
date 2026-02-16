@@ -30,5 +30,13 @@
     "chain": "solana",
     "added_date": "2026-02-15",
     "notes": "4-10 days (scanner verified) | +2685.0% | MC $364K | Auto-added from scanner"
+  },
+  {
+    "symbol": "SELFCLAW",
+    "name": "SELFCLAW",
+    "address": "0x9ae5f51d81FF510bF961218F833F79D57bfBAb07",
+    "chain": "base",
+    "added_date": "2026-02-16",
+    "notes": "$1.54M MC | +19% | EMA50 reclaim pattern | User found, good example"
   }
 ]
