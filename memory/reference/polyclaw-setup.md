@@ -161,7 +161,7 @@ polyclaw positions
 ### API Key
 
 Stored in: `scripts/polyclaw-research.py`
-- Key: `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`
+- Key: `[REDACTED - set via env var PERPLEXITY_API_KEY]`
 - Model: `sonar-pro` (best for research with citations)
 
 ---

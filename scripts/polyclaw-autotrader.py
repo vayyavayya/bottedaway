@@ -14,12 +14,12 @@ from typing import Optional, Dict, List, Tuple
 from datetime import datetime, timezone
 
 # Config
-CHAINSTACK_NODE = os.getenv("CHAINSTACK_NODE", "https://polygon-mainnet.core.chainstack.com/55b0f6bb17f8e6c0fd6285a5c7320a90")
-OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY", "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")
+CHAINSTACK_NODE = os.getenv("CHAINSTACK_NODE", "https://polygon-mainnet.core.chainstack.com/")
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY", "")
 # Original wallet for auto-trading
 # Address: 0x408Dbf2F3B4A589b122846Edf64dD27e73872985
-POLYCLAW_PRIVATE_KEY = os.getenv("POLYCLAW_PRIVATE_KEY", "0x0970feda196583fd5359efc9a15e2b5d32ba1e3c0d7853c27087baa33e6b18f0")
-PERPLEXITY_API_KEY = os.getenv("PERPLEXITY_API_KEY", "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")
+POLYCLAW_PRIVATE_KEY = os.getenv("POLYCLAW_PRIVATE_KEY", "")
+PERPLEXITY_API_KEY = os.getenv("PERPLEXITY_API_KEY", "")
 
 # RISK MANAGEMENT - LESSONS LEARNED FROM FED TRADE (Feb 14, 2026)
 # Fed trade lost 93% because: low probability (7%), low liquidity, extreme odds
