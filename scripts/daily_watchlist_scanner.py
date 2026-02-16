@@ -120,7 +120,7 @@ def detect_engine_b(change_24h: float, volume: float, age_days: int) -> Tuple[bo
     reason = " | ".join(signals) if signals else "Insufficient data"
     return qualifies, score, reason
 
-def detect_engine_c(change_24h: float, market_cap: float, age_days: int, volume: float = 0) -> Tuple[bool, float, str]:
+def detect_engine_c(change_24h: float, market_cap: float, age_days: int, volume: float = 0, buys: int = 0, sells: int = 0) -> Tuple[bool, float, str]:
     """
     Engine C: 1h EMA50 Hold After Pump (MC ≥ $300K)
     - 1h timeframe
@@ -128,11 +128,15 @@ def detect_engine_c(change_24h: float, market_cap: float, age_days: int, volume:
     - MC threshold ≥ $300K
     - Fast, aggressive
     
-    LESSON FROM SELFCLAW (Feb 16, 2026):
-    Successful pattern: Pump → Pullback to EMA50 → HOLD support → Reclaim higher
-    Failed pattern ($ME): Pump → Break below EMA50 → Keep falling
+    LESSONS LEARNED:
+    1. SELFCLAW (Feb 16, 2026): Successful pump → EMA50 hold → reclaim higher
+    2. $ME (Feb 15-16, 2026): Failed pump → break EMA50 → collapse
+    3. 114514 (Feb 16, 2026): Volume compression → EMA50 test → volume breakout
     
-    Key difference: Holding EMA50 support during consolidation vs breaking it
+    KEY INSIGHT FROM 114514:
+    - Volume compression during EMA50 tests = whale accumulation
+    - Volume expansion on reclaim = breakout confirmation
+    - Buy/sell ratio > 1.2 = sustained buying pressure
     """
     score = 0.0
     signals = []
@@ -145,40 +149,59 @@ def detect_engine_c(change_24h: float, market_cap: float, age_days: int, volume:
         score += 0.2
         signals.append(f"MC ≥$200K (${market_cap/1000:.0f}K)")
     
-    # Pump activity (must have pumped to need EMA50 support)
+    # Pump activity
     if change_24h > 100:
         score += 0.3
         signals.append(f"Strong pump (+{change_24h:.0f}%)")
     elif change_24h > 50:
         score += 0.2
         signals.append(f"Good pump (+{change_24h:.0f}%)")
+    elif change_24h > 20:
+        score += 0.1
+        signals.append(f"Mild pump (+{change_24h:.0f}%)")
     
-    # SELFCLAW PATTERN: Holding gains after pump (not breaking down)
-    # This is the critical difference vs $ME which broke support
+    # SELFCLAW PATTERN: Holding gains (not breaking down)
     if 0 < change_24h < 800:
         score += 0.2
         signals.append("Holding gains (SELFCLAW pattern)")
     
-    # SELFCLAW PATTERN: Volume confirmation during consolidation
-    # High volume on reclaim = institutional interest
-    if volume > 500000:  # $500K+ volume = strong interest
+    # 114514 PATTERN: Volume confirmation (critical)
+    # High volume on breakout = whale interest confirmed
+    if volume > 100000:  # $100K+ volume
         score += 0.3
-        signals.append(f"High volume reclaim (${volume/1000:.0f}K)")
-    elif volume > 100000:
+        signals.append(f"High volume (${volume/1000:.0f}K) - 114514 pattern")
+    elif volume > 50000:
         score += 0.2
         signals.append(f"Good volume (${volume/1000:.0f}K)")
+    elif volume > 20000:
+        score += 0.1
+        signals.append(f"Decent volume (${volume/1000:.0f}K)")
     
-    # Age check (need history to see EMA50 hold)
+    # 114514 PATTERN: Buy/Sell ratio (whale pressure indicator)
+    # Ratio > 1.2 = more buyers than sellers = accumulation
+    if sells > 0:
+        buy_sell_ratio = buys / sells
+        if buy_sell_ratio > 1.5:
+            score += 0.3
+            signals.append(f"Strong buy pressure ({buy_sell_ratio:.2f}x) - whale accumulation")
+        elif buy_sell_ratio > 1.2:
+            score += 0.2
+            signals.append(f"Buy pressure ({buy_sell_ratio:.2f}x)")
+        elif buy_sell_ratio < 0.8:
+            score -= 0.2  # Penalty for sell pressure
+            signals.append(f"Sell pressure ({buy_sell_ratio:.2f}x) - caution")
+    
+    # Age check
     if age_days >= 4:
         score += 0.1
         signals.append("4+ days old (EMA50 established)")
     
-    # SELFCLAW PATTERN: Not too old (pump exhaustion risk)
+    # Fresh momentum bonus
     if age_days <= 10:
         score += 0.1
         signals.append("Fresh momentum (<10 days)")
     
-    qualifies = score >= 0.7  # Raised threshold for quality
+    qualifies = score >= 0.7
     reason = " | ".join(signals) if signals else "Insufficient data"
     return qualifies, score, reason
 
@@ -236,7 +259,9 @@ def analyze_watchlist() -> List[Dict]:
         )
         engine_c, score_c, reason_c = detect_engine_c(
             data.get('change_24h', 0), data.get('market_cap', 0), age_days,
-            data.get('volume_24h', 0)  # SELFCLAW pattern: volume matters
+            data.get('volume_24h', 0),
+            data.get('txns', {}).get('h24', {}).get('buys', 0),  # 114514 pattern
+            data.get('txns', {}).get('h24', {}).get('sells', 0)  # Whale pressure
         )
         
         total_score = score_a + score_b + score_c
