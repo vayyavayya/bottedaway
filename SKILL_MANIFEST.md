@@ -81,12 +81,10 @@ ACTIVE CRON JOBS:
 
 CURRENT WATCHLIST:
 ==================
-- $ME (5 days, $209K MC, -76% loss — lesson learned)
 - $Seedance (7 days, $174K MC, -29% dip)
 - $PUP (4 days, $166K MC, +42% steady — Engine A)
 - $LEO (4-10 days, $364K MC, +378% parabolic — Engine B+C)
-- $114514 (Solana, $364K MC, +26% — Volume compression pattern)
-- $TROPHY (Solana, $2M MC, -33% pullback — Multiple EMA50 holds) [NEW]
+- $TROPHY (Solana, $2M MC, -33% pullback — Multiple EMA50 holds)
 
 OPEN POSITIONS:
 ===============

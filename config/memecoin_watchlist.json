@@ -1,13 +1,5 @@
 [
   {
-    "symbol": "ME",
-    "name": "In a world full of",
-    "address": "3wshHmD3aBx3wfHPeGWq2o38BNpVaEf7iFf3gYgRpump",
-    "chain": "solana",
-    "added_date": "2026-02-15",
-    "notes": "5 days old | -38% dip | $336K MC"
-  },
-  {
     "symbol": "Seedance",
     "name": "Seedance 2.0",
     "address": "vg22WXeS483q1vsNgPwuE4iWdVbhVEw3MqSXTJNpump",
@@ -30,14 +22,6 @@
     "chain": "solana",
     "added_date": "2026-02-15",
     "notes": "4-10 days (scanner verified) | +2685.0% | MC $364K | Auto-added from scanner"
-  },
-  {
-    "symbol": "114514",
-    "name": "114514",
-    "address": "AGdGTQa8iRnSx4fQJehWo4Xwbh1bzTazs55R6Jwupump",
-    "chain": "solana",
-    "added_date": "2026-02-16",
-    "notes": "$364K MC | +26% | Volume compression pattern | 1.35x buy/sell ratio | 114514 pattern"
   },
   {
     "symbol": "TROPHY",
