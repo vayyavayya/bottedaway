@@ -63,16 +63,18 @@ SKILL INVENTORY:
 --------
 [✓] skill-bootstrap       - Create new skill scaffolding
 [✓] agent-orchestrator    - Spawn sub-agents, keep main responsive
+[✓] git-backup            - Auto-backup to GitHub every 2h (NEW)
 [✗] dependency-check      - TODO: Pre-flight dependency validation
 
 ACTIVE CRON JOBS:
 =================
 1. memecoin-scanner-720min   - Every 12h → @pumpepump
 2. polyclaw-autotrader       - DISABLED
-3. daily-watchlist-8am       - Daily 8am → @sasimestri (FIXED)
+3. daily-watchlist-8am       - Daily 8am → @sasimestri
 4. me-ema50-monitor-2h       - DISABLED (position worthless)
 5. moltbook-learning-24h     - Daily midnight (MiniMax M2.5)
-6. diary-telegram-update     - Daily 9am → @sasimestri (FIXED) [FIXED]
+6. diary-telegram-update     - Daily 9am → @sasimestri
+7. git-auto-backup-2h        - Every 2h (NEW) [FIXED]
 
 CURRENT WATCHLIST:
 ==================
