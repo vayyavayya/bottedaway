@@ -1,0 +1,19 @@
+{
+  "agents": {
+    "defaults": {
+      "blockStreamingDefault": "on",
+      "blockStreamingBreak": "text_end",
+      "blockStreamingChunk": {
+        "minChars": 200,
+        "maxChars": 1500,
+        "breakPreference": "paragraph"
+      },
+      "blockStreamingCoalesce": {
+        "minChars": 300,
+        "maxChars": 2000,
+        "idleMs": 400
+      },
+      "humanDelay": "natural"
+    }
+  }
+}

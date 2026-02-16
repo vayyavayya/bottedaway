@@ -22,5 +22,13 @@
     "chain": "solana",
     "added_date": "2026-02-15",
     "notes": "4-10 days (scanner verified) | +2685.0% | MC $364K | Auto-added from scanner"
+  },
+  {
+    "symbol": "Maman",
+    "name": "ママン",
+    "address": "G8fSP7xigLVxA5qyFiTQg7cs6jPsqYDWwqzJVJ6ppump",
+    "chain": "solana",
+    "added_date": "2026-02-16",
+    "notes": "$100K MC | -59% | Price monitor active | Alert: <$0.000069 or >$0.00042"
   }
 ]
