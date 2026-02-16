@@ -52,7 +52,7 @@ def fetch_token_data(address: str, chain: str) -> Dict:
     
     return {}
 
-def detect_engine_a(change_24h: float, age_days: int, price_vs_high: float = 1.0, volume_trend: str = "neutral") -> Tuple[bool, float, str]:
+def detect_engine_a(change_24h: float, age_days: int, price_vs_high: float = 1.0, volume_trend: str = "neutral", ath_drawdown: float = 0.0) -> Tuple[bool, float, str]:
     """
     Engine A: 12h EMA50 Reclaim Pattern
     - 12h timeframe
@@ -64,6 +64,12 @@ def detect_engine_a(change_24h: float, age_days: int, price_vs_high: float = 1.0
     - Two peaks with lower second high = weakness
     - Breaking below EMA50 after distribution = AVOID
     - High volume on dump = whales exiting
+    
+    LESSONS FROM TRUMP/MAGA (Feb 16, 2026):
+    - Parabolic pumps (100x+) = inevitable 90%+ collapse
+    - Price down >90% from ATH = dead token, avoid
+    - Low volume after massive pump = no recovery interest
+    - Late buyers in parabolic phase get rekt 97%
     """
     score = 0.0
     signals = []
@@ -91,6 +97,15 @@ def detect_engine_a(change_24h: float, age_days: int, price_vs_high: float = 1.0
     if price_vs_high < 0.7 and volume_trend == "high":
         score -= 0.6  # Heavy penalty
         signals.append("⚠️ Double top breakdown pattern (丙午) - AVOID")
+    
+    # TRUMP/MAGA PATTERN: Parabolic collapse detection (AVOID)
+    # If token is down >90% from ATH = dead/rekt token
+    if ath_drawdown > 0.9:
+        score -= 0.8  # Severe penalty
+        signals.append("⚠️ Parabolic collapse (-90%+ from ATH) - DEAD TOKEN")
+    elif ath_drawdown > 0.7:
+        score -= 0.5
+        signals.append("⚠️ Heavy drawdown (-70%+ from ATH) - avoid")
     
     # If price breaking down with accelerating losses
     if change_24h < -30:
@@ -310,7 +325,8 @@ def analyze_watchlist() -> List[Dict]:
         engine_a, score_a, reason_a = detect_engine_a(
             data.get('change_24h', 0), age_days,
             data.get('price_vs_high', 1.0),  # 丙午 pattern - double top detection
-            data.get('volume_trend', 'neutral')  # Volume analysis
+            data.get('volume_trend', 'neutral'),  # Volume analysis
+            data.get('ath_drawdown', 0.0)  # TRUMP/MAGA pattern - parabolic collapse
         )
         engine_b, score_b, reason_b = detect_engine_b(
             data.get('change_24h', 0), data.get('volume_24h', 0), age_days,
