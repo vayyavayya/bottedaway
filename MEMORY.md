@@ -95,6 +95,8 @@
 - **Model for heartbeat checks:** google/gemini-2.0-flash-lite:free (cost efficiency)
 - **Heartbeat pattern:** Rotating checks (scanner → memory → git → skill audit → cost)
 - **Time zone:** Europe/Berlin
+- **Rate limit fallback:** Immediately switch to kimi-coding/k2p5 without asking permission, keep working
+- **Rate limit recovery:** Once window clears, switch back to minimax-portal/MiniMax-M2.5 (default primary)
 
 ---
 
