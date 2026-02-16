@@ -156,19 +156,31 @@ To modify: Edit skill README.md first, then code
 To archive: Move to /skills/.archive/ with date prefix
 To spawn work: See /skills/system/agent-orchestrator/README.md
 
-ENGINE PATTERN LIBRARY (7 Patterns):
+ENGINE PATTERN LIBRARY (8 Patterns):
 =====================================
+✅ POSITIVE PATTERNS (Enter):
 1. SELFCLAW - EMA50 hold → reclaim higher
-2. $ME - EMA50 break → collapse (avoid)
-3. 114514 - Volume compression → breakout
-4. Trophy Tomato - Multiple EMA50 holds (5+)
-5. WhiteWhale - Multiple fakeouts → accumulation
-6. 丙午 (BingWu) - Double top breakdown → AVOID ⚠️
-7. TRUMP/MAGA - Parabolic pump → 97% collapse → AVOID ⚠️⚠️
+2. 114514 - Volume compression → breakout
+3. Trophy Tomato - Multiple EMA50 holds (5+)
+4. WhiteWhale - Multiple fakeouts → accumulation
+5. GIGA - Pump → EMA50 reclaim → ride higher → MOON 🚀
+
+❌ NEGATIVE PATTERNS (Avoid):
+6. $ME - EMA50 break → collapse
+7. 丙午 (BingWu) - Double top breakdown
+8. TRUMP/MAGA - Parabolic pump → 97% collapse
+
+GIGA Pattern Details (Engine A) - PERFECT:
+- Pump → pullback to EMA50 → reclaim = entry
+- Riding EMA50 higher for months = strong trend
+- Healthy correction (not -90% collapse) = accumulation
+- Sustained volume = institutional interest
+- Bonus: +0.5 score for riding EMA50 with momentum
+- Result: 10x+ gains, sustainable uptrend
 
 丙午 Pattern Details (Engine A):
 - Two peaks, lower second high = weakness
-- Breaking below EMA50 after distribution = exit signal
+- Breaking below EMA50 after distribution = exit
 - High volume on red candles = whales leaving
 - Penalty: -0.6 score | Action: AVOID
 

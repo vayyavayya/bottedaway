@@ -52,7 +52,7 @@ def fetch_token_data(address: str, chain: str) -> Dict:
     
     return {}
 
-def detect_engine_a(change_24h: float, age_days: int, price_vs_high: float = 1.0, volume_trend: str = "neutral", ath_drawdown: float = 0.0) -> Tuple[bool, float, str]:
+def detect_engine_a(change_24h: float, age_days: int, price_vs_high: float = 1.0, volume_trend: str = "neutral", ath_drawdown: float = 0.0, ema50_riding: bool = False) -> Tuple[bool, float, str]:
     """
     Engine A: 12h EMA50 Reclaim Pattern
     - 12h timeframe
@@ -70,6 +70,13 @@ def detect_engine_a(change_24h: float, age_days: int, price_vs_high: float = 1.0
     - Price down >90% from ATH = dead token, avoid
     - Low volume after massive pump = no recovery interest
     - Late buyers in parabolic phase get rekt 97%
+    
+    LESSONS FROM GIGA (Feb 16, 2026):
+    - Pump → pullback to EMA50 → reclaim = PERFECT entry
+    - Riding EMA50 higher for months = strong trend
+    - Healthy correction (not collapse) = accumulation
+    - Sustained volume = institutional interest
+    - This is the IDEAL Engine A pattern
     """
     score = 0.0
     signals = []
@@ -91,6 +98,12 @@ def detect_engine_a(change_24h: float, age_days: int, price_vs_high: float = 1.0
     if change_24h > 0:
         score += 0.2
         signals.append("Positive momentum")
+    
+    # GIGA PATTERN: Riding EMA50 higher (POSITIVE)
+    # Price consistently above EMA50 with higher highs
+    if ema50_riding and change_24h > 10:
+        score += 0.5  # Bonus for perfect trend
+        signals.append("🚀 GIGA pattern - Riding EMA50 higher (perfect trend)")
     
     # 丙午 PATTERN: Double top breakdown detection (AVOID)
     # If price is down >30% from highs with high volume = distribution
@@ -326,7 +339,8 @@ def analyze_watchlist() -> List[Dict]:
             data.get('change_24h', 0), age_days,
             data.get('price_vs_high', 1.0),  # 丙午 pattern - double top detection
             data.get('volume_trend', 'neutral'),  # Volume analysis
-            data.get('ath_drawdown', 0.0)  # TRUMP/MAGA pattern - parabolic collapse
+            data.get('ath_drawdown', 0.0),  # TRUMP/MAGA pattern - parabolic collapse
+            data.get('ema50_riding', False)  # GIGA pattern - riding EMA50 higher
         )
         engine_b, score_b, reason_b = detect_engine_b(
             data.get('change_24h', 0), data.get('volume_24h', 0), age_days,
