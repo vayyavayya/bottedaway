@@ -120,7 +120,7 @@ def detect_engine_b(change_24h: float, volume: float, age_days: int) -> Tuple[bo
     reason = " | ".join(signals) if signals else "Insufficient data"
     return qualifies, score, reason
 
-def detect_engine_c(change_24h: float, market_cap: float, age_days: int, volume: float = 0, buys: int = 0, sells: int = 0) -> Tuple[bool, float, str]:
+def detect_engine_c(change_24h: float, market_cap: float, age_days: int, volume: float = 0, buys: int = 0, sells: int = 0, ema50_touches: int = 0) -> Tuple[bool, float, str]:
     """
     Engine C: 1h EMA50 Hold After Pump (MC ≥ $300K)
     - 1h timeframe
@@ -137,6 +137,12 @@ def detect_engine_c(change_24h: float, market_cap: float, age_days: int, volume:
     - Volume compression during EMA50 tests = whale accumulation
     - Volume expansion on reclaim = breakout confirmation
     - Buy/sell ratio > 1.2 = sustained buying pressure
+    
+    KEY INSIGHT FROM SOL/TROPHY TOMATO (Feb 16, 2026):
+    - Multiple EMA50 touches (5+) over weeks = extremely strong support
+    - Volume compression on pullback = potential reversal
+    - Buy pressure during dump = smart money accumulating
+    - Trend following along EMA50 = sustained momentum
     """
     score = 0.0
     signals = []
@@ -164,6 +170,18 @@ def detect_engine_c(change_24h: float, market_cap: float, age_days: int, volume:
     if 0 < change_24h < 800:
         score += 0.2
         signals.append("Holding gains (SELFCLAW pattern)")
+    
+    # SOL/TROPHY TOMATO PATTERN: Multiple EMA50 holds = strong support
+    # More touches = more established support
+    if ema50_touches >= 5:
+        score += 0.4
+        signals.append(f"Strong EMA50 support ({ema50_touches} touches) - Trophy Tomato pattern")
+    elif ema50_touches >= 3:
+        score += 0.3
+        signals.append(f"Good EMA50 support ({ema50_touches} touches)")
+    elif ema50_touches >= 1:
+        score += 0.1
+        signals.append(f"EMA50 tested ({ema50_touches} touch)")
     
     # 114514 PATTERN: Volume confirmation (critical)
     # High volume on breakout = whale interest confirmed
@@ -200,6 +218,11 @@ def detect_engine_c(change_24h: float, market_cap: float, age_days: int, volume:
     if age_days <= 10:
         score += 0.1
         signals.append("Fresh momentum (<10 days)")
+    
+    # SOL/TROPHY TOMATO: Mature uptrend with strong support bonus
+    if age_days >= 10 and ema50_touches >= 3:
+        score += 0.2
+        signals.append("Mature uptrend with strong support")
     
     qualifies = score >= 0.7
     reason = " | ".join(signals) if signals else "Insufficient data"
