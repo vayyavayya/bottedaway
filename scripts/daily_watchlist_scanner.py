@@ -84,13 +84,18 @@ def detect_engine_a(change_24h: float, age_days: int) -> Tuple[bool, float, str]
     reason = " | ".join(signals) if signals else "Insufficient data"
     return qualifies, score, reason
 
-def detect_engine_b(change_24h: float, volume: float, age_days: int) -> Tuple[bool, float, str]:
+def detect_engine_b(change_24h: float, volume: float, age_days: int, ema50_touches: int = 0, ema50_rejections: int = 0) -> Tuple[bool, float, str]:
     """
     Engine B: 4h Pump → Dump → Reclaim
     - 4h timeframe
     - Pump followed by pullback
     - Price reclaims support
     - Medium speed
+    
+    LESSONS FROM WHITEWHALE (Feb 16, 2026):
+    - Multiple EMA50 touches with rejections = whale accumulation
+    - 3-4 fakeouts before real breakout = classic accumulation pattern
+    - Volume compression during fakeouts, expansion on breakout
     """
     score = 0.0
     signals = []
@@ -115,6 +120,17 @@ def detect_engine_b(change_24h: float, volume: float, age_days: int) -> Tuple[bo
     elif volume > 50000:
         score += 0.2
         signals.append(f"Good volume (${volume/1000:.0f}K)")
+    
+    # WHITEWHALE PATTERN: Multiple EMA50 fakeouts = accumulation
+    if ema50_rejections >= 3:
+        score += 0.5
+        signals.append(f"WhiteWhale pattern ({ema50_rejections} EMA50 rejections) - whale accumulation")
+    elif ema50_touches >= 3:
+        score += 0.3
+        signals.append(f"Multiple EMA50 tests ({ema50_touches}) - building support")
+    elif ema50_touches >= 1:
+        score += 0.1
+        signals.append(f"EMA50 tested ({ema50_touches})")
     
     qualifies = score >= 0.6
     reason = " | ".join(signals) if signals else "Insufficient data"
@@ -278,7 +294,9 @@ def analyze_watchlist() -> List[Dict]:
             data.get('change_24h', 0), age_days
         )
         engine_b, score_b, reason_b = detect_engine_b(
-            data.get('change_24h', 0), data.get('volume_24h', 0), age_days
+            data.get('change_24h', 0), data.get('volume_24h', 0), age_days,
+            data.get('ema50_touches', 0),  # WhiteWhale pattern
+            data.get('ema50_rejections', 0)  # Accumulation detection
         )
         engine_c, score_c, reason_c = detect_engine_c(
             data.get('change_24h', 0), data.get('market_cap', 0), age_days,
