@@ -10,7 +10,7 @@ import json
 import requests
 from typing import Optional, Dict, List
 
-PERPLEXITY_API_KEY = os.getenv("PERPLEXITY_API_KEY", "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")
+PERPLEXITY_API_KEY = os.getenv("PERPLEXITY_API_KEY", "")
 PERPLEXITY_URL = "https://api.perplexity.ai/chat/completions"
 
 def perplexity_research(query: str, model: str = "sonar-pro") -> Optional[Dict]:
