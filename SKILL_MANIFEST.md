@@ -86,6 +86,30 @@ CURRENT WATCHLIST:
 - $LEO (4-10 days, $364K MC, +378% parabolic — Engine B+C)
 - $Maman (Solana, $100K MC — monitoring STOPPED)
 
+SMART MONEY MONITORING (NEW):
+=============================
+Unified onchain intelligence system combining:
+- Nansen (deep wallet profiling, god mode)
+- Cielo Finance (real-time Solana tracking)
+- Base Signal Feed (Base L2 smart money)
+- Birdeye/DexScreener (price & volume)
+
+Alert Types:
+- 🐋 CONVERGENCE: Multiple whales buying (2+ sources confirm)
+- ⚠️ DIVERGENCE: Whales selling while price rises
+- 📊 VOLUME_SPIKE: $500K+ volume with >1.5x buy pressure
+- 💰 EXCHANGE_FLOW: Large inflows (bearish) / outflows (bullish)
+
+Cron: smart-money-monitor-2h (every 2 hours)
+Config: config/smart_money_config.json
+
+SCRIPTS:
+========
+- nansen_enhanced.py: Enhanced Nansen CLI with additional endpoints
+- cielo_finance.py: Cielo Finance integration for Solana
+- unified_smart_money_monitor.py: Combined intelligence system
+- smart_money_wrapper.sh: Telegram alert wrapper
+
 OPEN POSITIONS:
 ===============
 - Fed rate cut (March): $5 YES @ $0.065 → Currently -93%, worthless

@@ -1,0 +1,17 @@
+{
+  "watched_tokens": [],
+  "whale_wallets": [],
+  "alert_thresholds": {
+    "min_transaction_usd": 10000,
+    "convergence_min_whales": 3,
+    "divergence_threshold": 0.05,
+    "exchange_flow_threshold": 500000
+  },
+  "sources": {
+    "nansen": true,
+    "cielo": true,
+    "base_signal": true,
+    "birdeye": true
+  },
+  "alert_channels": ["telegram"]
+}
