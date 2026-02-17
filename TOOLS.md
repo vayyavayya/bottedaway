@@ -37,4 +37,20 @@ Skills are shared. Your setup is yours. Keeping them apart means you can update 
 
 ---
 
-Add whatever helps you do your job. This is your cheat sheet.
+## Model Routing Preferences
+
+**Heartbeat/Monitoring Tasks:**
+- Primary: `google/gemini-2.0-flash-lite:free` (free tier)
+
+**Trading Decisions:**
+- Primary: `kimi-coding/k2p5` (high quality)
+
+**Rate Limit Handling:**
+- **Fallback:** Immediately switch to `kimi-coding/k2p5` without asking permission, keep working
+- **Recovery:** Once window clears, switch back to `minimax-portal/MiniMax-M2.5` (default primary)
+
+## Time Zone
+- Europe/Berlin
+
+## Heartbeat Pattern
+- Rotating checks: scanner → memory → git → skill audit → cost
