@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>WhaleTracker Daily — 2026-02-17 (SAMPLE)</title>
+    <style>
+        body { font-family: system-ui, sans-serif; max-width: 1200px; margin: 0 auto; padding: 20px; background: #0a0a0f; color: #e0e0e0; }
+        h1 { color: #00ff88; border-bottom: 2px solid #00ff88; padding-bottom: 10px; }
+        h2 { color: #00ccff; margin-top: 30px; }
+        .summary { background: #1a1a2e; padding: 15px; border-radius: 8px; margin: 20px 0; }
+        .token { background: #16162a; padding: 15px; margin: 10px 0; border-radius: 8px; border-left: 4px solid #333; }
+        .token.pass { border-left-color: #00ff88; }
+        .token.watch { border-left-color: #ffaa00; }
+        .token.reject { border-left-color: #ff4444; }
+        .score { font-size: 24px; font-weight: bold; color: #00ff88; }
+        .score.low { color: #ff4444; }
+        .score.mid { color: #ffaa00; }
+        .meta { color: #888; font-size: 14px; }
+        .wallets { background: #0f0f1a; padding: 10px; border-radius: 4px; margin: 10px 0; }
+        .wallet { display: inline-block; background: #252540; padding: 4px 8px; margin: 2px; border-radius: 4px; font-size: 12px; }
+        .reject-reason { color: #ff6666; font-size: 12px; }
+        a { color: #00ccff; text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+        th, td { padding: 8px; text-align: left; border-bottom: 1px solid #333; }
+        th { color: #00ccff; }
+        .sample-banner { background: #ffaa00; color: #000; padding: 10px; text-align: center; font-weight: bold; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <div class="sample-banner">⚠️ SAMPLE REPORT — Add wallets to see real data</div>
+    
+    <h1>🐋 WhaleTracker Daily — 2026-02-17</h1>
+    
+    <div class="summary">
+        <h3>Summary</h3>
+        <table>
+            <tr><th>Metric</th><th>Value</th></tr>
+            <tr><td>Wallets Scanned</td><td>0</td></tr>
+            <tr><td>New Tokens Detected</td><td>0</td></tr>
+            <tr><td>✅ PASS</td><td>0</td></tr>
+            <tr><td>⚠️ WATCH</td><td>0</td></tr>
+            <tr><td>❌ REJECT</td><td>0</td></tr>
+        </table>
+    </div>
+
+    <h2>ℹ️ Getting Started</h2>
+    <div class="token">
+        <p><strong>Whale Tracker is ready!</strong> Add wallet addresses to start monitoring.</p>
+        <p>Usage:</p>
+        <code style="background:#0f0f1a;padding:10px;display:block;margin:10px 0;">
+            /Users/pterion2910/.openclaw/workspace/skills/whale-tracker/scripts/add_wallet.sh &lt;address&gt; [label] [notes]
+        </code>
+        <p>Or manually edit: <code>data/whales/whales.json</code></p>
+        <p>Schedule: Daily at 09:00 Europe/Berlin (cron job: whale-tracker-daily-9am)</p>
+    </div>
+
+    <h2>📊 Example PASS Token</h2>
+    <div class="token pass">
+        <div class="score">78.5</div>
+        <strong>$EXAMPLE (EXAMPL...e7f3)</strong>
+        <div class="meta">
+            Age: 6d | Liquidity: $45,000 | Volume 24h: $89,000
+        </div>
+        <div class="wallets">
+            Wallets: <span class="wallet">Whale1@14:32</span> <span class="wallet">Whale2@16:45</span>
+        </div>
+        <div>
+            A: 82 | B: 75 | C: 78
+        </div>
+        <div style="margin-top:10px;">
+            <a href="#">DexScreener</a> | <a href="#">Solscan</a>
+        </div>
+    </div>
+
+    <h2>⚠️ Example WATCH Token</h2>
+    <div class="token watch">
+        <div class="score mid">58.0</div>
+        <strong>$WATCHME (WATCH...a1b2)</strong>
+        <div class="meta">
+            Age: 3d | Liquidity: $18,000 | Volume 24h: $34,000
+        </div>
+        <div class="reject-reason">
+            Reasons: LIQUIDITY < $25,000, LOW_COMPOSITE
+        </div>
+        <div style="margin-top:10px;color:#888;font-size:12px;">
+            Needs retest/confirmation before consideration
+        </div>
+    </div>
+
+    <h2>❌ Example REJECT Token</h2>
+    <div class="token reject">
+        <strong>$RUGPULL (RUG...c3d4)</strong>
+        <span class="reject-reason" style="margin-left:20px;">TOP10 > 35%, MINT_AUTH_ENABLED, LP_UNLOCKED</span>
+    </div>
+</body>
+</html>
