@@ -27,16 +27,25 @@
 - **solscan** — Solana verification
 - **basescan** — Base L2 explorer
 - **nansen-cli** — Onchain forensics
+- **whale-tracker** — Autonomous whale monitoring with Engines A/B/C scoring
 
 ### Active Systems
 - **3-Engine Memecoin Scanner** (A/B/C pattern detection)
+- **Whale Tracker** (24h whale wallet monitoring, auto-scoring)
+- **Smart Money Monitor** (Nansen + Cielo convergence/divergence)
 - **Telegram notifications** (paired with @sasimestri)
 - **GitHub backup** (bottedaway repo)
 - **Daily diary** (HTML format)
 
 ### Cron Jobs
 - `memecoin-scanner-720min` — Every 12h (data collection)
+- `whale-tracker-daily-9am` — Daily 9am (whale monitoring)
+- `smart-money-monitor-2h` — Every 2h (convergence signals)
+- `ema50-crossing-alerts-4h` — Every 4h (EMA50 alerts)
+- `moltbook-learning-24h` — Daily midnight (intelligence)
+- `git-auto-backup-2h` — Every 2h (disaster recovery)
 - `diary-telegram-update` — Daily 9am (user notification)
+- `memory-grooming-nightly` — Daily 3am (cleanup)
 
 ---
 
@@ -91,13 +100,4 @@
 
 ---
 
-## Preferences
-- **Model for heartbeat checks:** google/gemini-2.0-flash-lite:free (cost efficiency)
-- **Heartbeat pattern:** Rotating checks (scanner → memory → git → skill audit → cost)
-- **Time zone:** Europe/Berlin
-- **Rate limit fallback:** Immediately switch to kimi-coding/k2p5 without asking permission, keep working
-- **Rate limit recovery:** Once window clears, switch back to minimax-portal/MiniMax-M2.5 (default primary)
-
----
-
-*Last updated: February 14, 2026*
+*Last updated: February 17, 2026*
