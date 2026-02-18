@@ -2,9 +2,9 @@
   "lastChecks": {
     "scanner_review": 1771366025,
     "memory_review": 1771366341,
-    "git_sync": 1771363915,
-    "skill_audit": 1771364221,
-    "cost_check": 1771364226
+    "git_sync": 1771366363,
+    "skill_audit": 1771366573,
+    "cost_check": 1771366578
   },
-  "nextCheck": "git_sync"
+  "nextCheck": "scanner_review"
 }
