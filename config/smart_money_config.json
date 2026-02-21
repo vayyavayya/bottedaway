@@ -1,5 +1,36 @@
 {
-  "watched_tokens": [],
+  "watched_tokens": [
+    {
+      "address": "4sAUSQFdvWRBxR8UoLBYbw8CcXuwXWxnN8pXa4mtm5nU",
+      "chain": "solana",
+      "symbol": "TOKEN1",
+      "added": "2026-02-21"
+    },
+    {
+      "address": "4pcfEWH1s3qsLUYMvRquH2hPcpMokMHDLShNyukvxb5e",
+      "chain": "solana",
+      "symbol": "TOKEN2",
+      "added": "2026-02-21"
+    },
+    {
+      "address": "6rq8QHA89oeaPix1jUP7raHJ9HwNejUVCzwdwmpqcMhe",
+      "chain": "solana",
+      "symbol": "TOKEN3",
+      "added": "2026-02-21"
+    },
+    {
+      "address": "2gjDmkFTsByCebzLfVnrksH7AhghCE1t6u2giw9gAdBm",
+      "chain": "solana",
+      "symbol": "TOKEN4",
+      "added": "2026-02-21"
+    },
+    {
+      "address": "6u9jyRaT1UEWeZR7CLe9CZ5NgX96n1Txmu9Thb9nHmy5",
+      "chain": "solana",
+      "symbol": "TOKEN5",
+      "added": "2026-02-21"
+    }
+  ],
   "whale_wallets": [],
   "alert_thresholds": {
     "min_transaction_usd": 10000,
