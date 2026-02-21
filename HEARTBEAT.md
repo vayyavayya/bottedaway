@@ -1,6 +1,14 @@
-# HEARTBEAT.md - Rotating Check Pattern
+# HEARTBEAT.md — Rotating Check Pattern
 
 Based on digitalknk's runbook: Single heartbeat rotates through overdue checks instead of separate cron jobs.
+
+## Cost Optimization: Local Model Routing
+
+**NEW**: Heartbeats now route to local Llama 3.2 via Ollama for **$0 cost**.
+- 48×/day pings = $0 with local model
+- Falls back to Gemini Flash Lite if local model unavailable
+
+---
 
 ## Check Rotation
 
@@ -40,11 +48,33 @@ Based on digitalknk's runbook: Single heartbeat rotates through overdue checks i
 - **Batched work** — Multiple checks in one heartbeat
 - **Flat costs** — No spike from concurrent cron jobs
 - **Flexible timing** — Checks run when most needed, not rigid schedule
-- **Cheap model** — All checks use `google/gemini-2.0-flash-lite:free`
+- **$0 heartbeats** — Local Llama 3.2 handles 48×/day pings
 
 ## Current Cron Jobs (Still Active)
 
-- `memecoin-scanner-720min` — Every 12h (data collection)
-- `diary-telegram-update` — Daily 9am (user notification)
+These are user-facing and time-sensitive:
 
-These are user-facing and time-sensitive, so they stay as cron jobs.
+- `memecoin-scanner-720min` — Every 12h (data collection)
+- `smart-money-monitor-2h` — Every 2h (whale alerts)
+- `ema50-crossing-alerts-4h` — Every 4h (EMA50 signals)
+- `watchlist-maintenance-daily` — Daily 7am (cleanup)
+- `git-auto-backup-2h` — Every 2h (disaster recovery)
+- `diary-telegram-update` — Daily 9am (user digest)
+- `morning-briefing-8am` — Daily 8am
+- `daily-watchlist-8am` — Daily 8am
+- `moltbook-learning-24h` — Daily midnight
+- `memory-grooming-nightly` — Daily 3am
+
+---
+
+## Local Model Setup
+
+```bash
+# Ensure Llama 3.2 is available
+ollama list | grep llama3.2
+
+# If not present:
+ollama pull llama3.2:3b
+```
+
+Heartbeat responses will use local model first, fall back to Gemini Flash Lite.
