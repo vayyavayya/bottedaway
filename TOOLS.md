@@ -39,15 +39,29 @@ Skills are shared. Your setup is yours. Keeping them apart means you can update 
 
 ## Model Routing Preferences
 
+**Default (Routine Work):**
+- Primary: `kimi-coding/k2p5` (flat-rate, cost-effective)
+- Fallback: `minimax-portal/MiniMax-M2.5`
+
+**Escalate to MiniMax ONLY for:**
+- Genuinely hard reasoning tasks
+- Long-context synthesis (>50K tokens)
+- High-stakes decisions (trading, config changes)
+- Complex code generation/refactoring
+
+**If using MiniMax without clear reason → nudge to downgrade to Kimi.**
+**If stuck on Kimi → nudge to upgrade to MiniMax.**
+
 **Heartbeat/Monitoring Tasks:**
-- Primary: `google/gemini-2.0-flash-lite:free` (free tier)
+- Primary: `ollama/llama3.2:3b` (local, $0)
+- Fallback: `google/gemini-2.0-flash-lite:free`
 
 **Trading Decisions:**
 - Primary: `kimi-coding/k2p5` (high quality)
 
 **Rate Limit Handling:**
 - **Fallback:** Immediately switch to `kimi-coding/k2p5` without asking permission, keep working
-- **Recovery:** Once window clears, switch back to `minimax-portal/MiniMax-M2.5` (default primary)
+- **Recovery:** Once window clears, switch back to Kimi as default
 
 ## Time Zone
 - Europe/Berlin
