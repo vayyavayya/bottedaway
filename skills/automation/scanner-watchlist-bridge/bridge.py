@@ -145,6 +145,13 @@ def main():
     print(f"📋 Watchlist now has {len(load_watchlist())} coins")
     print("=" * 70)
     print()
+    
+    # Run maintenance to remove dead coins
+    print("🧹 Running watchlist maintenance...")
+    import subprocess
+    subprocess.run(["python3", "/Users/pterion2910/.openclaw/workspace/skills/automation/watchlist-maintenance/maintain.py"])
+    
+    print()
     print("🕗 Next daily watchlist report: Tomorrow 8 AM")
     print("   You'll get engine analysis for all watchlist coins")
 
