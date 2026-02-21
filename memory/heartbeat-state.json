@@ -1,10 +1,10 @@
 {
   "lastChecks": {
-    "scanner_review": 1771433967,
+    "scanner_review": 1771444174,
     "memory_review": 1771436979,
     "git_sync": 1771437000,
     "skill_audit": 1771440574,
     "cost_check": 1771440580
   },
-  "nextCheck": "scanner_review"
+  "nextCheck": "memory_review"
 }
