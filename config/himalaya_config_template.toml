@@ -1,0 +1,34 @@
+# Himalaya Gmail Configuration
+# Place at: ~/.config/himalaya/config.toml
+
+[accounts.gmail]
+email = "nadeshan.agent@gmail.com"
+display-name = "Nadeshan Agent"
+default = true
+
+# IMAP backend for receiving
+[accounts.gmail.backend]
+type = "imap"
+host = "imap.gmail.com"
+port = 993
+
+[accounts.gmail.backend.encryption]
+type = "tls"
+
+[accounts.gmail.backend.auth]
+type = "oauth2"
+# You'll need to configure OAuth2 tokens here
+# Option 1: Use the token from the Python script
+# Option 2: Use pass or keyring
+
+# SMTP backend for sending  
+[accounts.gmail.message.send.backend]
+type = "smtp"
+host = "smtp.gmail.com"
+port = 587
+
+[accounts.gmail.message.send.backend.encryption]
+type = "start-tls"
+
+[accounts.gmail.message.send.backend.auth]
+type = "oauth2"
