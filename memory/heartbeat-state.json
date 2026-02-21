@@ -3,8 +3,8 @@
     "scanner_review": 1771451374,
     "memory_review": 1771436979,
     "git_sync": 1771451405,
-    "skill_audit": 1771447774,
-    "cost_check": 1771447780
+    "skill_audit": 1771474570,
+    "cost_check": 1771474580
   },
-  "nextCheck": "skill_audit"
+  "nextCheck": "scanner_review"
 }
