@@ -4,7 +4,7 @@
     "memory_review": 1771774579,
     "git_sync": 1771806990,
     "skill_audit": 1771815964,
-    "cost_check": 1771775815
+    "cost_check": 1771820260
   },
-  "nextCheck": "cost_check"
+  "nextCheck": "scanner_review"
 }
