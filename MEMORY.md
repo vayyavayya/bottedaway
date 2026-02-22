@@ -33,9 +33,10 @@
 - **3-Engine Memecoin Scanner** (A/B/C pattern detection)
 - **Whale Tracker** (24h whale wallet monitoring, auto-scoring)
 - **Smart Money Monitor** (Nansen + Cielo convergence/divergence)
-- **Telegram notifications** (paired with @sasimestri)
-- **GitHub backup** (bottedaway repo)
+- **Discord notifications** (Clawsecondbot#5518, 5 channels)
+- **GitHub backup** (bottedaway repo, now private)
 - **Daily diary** (HTML format)
+- **Mission Control** (NextJS dashboard for OpenClaw operations)
 
 ### Cron Jobs (Active via `openclaw cron`)
 - `memecoin-scanner-12h` — Every 12h (data collection)
@@ -70,6 +71,23 @@
 
 ---
 
+## Infrastructure Updates (Feb 22-23, 2026)
+
+### Discord Migration
+- Migrated from Telegram to Discord as primary channel
+- Bot: Clawsecondbot#5518
+- Created 5 channels: #scanner-alerts, #whale-buys, #git-sync, #system-logs, #trading-alerts
+- Repo privatized: vayyavayya/bottedaway
+
+### Mission Control Dashboard
+- Built full NextJS web app for OpenClaw operations
+- 8 modules: Overview, Scanner, Whale Tracker, Calendar, Tasks, Memory, Cost, Team
+- SQLite database with Drizzle ORM
+- Dark theme UI, real-time stats
+- Location: skills/mission-control/
+
+---
+
 ## Trading Rules
 
 ### Target Criteria
@@ -96,4 +114,4 @@
 
 ---
 
-*Last updated: February 22, 2026*
+*Last updated: February 23, 2026*
