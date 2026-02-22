@@ -1,0 +1,29 @@
+📅 **Morning Briefing — 2026-02-21 07:01 UTC**
+
+## 🪙 Crypto Watchlist
+5 coins tracked
+**Active Signals:**
+- $PUP: +42%, Engine A (steady)
+- $LEO: +378%, Engine B+C (parabolic, watch for dip)
+
+## 📉 Open Positions
+**Fed Trade (March):** -93% loss, illiquid — holding to resolution
+
+## ⚙️ System Status
+- Scanner: Every 12h ✅
+- Watchlist Report: Daily 8 AM ✅
+- Git Backup: Every 2h ✅
+- Moltbook Learning: Daily midnight ✅
+
+## 🎯 Today's Priorities
+1. Monitor $PUP for entry opportunity
+2. Watch $LEO for pullback
+3. Review any new scanner findings at 8 PM
+
+## 💡 Key Reminder
+Position sizing: 1-2% max per coin
+Stop loss: -15% from entry
+Never buy deep dips (-50%+) without reversal
+
+—
+*Next briefing: Tomorrow 8 AM*

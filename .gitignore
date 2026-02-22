@@ -1,0 +1,25 @@
+# Skill-Based Agent Gitignore
+
+# Runtime data
+*.log
+*.pyc
+__pycache__/
+.env
+
+# State files (generated)
+config/*_state.json
+state/
+
+# Artifacts (handoff boundary - keep structure, ignore contents)
+/mnt/data/reports/*.html
+/mnt/data/exports/*.csv
+/mnt/data/backups/*.json
+
+# But keep directories
+!/mnt/data/reports/.gitkeep
+!/mnt/data/exports/.gitkeep
+!/mnt/data/backups/.gitkeep
+
+# Local testing
+.test/
+*.test.py

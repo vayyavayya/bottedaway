@@ -42,6 +42,11 @@ MIN_LIQUIDITY = 10_000
 MIN_COIN_AGE_DAYS = 4  # Minimum 4 days old (survivorship bias)
 MAX_COIN_AGE_DAYS = 10  # Maximum 10 days old (sweet spot window)
 
+# MOMENTUM FILTERS (Lessons from $ME failure)
+MIN_24H_CHANGE = -5      # Reject coins < -5% (falling knives)
+MAX_24H_CHANGE = 200     # Reject coins > 200% (parabolic top risk)
+PREFERRED_MIN_CHANGE = 5 # Prefer coins with positive momentum
+
 LOG_FILE = f"/Users/pterion2910/.openclaw/workspace/memory/scanner-{datetime.now().strftime('%Y-%m-%d')}.log"
 
 def log(msg):
@@ -544,6 +549,28 @@ def main():
     all_tokens = sweet_spot_tokens
     log(f"Tokens in sweet spot ({MIN_COIN_AGE_DAYS}-{MAX_COIN_AGE_DAYS} days): {len(all_tokens)}")
     
+    # Filter by momentum (Lessons from $ME failure)
+    momentum_tokens = []
+    falling_knives = []
+    parabolic_tops = []
+    
+    for token in all_tokens:
+        change = token.get('change_24h', 0)
+        if change < MIN_24H_CHANGE:
+            falling_knives.append(token)
+        elif change > MAX_24H_CHANGE:
+            parabolic_tops.append(token)
+        else:
+            momentum_tokens.append(token)
+    
+    if falling_knives:
+        log(f"Filtered out {len(falling_knives)} tokens below {MIN_24H_CHANGE}% (falling knives — $ME lesson)")
+    if parabolic_tops:
+        log(f"Filtered out {len(parabolic_tops)} tokens above {MAX_24H_CHANGE}% (parabolic tops)")
+    
+    all_tokens = momentum_tokens
+    log(f"Tokens with acceptable momentum ({MIN_24H_CHANGE}% to {MAX_24H_CHANGE}%): {len(all_tokens)}")
+    
     # Filter by target criteria
     target_matches = [t for t in all_tokens if TARGET_MIN_MC <= t.get('market_cap', 0) <= TARGET_MAX_MC]
     other_coins = [t for t in all_tokens if t.get('market_cap', 0) > 0 and not (TARGET_MIN_MC <= t.get('market_cap', 0) <= TARGET_MAX_MC)]
@@ -604,6 +631,7 @@ def main():
     print("⚠️ DUE DILIGENCE CHECKLIST:")
     print("=" * 70)
     print(f"   ☐ Coin is {MIN_COIN_AGE_DAYS}-{MAX_COIN_AGE_DAYS} days old (sweet spot)")
+    print(f"   ☐ 24h change is {MIN_24H_CHANGE}% to {MAX_24H_CHANGE}% (not falling knife or parabolic top)")
     print("   ☐ Check GMGN for smart money signals: https://gmgn.ai")
     print("   ☐ Verify on Solscan (Solana) or BaseScan (Base)")
     print("   ☐ Liquidity locked? (DexScreener/DexTools)")
@@ -611,6 +639,12 @@ def main():
     print("   ☐ Bubble Maps for dev dumps")
     print("   ☐ CT hype: organic vs paid shills?")
     print("   ☐ Wait for dip - NEVER buy top!")
+    print("")
+    print("🛡️ RISK MANAGEMENT (Lessons from $ME -70% loss):")
+    print("   📏 Position size: 1-2% max per coin")
+    print("   🛑 Stop loss: Set at -15% from entry (don't hope it recovers)")
+    print("   ⏰ Time stop: Reconsider if no move in 48h")
+    print("   📊 Never buy deep dips (-50%+) without reversal confirmation")
     print("")
     print("💡 EXIT: 2x → 5x → 10x (not 100x greed)")
     print("🚨 Volume dies? Whales dump? GTFO!")

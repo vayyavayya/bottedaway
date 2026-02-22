@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memecoin Engine Report - 2026-02-15 10:27 UTC</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+            color: #fff;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .container { max-width: 1400px; margin: 0 auto; }
+        header {
+            text-align: center;
+            padding: 40px 20px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 20px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #00d4ff, #7b2cbf, #ff006e);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .timestamp { color: #888; font-size: 0.9em; }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: rgba(255,255,255,0.05);
+            padding: 20px;
+            border-radius: 15px;
+            border: 1px solid rgba(255,255,255,0.1);
+            text-align: center;
+        }
+        .stat-value { font-size: 2em; font-weight: bold; color: #00d4ff; }
+        .stat-label { color: #888; font-size: 0.9em; margin-top: 5px; }
+        .engines {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        .engine-pill {
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+        .pill-a { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .pill-b { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+        .pill-c { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: #000; }
+        .tokens { display: grid; gap: 20px; }
+        .token {
+            background: rgba(255,255,255,0.05);
+            border-radius: 20px;
+            padding: 25px;
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: all 0.3s;
+        }
+        .token:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.4);
+        }
+        .token-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 15px;
+        }
+        .token-title { font-size: 1.4em; font-weight: bold; }
+        .token-meta { color: #888; font-size: 0.85em; }
+        .change {
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+        .change-up { background: rgba(0,255,100,0.2); color: #00ff64; }
+        .change-down { background: rgba(255,0,0,0.2); color: #ff4444; }
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+            padding: 15px 0;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .metric { text-align: center; }
+        .metric-value { font-weight: bold; font-size: 1.1em; color: #fff; }
+        .metric-label { color: #888; font-size: 0.75em; margin-top: 3px; }
+        .engine-tags {
+            display: flex;
+            gap: 8px;
+            margin: 15px 0;
+            flex-wrap: wrap;
+        }
+        .tag {
+            padding: 6px 14px;
+            border-radius: 15px;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+        .tag-a { background: #667eea; }
+        .tag-b { background: #f5576c; }
+        .tag-c { background: #00f2fe; color: #000; }
+        .tag-none { background: rgba(255,255,255,0.1); color: #888; }
+        .contract {
+            background: rgba(0,0,0,0.3);
+            padding: 12px 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+        }
+        .contract-label { color: #888; font-size: 0.75em; margin-bottom: 5px; }
+        .contract-addr {
+            font-family: 'Courier New', monospace;
+            font-size: 0.85em;
+            color: #00d4ff;
+            word-break: break-all;
+        }
+        .links {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .btn {
+            padding: 8px 16px;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            text-decoration: none;
+            font-size: 0.85em;
+            transition: background 0.2s;
+        }
+        .btn:hover { background: rgba(255,255,255,0.2); }
+        .footer {
+            text-align: center;
+            padding: 40px 20px;
+            color: #888;
+        }
+        @media (max-width: 768px) {
+            .stats { grid-template-columns: repeat(2, 1fr); }
+            .metrics { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🚀 Memecoin Engine Report</h1>
+            <p class="timestamp">2026-02-15 10:27 UTC</p>
+        </header>
+        
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-value">9</div>
+                <div class="stat-label">Sweet Spot Tokens</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">2</div>
+                <div class="stat-label">Engine A Signals</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">8</div>
+                <div class="stat-label">Engine B Signals</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value">6</div>
+                <div class="stat-label">Engine C Signals</div>
+            </div>
+        </div>
+        
+        <div class="engines">
+            <div class="engine-pill pill-a">Engine A: 12h EMA50 Reclaim</div>
+            <div class="engine-pill pill-b">Engine B: 4h Pump→Dump→Reclaim</div>
+            <div class="engine-pill pill-c">Engine C: 1h EMA50 Hold (MC≥$300K)</div>
+        </div>
+        
+        <div class="tokens">
+
+            <div class="token">
+                <div class="token-header">
+                    <div>
+                        <div class="token-title">1. Toly The Grey ($TOLY)</div>
+                        <div class="token-meta">SOLANA • dexscreener</div>
+                    </div>
+                    <div class="change change-up">+83.5%</div>
+                </div>
+                
+                <div class="metrics">
+                    <div class="metric">
+                        <div class="metric-value">$0.00011680</div>
+                        <div class="metric-label">Price</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">$117K</div>
+                        <div class="metric-label">Market Cap</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">$542K</div>
+                        <div class="metric-label">24h Volume</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">2.10</div>
+                        <div class="metric-label">Engine Score</div>
+                    </div>
+                </div>
+                
+                <div class="engine-tags">
+                    <span class="tag tag-a">Engine A</span><span class="tag tag-b">Engine B</span>
+                </div>
+                
+                <div class="contract">
+                    <div class="contract-label">Contract Address</div>
+                    <div class="contract-addr">9ekm6h4pxZcNbdyMw5fWkEnqAStjQCSzZ3TEfZ7tpump</div>
+                </div>
+                
+                <div class="links">
+                    <a href="https://dexscreener.com/solana/9ekm6h4pxZcNbdyMw5fWkEnqAStjQCSzZ3TEfZ7tpump" target="_blank" class="btn">DexScreener</a>
+                    <a href="https://app.bubblemaps.io/solana/token/9ekm6h4pxZcNbdyMw5fWkEnqAStjQCSzZ3TEfZ7tpump" target="_blank" class="btn">Bubble Maps</a>
+                    <a href="https://solscan.io/token/9ekm6h4pxZcNbdyMw5fWkEnqAStjQCSzZ3TEfZ7tpump" target="_blank" class="btn">Solscan</a>
+                </div>
+            </div>
+
+            <div class="token">
+                <div class="token-header">
+                    <div>
+                        <div class="token-title">2. Claim The Fees ($CTF)</div>
+                        <div class="token-meta">SOLANA • dexscreener</div>
+                    </div>
+                    <div class="change change-up">+604.0%</div>
+                </div>
+                
+                <div class="metrics">
+                    <div class="metric">
+                        <div class="metric-value">$0.00031060</div>
+                        <div class="metric-label">Price</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">$311K</div>
+                        <div class="metric-label">Market Cap</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">$1120K</div>
+                        <div class="metric-label">24h Volume</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">2.00</div>
+                        <div class="metric-label">Engine Score</div>
+                    </div>
+                </div>
+                
+                <div class="engine-tags">
+                    <span class="tag tag-b">Engine B</span><span class="tag tag-c">Engine C</span>
+                </div>
+                
+                <div class="contract">
+                    <div class="contract-label">Contract Address</div>
+                    <div class="contract-addr">GuMGpj1ATXZHfBQzdPiQCu464icCGt9b2FX9YqrqBAGS</div>
+                </div>
+                
+                <div class="links">
+                    <a href="https://dexscreener.com/solana/GuMGpj1ATXZHfBQzdPiQCu464icCGt9b2FX9YqrqBAGS" target="_blank" class="btn">DexScreener</a>
+                    <a href="https://app.bubblemaps.io/solana/token/GuMGpj1ATXZHfBQzdPiQCu464icCGt9b2FX9YqrqBAGS" target="_blank" class="btn">Bubble Maps</a>
+                    <a href="https://solscan.io/token/GuMGpj1ATXZHfBQzdPiQCu464icCGt9b2FX9YqrqBAGS" target="_blank" class="btn">Solscan</a>
+                </div>
+            </div>
+
+            <div class="token">
+                <div class="token-header">
+                    <div>
+                        <div class="token-title">3. ZeroClaw ($ZEROCLAW)</div>
+                        <div class="token-meta">SOLANA • dexscreener</div>
+                    </div>
+                    <div class="change change-up">+719.0%</div>
+                </div>
+                
+                <div class="metrics">
+                    <div class="metric">
+                        <div class="metric-value">$0.00030490</div>
+                        <div class="metric-label">Price</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">$305K</div>
+                        <div class="metric-label">Market Cap</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">$536K</div>
+                        <div class="metric-label">24h Volume</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">2.00</div>
+                        <div class="metric-label">Engine Score</div>
+                    </div>
+                </div>
+                
+                <div class="engine-tags">
+                    <span class="tag tag-b">Engine B</span><span class="tag tag-c">Engine C</span>
+                </div>
+                
+                <div class="contract">
+                    <div class="contract-label">Contract Address</div>
+                    <div class="contract-addr">SVdeWmHnXsSSeU6sE7tf6x8hwBG5jYuUW141pRapump</div>
+                </div>
+                
+                <div class="links">
+                    <a href="https://dexscreener.com/solana/SVdeWmHnXsSSeU6sE7tf6x8hwBG5jYuUW141pRapump" target="_blank" class="btn">DexScreener</a>
+                    <a href="https://app.bubblemaps.io/solana/token/SVdeWmHnXsSSeU6sE7tf6x8hwBG5jYuUW141pRapump" target="_blank" class="btn">Bubble Maps</a>
+                    <a href="https://solscan.io/token/SVdeWmHnXsSSeU6sE7tf6x8hwBG5jYuUW141pRapump" target="_blank" class="btn">Solscan</a>
+                </div>
+            </div>
+
+            <div class="token">
+                <div class="token-header">
+                    <div>
+                        <div class="token-title">4. Franklin The Turtle ($Franklin)</div>
+                        <div class="token-meta">SOLANA • dexscreener</div>
+                    </div>
+                    <div class="change change-up">+90.6%</div>
+                </div>
+                
+                <div class="metrics">
+                    <div class="metric">
+                        <div class="metric-value">$0.00021810</div>
+                        <div class="metric-label">Price</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">$218K</div>
+                        <div class="metric-label">Market Cap</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">$164K</div>
+                        <div class="metric-label">24h Volume</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">2.00</div>
+                        <div class="metric-label">Engine Score</div>
+                    </div>
+                </div>
+                
+                <div class="engine-tags">
+                    <span class="tag tag-a">Engine A</span><span class="tag tag-b">Engine B</span><span class="tag tag-c">Engine C</span>
+                </div>
+                
+                <div class="contract">
+                    <div class="contract-label">Contract Address</div>
+                    <div class="contract-addr">CSrwNk6B1DwWCHRMsaoDVUfD5bBMQCJPY72ZG3Nnpump</div>
+                </div>
+                
+                <div class="links">
+                    <a href="https://dexscreener.com/solana/CSrwNk6B1DwWCHRMsaoDVUfD5bBMQCJPY72ZG3Nnpump" target="_blank" class="btn">DexScreener</a>
+                    <a href="https://app.bubblemaps.io/solana/token/CSrwNk6B1DwWCHRMsaoDVUfD5bBMQCJPY72ZG3Nnpump" target="_blank" class="btn">Bubble Maps</a>
+                    <a href="https://solscan.io/token/CSrwNk6B1DwWCHRMsaoDVUfD5bBMQCJPY72ZG3Nnpump" target="_blank" class="btn">Solscan</a>
+                </div>
+            </div>
+
+            <div class="token">
+                <div class="token-header">
+                    <div>
+                        <div class="token-title">5. Wheelchair Fish ($Sue)</div>
+                        <div class="token-meta">SOLANA • dexscreener</div>
+                    </div>
+                    <div class="change change-up">+183.0%</div>
+                </div>
+                
+                <div class="metrics">
+                    <div class="metric">
+                        <div class="metric-value">$0.00010460</div>
+                        <div class="metric-label">Price</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">$105K</div>
+                        <div class="metric-label">Market Cap</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">$1307K</div>
+                        <div class="metric-label">24h Volume</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">1.90</div>
+                        <div class="metric-label">Engine Score</div>
+                    </div>
+                </div>
+                
+                <div class="engine-tags">
+                    <span class="tag tag-b">Engine B</span><span class="tag tag-c">Engine C</span>
+                </div>
+                
+                <div class="contract">
+                    <div class="contract-label">Contract Address</div>
+                    <div class="contract-addr">367nFQiNemxPddfQmKmGSyRQwumbGaxmNefVkvUEpump</div>
+                </div>
+                
+                <div class="links">
+                    <a href="https://dexscreener.com/solana/367nFQiNemxPddfQmKmGSyRQwumbGaxmNefVkvUEpump" target="_blank" class="btn">DexScreener</a>
+                    <a href="https://app.bubblemaps.io/solana/token/367nFQiNemxPddfQmKmGSyRQwumbGaxmNefVkvUEpump" target="_blank" class="btn">Bubble Maps</a>
+                    <a href="https://solscan.io/token/367nFQiNemxPddfQmKmGSyRQwumbGaxmNefVkvUEpump" target="_blank" class="btn">Solscan</a>
+                </div>
+            </div>
+
+            <div class="token">
+                <div class="token-header">
+                    <div>
+                        <div class="token-title">6. ママン ($Maman)</div>
+                        <div class="token-meta">SOLANA • dexscreener</div>
+                    </div>
+                    <div class="change change-up">+700.0%</div>
+                </div>
+                
+                <div class="metrics">
+                    <div class="metric">
+                        <div class="metric-value">$0.00028890</div>
+                        <div class="metric-label">Price</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">$289K</div>
+                        <div class="metric-label">Market Cap</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">$1830K</div>
+                        <div class="metric-label">24h Volume</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">1.80</div>
+                        <div class="metric-label">Engine Score</div>
+                    </div>
+                </div>
+                
+                <div class="engine-tags">
+                    <span class="tag tag-b">Engine B</span><span class="tag tag-c">Engine C</span>
+                </div>
+                
+                <div class="contract">
+                    <div class="contract-label">Contract Address</div>
+                    <div class="contract-addr">G8fSP7xigLVxA5qyFiTQg7cs6jPsqYDWwqzJVJ6ppump</div>
+                </div>
+                
+                <div class="links">
+                    <a href="https://dexscreener.com/solana/G8fSP7xigLVxA5qyFiTQg7cs6jPsqYDWwqzJVJ6ppump" target="_blank" class="btn">DexScreener</a>
+                    <a href="https://app.bubblemaps.io/solana/token/G8fSP7xigLVxA5qyFiTQg7cs6jPsqYDWwqzJVJ6ppump" target="_blank" class="btn">Bubble Maps</a>
+                    <a href="https://solscan.io/token/G8fSP7xigLVxA5qyFiTQg7cs6jPsqYDWwqzJVJ6ppump" target="_blank" class="btn">Solscan</a>
+                </div>
+            </div>
+
+            <div class="token">
+                <div class="token-header">
+                    <div>
+                        <div class="token-title">7. Flium ($Flium)</div>
+                        <div class="token-meta">SOLANA • dexscreener</div>
+                    </div>
+                    <div class="change change-up">+274.0%</div>
+                </div>
+                
+                <div class="metrics">
+                    <div class="metric">
+                        <div class="metric-value">$0.00015070</div>
+                        <div class="metric-label">Price</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">$151K</div>
+                        <div class="metric-label">Market Cap</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">$186K</div>
+                        <div class="metric-label">24h Volume</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">1.60</div>
+                        <div class="metric-label">Engine Score</div>
+                    </div>
+                </div>
+                
+                <div class="engine-tags">
+                    <span class="tag tag-b">Engine B</span><span class="tag tag-c">Engine C</span>
+                </div>
+                
+                <div class="contract">
+                    <div class="contract-label">Contract Address</div>
+                    <div class="contract-addr">7AdrLapGgRjhPWxtXnu2qtuFdMF8S5to4Q1b8j5jpump</div>
+                </div>
+                
+                <div class="links">
+                    <a href="https://dexscreener.com/solana/7AdrLapGgRjhPWxtXnu2qtuFdMF8S5to4Q1b8j5jpump" target="_blank" class="btn">DexScreener</a>
+                    <a href="https://app.bubblemaps.io/solana/token/7AdrLapGgRjhPWxtXnu2qtuFdMF8S5to4Q1b8j5jpump" target="_blank" class="btn">Bubble Maps</a>
+                    <a href="https://solscan.io/token/7AdrLapGgRjhPWxtXnu2qtuFdMF8S5to4Q1b8j5jpump" target="_blank" class="btn">Solscan</a>
+                </div>
+            </div>
+
+            <div class="token">
+                <div class="token-header">
+                    <div>
+                        <div class="token-title">8. Official Lizard Coin ($LIZARD)</div>
+                        <div class="token-meta">SOLANA • dexscreener</div>
+                    </div>
+                    <div class="change change-down">-37.6%</div>
+                </div>
+                
+                <div class="metrics">
+                    <div class="metric">
+                        <div class="metric-value">$0.00011850</div>
+                        <div class="metric-label">Price</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">$119K</div>
+                        <div class="metric-label">Market Cap</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">$266K</div>
+                        <div class="metric-label">24h Volume</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">0.60</div>
+                        <div class="metric-label">Engine Score</div>
+                    </div>
+                </div>
+                
+                <div class="engine-tags">
+                    <span class="tag tag-b">Engine B</span>
+                </div>
+                
+                <div class="contract">
+                    <div class="contract-label">Contract Address</div>
+                    <div class="contract-addr">5T17aqgJ8cM39SNuVBu2LK2cq5MWUpZxcQnnuwNjpump</div>
+                </div>
+                
+                <div class="links">
+                    <a href="https://dexscreener.com/solana/5T17aqgJ8cM39SNuVBu2LK2cq5MWUpZxcQnnuwNjpump" target="_blank" class="btn">DexScreener</a>
+                    <a href="https://app.bubblemaps.io/solana/token/5T17aqgJ8cM39SNuVBu2LK2cq5MWUpZxcQnnuwNjpump" target="_blank" class="btn">Bubble Maps</a>
+                    <a href="https://solscan.io/token/5T17aqgJ8cM39SNuVBu2LK2cq5MWUpZxcQnnuwNjpump" target="_blank" class="btn">Solscan</a>
+                </div>
+            </div>
+
+            <div class="token">
+                <div class="token-header">
+                    <div>
+                        <div class="token-title">9. soluna ($soluna)</div>
+                        <div class="token-meta">SOLANA • dexscreener</div>
+                    </div>
+                    <div class="change change-down">-17.1%</div>
+                </div>
+                
+                <div class="metrics">
+                    <div class="metric">
+                        <div class="metric-value">$0.00017010</div>
+                        <div class="metric-label">Price</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">$170K</div>
+                        <div class="metric-label">Market Cap</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">$156K</div>
+                        <div class="metric-label">24h Volume</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">0.30</div>
+                        <div class="metric-label">Engine Score</div>
+                    </div>
+                </div>
+                
+                <div class="engine-tags">
+                    <span class="tag tag-none">No Engine Signals</span>
+                </div>
+                
+                <div class="contract">
+                    <div class="contract-label">Contract Address</div>
+                    <div class="contract-addr">2qT8JVotQ2C1gKbqpuqNatkpSBWxiKHbXkCyTqH9pump</div>
+                </div>
+                
+                <div class="links">
+                    <a href="https://dexscreener.com/solana/2qT8JVotQ2C1gKbqpuqNatkpSBWxiKHbXkCyTqH9pump" target="_blank" class="btn">DexScreener</a>
+                    <a href="https://app.bubblemaps.io/solana/token/2qT8JVotQ2C1gKbqpuqNatkpSBWxiKHbXkCyTqH9pump" target="_blank" class="btn">Bubble Maps</a>
+                    <a href="https://solscan.io/token/2qT8JVotQ2C1gKbqpuqNatkpSBWxiKHbXkCyTqH9pump" target="_blank" class="btn">Solscan</a>
+                </div>
+            </div>
+
+        </div>
+        
+        <div class="footer">
+            <p>⚠️ Trading Rules: Target MC $100K-$500K | Wait for dip | Never buy top</p>
+            <p>Exit: 2x → 5x → 10x | Volume dies? GTFO!</p>
+            <p style="margin-top: 15px; font-size: 0.85em;">
+                Generated by PolyClaw Memecoin Scanner • Engines: A/B/C Pattern Detection
+            </p>
+        </div>
+    </div>
+</body>
+</html>

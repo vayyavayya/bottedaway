@@ -1,0 +1,53 @@
+{
+  "watched_tokens": [],
+  "whale_wallets": [
+    {
+      "address": "4sAUSQFdvWRBxR8UoLBYbw8CcXuwXWxnN8pXa4mtm5nU",
+      "chain": "solana",
+      "label": "whale_1",
+      "added": "2026-02-21",
+      "tags": ["trader"]
+    },
+    {
+      "address": "4pcfEWH1s3qsLUYMvRquH2hPcpMokMHDLShNyukvxb5e",
+      "chain": "solana",
+      "label": "whale_2",
+      "added": "2026-02-21",
+      "tags": ["trader"]
+    },
+    {
+      "address": "6rq8QHA89oeaPix1jUP7raHJ9HwNejUVCzwdwmpqcMhe",
+      "chain": "solana",
+      "label": "whale_3",
+      "added": "2026-02-21",
+      "tags": ["trader"]
+    },
+    {
+      "address": "2gjDmkFTsByCebzLfVnrksH7AhghCE1t6u2giw9gAdBm",
+      "chain": "solana",
+      "label": "whale_4",
+      "added": "2026-02-21",
+      "tags": ["trader"]
+    },
+    {
+      "address": "6u9jyRaT1UEWeZR7CLe9CZ5NgX96n1Txmu9Thb9nHmy5",
+      "chain": "solana",
+      "label": "whale_5",
+      "added": "2026-02-21",
+      "tags": ["trader"]
+    }
+  ],
+  "alert_thresholds": {
+    "min_transaction_usd": 10000,
+    "convergence_min_whales": 3,
+    "divergence_threshold": 0.05,
+    "exchange_flow_threshold": 500000
+  },
+  "sources": {
+    "nansen": true,
+    "cielo": true,
+    "base_signal": true,
+    "birdeye": true
+  },
+  "alert_channels": ["telegram"]
+}
