@@ -37,15 +37,11 @@
 - **GitHub backup** (bottedaway repo)
 - **Daily diary** (HTML format)
 
-### Cron Jobs
-- `memecoin-scanner-720min` — Every 12h (data collection)
-- `whale-tracker-daily-9am` — Daily 9am (whale monitoring)
-- `smart-money-monitor-2h` — Every 2h (convergence signals)
-- `ema50-crossing-alerts-4h` — Every 4h (EMA50 alerts)
-- `moltbook-learning-24h` — Daily midnight (intelligence)
-- `git-auto-backup-2h` — Every 2h (disaster recovery)
-- `diary-telegram-update` — Daily 9am (user notification)
-- `memory-grooming-nightly` — Daily 3am (cleanup)
+### Cron Jobs (Active via `openclaw cron`)
+- `memecoin-scanner-12h` — Every 12h (data collection)
+- `whale-tracker-daily-9am` — Daily 9am (5-wallet whale monitoring)
+- `git-backup-2h` — Every 2h (disaster recovery)
+- `watchlist-maintenance-daily` — Daily 7am (cleanup stale entries)
 
 ---
 
@@ -100,4 +96,4 @@
 
 ---
 
-*Last updated: February 17, 2026*
+*Last updated: February 22, 2026*
