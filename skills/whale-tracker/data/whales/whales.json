@@ -1,4 +1,45 @@
 {
   "network": "solana",
-  "watchlist": []
+  "watchlist": [
+    {
+      "address": "4sAUSQFdvWRBxR8UoLBYbw8CcXuwXWxnN8pXa4mtm5nU",
+      "label": "Whale 01",
+      "added_at": "2026-02-22",
+      "source": "manual",
+      "confidence": 0.85,
+      "notes": "Added via user request"
+    },
+    {
+      "address": "4pcfEWH1s3qsLUYMvRquH2hPcpMokMHDLShNyukvxb5e",
+      "label": "Whale 02",
+      "added_at": "2026-02-22",
+      "source": "manual",
+      "confidence": 0.85,
+      "notes": "Added via user request"
+    },
+    {
+      "address": "6rq8QHA89oeaPix1jUP7raHJ9HwNejUVCzwdwmpqcMhe",
+      "label": "Whale 03",
+      "added_at": "2026-02-22",
+      "source": "manual",
+      "confidence": 0.85,
+      "notes": "Added via user request"
+    },
+    {
+      "address": "2gjDmkFTsByCebzLfVnrksH7AhghCE1t6u2giw9gAdBm",
+      "label": "Whale 04",
+      "added_at": "2026-02-22",
+      "source": "manual",
+      "confidence": 0.85,
+      "notes": "Added via user request"
+    },
+    {
+      "address": "6u9jyRaT1UEWeZR7CLe9CZ5NgX96n1Txmu9Thb9nHmy5",
+      "label": "Whale 05",
+      "added_at": "2026-02-22",
+      "source": "manual",
+      "confidence": 0.85,
+      "notes": "Added via user request"
+    }
+  ]
 }
