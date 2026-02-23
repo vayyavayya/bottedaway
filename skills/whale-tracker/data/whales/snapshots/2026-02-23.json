@@ -1,0 +1,10 @@
+{
+  "date": "2026-02-23",
+  "wallets_scanned": 5,
+  "wallets_successful": 0,
+  "tokens_found": 0,
+  "status": "API_BLOCKED",
+  "tokens": [],
+  "issues": ["Missing HELIUS_API_KEY or SOLSCAN_API_KEY"],
+  "recommendation": "Configure API key to enable wallet transaction fetching"
+}
