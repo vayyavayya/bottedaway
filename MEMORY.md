@@ -44,6 +44,11 @@
 - `git-backup-2h` — Every 2h (disaster recovery)
 - `watchlist-maintenance-daily` — Daily 7am (cleanup stale entries)
 
+### Current Issues (Feb 24, 2026)
+- **Whale Tracker API blocked** — Needs `HELIUS_API_KEY` (403 error)
+- **Watchlist empty** — No tokens being monitored by pattern engines
+- **BLOB candidate** — Recurring appearance, -21% dip buy opportunity
+
 ---
 
 ## Learnings & Patterns
@@ -114,4 +119,4 @@
 
 ---
 
-*Last updated: February 23, 2026*
+*Last updated: February 24, 2026*

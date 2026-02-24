@@ -8,6 +8,7 @@ Navigation map for agent orientation. Read this FIRST every session.
 
 | Date | File | Summary |
 |------|------|---------|
+| 2026-02-24 | [daily/2026-02-24.md](daily/2026-02-24.md) | Morning scan: 0 sweet spot tokens, GMGN down, full token rotation |
 | 2026-02-23 | [daily/2026-02-23.md](daily/2026-02-23.md) | Scanner runs (AM/PM), whale tracker API issue, 3 sweet spot tokens |
 | 2026-02-22 | [daily/2026-02-22.md](daily/2026-02-22.md) | Discord migration complete, Mission Control dashboard built |
 | 2026-02-21 | [daily/2026-02-21.md](daily/2026-02-21.md) | Repo privatized, Discord bot testing |
