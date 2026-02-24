@@ -8,8 +8,13 @@ Navigation map for agent orientation. Read this FIRST every session.
 
 | Date | File | Summary |
 |------|------|---------|
-| 2026-02-15 | [daily/2026-02-15.md](daily/2026-02-15.md) | Fed trade loss (-93%), risk management overhaul, multi-agent system built |
-| 2026-02-13 | [daily/2026-02-13.md](daily/2026-02-13.md) | First day online, 9 skills created, 3-engine scanner built |
+| 2026-02-23 | [daily/2026-02-23.md](daily/2026-02-23.md) | Scanner runs (AM/PM), whale tracker API issue, 3 sweet spot tokens |
+| 2026-02-22 | [daily/2026-02-22.md](daily/2026-02-22.md) | Discord migration complete, Mission Control dashboard built |
+| 2026-02-21 | [daily/2026-02-21.md](daily/2026-02-21.md) | Repo privatized, Discord bot testing |
+| 2026-02-20 | [daily/2026-02-20.md](daily/2026-02-20.md) | Cost optimization complete, cron jobs on free models |
+| 2026-02-17 | [daily/2026-02-17.md](daily/2026-02-17.md) | Multi-agent fixes, 6 skills created |
+| 2026-02-16 | [daily/2026-02-16.md](daily/2026-02-16.md) | Skills audit, Docker infrastructure |
+| 2026-02-15 | [archive/2026-02-15.md](archive/2026-02-15.md) | Fed trade loss (-93%), risk management overhaul |
 
 > **Rule:** Keep only last 7 days in `daily/`. Archive older to `archive/`.
 
@@ -19,18 +24,18 @@ Navigation map for agent orientation. Read this FIRST every session.
 
 | Project | Status | File |
 |---------|--------|------|
+| Mission Control | 🟢 Active | NextJS dashboard for OpenClaw operations |
+| Whale Tracker | 🟢 Active | 24h whale monitoring, auto-scoring |
+| Memecoin Scanner v4 | 🟢 Active | 3-engine pattern detection |
+| Discord Notifications | 🟢 Active | 5 channels, Clawsecondbot |
+| Git Auto-Backup | 🟢 Active | Every 2h to private repo |
 | Fed Trade Post-Mortem | ✅ Complete | [projects/fed-trade-postmortem.md](projects/fed-trade-postmortem.md) |
-| Multi-Agent System | 🟢 Active | Supabase backend, agent coordination |
-| Memecoin Scanner v4 | 🟢 Active | See scanner architecture in code |
-| Trading Rules Integration | 🟢 Complete | Rules hardcoded in scanner |
-| Multi-Source Data Feed | 🟢 Active | CoinGecko + Birdeye + DexScreener + GMGN |
 
 ---
 
 ## 📚 Reference Docs
 
 - **[reference/voice-guide.md](reference/voice-guide.md)** — Writing style and voice patterns
-- **[reference/api-reference.md](reference/api-reference.md)** — API endpoints and auth
 - **[reference/trading-rules.md](reference/trading-rules.md)** — Memecoin trading rules
 - **[reference/scanner-workflow.md](reference/scanner-workflow.md)** — How the scanner operates
 
@@ -55,11 +60,12 @@ Navigation map for agent orientation. Read this FIRST every session.
 
 ## ⚡ Quick Stats
 
-- **Skills Created:** 9
-- **Cron Jobs:** 4 active
+- **Skills Created:** 10+
+- **Cron Jobs:** 10+ active
 - **Data Sources:** 6 (CoinGecko, Birdeye, DexScreener, GMGN, Solscan, BaseScan)
-- **Last System Update:** 2026-02-15
+- **Discord Channels:** 5
+- **Last System Update:** 2026-02-23
 
 ---
 
-*This INDEX is updated automatically. Last refreshed: 2026-02-15*
+*This INDEX is updated automatically. Last refreshed: 2026-02-24*
