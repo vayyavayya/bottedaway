@@ -50,6 +50,10 @@
 - **GMGN down** — DNS resolution failure (service may be deprecated)
 - **Cron INDEX edit** — Whitespace mismatch in auto-update script
 
+### OpenClaw Update (Feb 24, 2026)
+- **Updated to:** 2026.2.23
+- **New features:** Moonshot/Kimi vision + video, compaction overflow recovery, exec hardening, secret redaction
+
 ### Morning Scan Results (Feb 24, 8:19 AM)
 - **Sweet spot tokens:** 0 (complete market rotation)
 - Yesterday's 6 tokens (CLAWBOOK, CLAW, BLOB, XINGXING, GIZMO, AURA) all exited $100K-$500K range
@@ -125,4 +129,4 @@
 
 ---
 
-*Last updated: February 24, 2026 (9:31 AM)*
+*Last updated: February 24, 2026 (5:20 PM)*
