@@ -44,8 +44,8 @@
 - `git-backup-2h` — Every 2h (disaster recovery)
 - `watchlist-maintenance-daily` — Daily 7am (cleanup stale entries)
 
-### Current Issues (Feb 24, 2026)
-- **Whale Tracker API blocked** — Needs `HELIUS_API_KEY` (403 error)
+### Current Issues (Feb 25, 2026)
+- **Whale Tracker API fixed** — ✅ `HELIUS_API_KEY` configured
 - **Watchlist empty** — No tokens being monitored by pattern engines
 - **GMGN down** — DNS resolution failure (service may be deprecated)
 - **Cron INDEX edit** — Whitespace mismatch in auto-update script
