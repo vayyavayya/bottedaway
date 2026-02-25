@@ -45,7 +45,7 @@
 - `watchlist-maintenance-daily` — Daily 7am (cleanup stale entries)
 
 ### Current Issues (Feb 25, 2026)
-- **Whale Tracker API fixed** — ✅ `HELIUS_API_KEY` configured
+- **Whale Tracker needs Helius routing** — API key configured but skill still only uses Solscan (failing with SSL/DNS errors)
 - **Watchlist empty** — No tokens being monitored by pattern engines
 - **GMGN down** — DNS resolution failure (service may be deprecated)
 - **Cron INDEX edit** — Whitespace mismatch in auto-update script
