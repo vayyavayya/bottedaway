@@ -182,29 +182,44 @@ class WhaleTracker:
         }))
     
     async def fetch_wallet_transactions(self, wallet: Wallet) -> List[Dict]:
-        """Fetch recent transactions for a wallet"""
-        # Use Helius or Solscan API
-        api_key = os.getenv("HELIUS_API_KEY") or os.getenv("SOLSCAN_API_KEY")
+        """Fetch recent transactions for a wallet - Helius primary, Solscan fallback"""
+        helius_key = os.getenv("HELIUS_API_KEY")
         
-        if api_key and os.getenv("HELIUS_API_KEY"):
-            url = f"https://api.helius.xyz/v0/addresses/{wallet.address}/transactions"
-            params = {"api-key": api_key, "limit": 100}
-        else:
-            # Fallback to public Solscan API (rate limited)
+        # PRIMARY: Try Helius API first
+        if helius_key:
+            try:
+                url = f"https://api.helius.xyz/v0/addresses/{wallet.address}/transactions"
+                params = {"api-key": helius_key, "limit": 100}
+                
+                async with self.session.get(url, params=params) as resp:
+                    if resp.status == 200:
+                        data = await resp.json()
+                        tx_list = data if isinstance(data, list) else data.get("data", [])
+                        logger.info(f"  Helius OK for {wallet.address[:8]}... ({len(tx_list)} txs)")
+                        return tx_list
+                    else:
+                        logger.warning(f"Helius error {resp.status} for {wallet.address[:8]}...")
+            except Exception as e:
+                logger.warning(f"Helius failed for {wallet.address[:8]}...: {e}")
+        
+        # FALLBACK: Try Solscan public API
+        logger.info(f"  Falling back to Solscan for {wallet.address[:8]}...")
+        try:
             url = f"https://api.solscan.io/account/transactions"
             params = {"address": wallet.address, "limit": 50}
-        
-        try:
+            
             async with self.session.get(url, params=params) as resp:
                 if resp.status == 200:
                     data = await resp.json()
-                    return data if isinstance(data, list) else data.get("data", [])
+                    tx_list = data if isinstance(data, list) else data.get("data", [])
+                    logger.info(f"  Solscan OK for {wallet.address[:8]}... ({len(tx_list)} txs)")
+                    return tx_list
                 else:
-                    logger.warning(f"API error for {wallet.address[:8]}: {resp.status}")
-                    return []
+                    logger.error(f"Solscan error {resp.status} for {wallet.address[:8]}...")
         except Exception as e:
-            logger.error(f"Fetch error for {wallet.address[:8]}: {e}")
-            return []
+            logger.error(f"Solscan fallback failed for {wallet.address[:8]}...: {e}")
+        
+        return []
     
     def extract_swap_events(self, txs: List[Dict], wallet: Wallet) -> List[TokenBuy]:
         """Extract token swap/buy events from transactions"""
