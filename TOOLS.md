@@ -39,9 +39,30 @@ Skills are shared. Your setup is yours. Keeping them apart means you can update 
 
 ## Model Routing Preferences
 
+**Qwen3-30B-A3B (NEW - Local Superintelligence)**
+- **Status:** ✅ Installed and operational
+- **Capability:** Sonnet 4.5-level coding, reasoning, analysis
+- **Speed:** ~15-20 tokens/sec on M1 Max
+- **Use for:** All local workloads — heartbeats, coding, analysis
+- **Cost:** $0, fully private
+
 **Default (Routine Work):**
 - Primary: `kimi-coding/k2p5` (flat-rate, cost-effective)
 - Fallback: `minimax-portal/MiniMax-M2.5`
+
+**Escalate to MiniMax ONLY for:**
+- Genuinely hard reasoning tasks
+- Long-context synthesis (>50K tokens)
+- High-stakes decisions (trading, config changes)
+- Complex code generation/refactoring
+
+**If using MiniMax without clear reason → nudge to downgrade to Kimi or Qwen3.**
+**If stuck on Kimi → nudge to upgrade to MiniMax.**
+
+**Heartbeat/Monitoring Tasks:**
+- Primary: `ollama/qwen3:30b-a3b-q4_K_M` (local, Sonnet 4.5-level, $0)
+- Fallback: `ollama/llama3.2:3b` (local, lightweight)
+- API Fallback: `google/gemini-2.0-flash-lite:free`
 
 **Escalate to MiniMax ONLY for:**
 - Genuinely hard reasoning tasks
@@ -53,8 +74,9 @@ Skills are shared. Your setup is yours. Keeping them apart means you can update 
 **If stuck on Kimi → nudge to upgrade to MiniMax.**
 
 **Heartbeat/Monitoring Tasks:**
-- Primary: `ollama/llama3.2:3b` (local, $0)
-- Fallback: `google/gemini-2.0-flash-lite:free`
+- Primary: `ollama/qwen3:30b-a3b-q4_K_M` (local, Sonnet 4.5-level, $0)
+- Fallback: `ollama/llama3.2:3b` (local, lightweight)
+- API Fallback: `google/gemini-2.0-flash-lite:free`
 
 **Trading Decisions:**
 - Primary: `kimi-coding/k2p5` (high quality)

@@ -107,11 +107,23 @@ Posted to @whalesarebitches:
 ## Environment Variables
 
 ```bash
+# PRIMARY (Required): Helius API for reliable Solana data
+HELIUS_API_KEY=your_helius_key
+
+# OPTIONAL: Telegram for alerts
 WHALE_TELEGRAM_BOT_TOKEN=your_bot_token
 WHALE_TELEGRAM_CHANNEL=@whalesarebitches
-SOLSCAN_API_KEY=optional_for_rate_limits
-HELIUS_API_KEY=optional_for_enhanced_data
+
+# DEPRECATED: Solscan fallback (unreliable, DNS issues)
+# SOLSCAN_API_KEY=optional
 ```
+
+## API Priority
+
+1. **Helius (Primary)** - Fast, reliable, enhanced transaction data
+2. **Solscan (Fallback)** - Public API, rate-limited, often unavailable
+
+**Note:** Solscan has been experiencing DNS resolution failures. Helius is now the **required** default for reliable operation.
 
 ## Scripts
 

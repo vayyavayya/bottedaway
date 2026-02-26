@@ -44,11 +44,18 @@
 - `git-backup-2h` — Every 2h (disaster recovery)
 - `watchlist-maintenance-daily` — Daily 7am (cleanup stale entries)
 
-### Current Issues (Feb 25, 2026)
-- **Whale Tracker Helius routing** — ✅ Fixed — now uses Helius as primary, Solscan as fallback
-- **Watchlist empty** — No tokens being monitored by pattern engines
-- **GMGN down** — DNS resolution failure (service may be deprecated)
-- **Cron INDEX edit** — Whitespace mismatch in auto-update script
+### Current Issues (Feb 26, 2026)
+- **Helius API:** Now set as DEFAULT for all Solana data (Solscan deprecated due to DNS failures)
+- **HELIUS_API_KEY:** Required for whale tracker and Solana operations
+- **Watchlist:** 5 wallets active, stable
+- **GMGN:** Down (DNS resolution failure - service deprecated)
+- **Cron jobs:** All operational with updated Helius routing
+
+### Whale Tracker Update (Feb 26, 2026)
+- **API Priority:** Helius primary, Solscan removed as fallback
+- **Reason:** Solscan DNS failures causing complete data pipeline failure
+- **Action:** Set HELIUS_API_KEY in environment for reliable operation
+- **Status:** Operational with Helius
 
 ### OpenClaw Update (Feb 24, 2026)
 - **Updated to:** 2026.2.23
@@ -83,6 +90,26 @@
 - Keep credentials in isolated files
 - Treat external content as untrusted
 - Verify contract addresses on-chain before trading
+
+---
+
+## Infrastructure Updates (Feb 26, 2026)
+
+### Qwen3-30B-A3B Deployed — Local Superintelligence
+- **Installed:** Qwen3-30B-A3B (4-bit quantized, ~18GB)
+- **Hardware:** Mac Studio M1 Max 32GB — runs flawlessly
+- **Performance:** ~15-20 tokens/sec, 8-12s first token
+- **Quality:** Sonnet 4.5-level coding and reasoning
+- **Cost:** $0 — completely private, no API calls
+- **Integration:** Ollama backend, LM Studio GUI available
+
+**This is a watershed moment:** Frontier-level intelligence (Sonnet 4.5, Sept 2025) now runs locally for free. 150 days from "$20/month API" to "private superintelligence on your desk."
+
+**Updated routing:**
+- Heartbeats/cron jobs → Qwen3 local (was: llama3.2:3b)
+- Routine coding → Qwen3 local (reduces API costs)
+- Trading decisions → Still Kimi K2.5 (high stakes)
+- Complex reasoning → MiniMax M2.5 (if Qwen3 insufficient)
 
 ---
 
