@@ -43,6 +43,7 @@
 - `whale-tracker-daily-9am` — Daily 9am (5-wallet whale monitoring)
 - `git-backup-2h` — Every 2h (disaster recovery)
 - `watchlist-maintenance-daily` — Daily 7am (cleanup stale entries)
+- `punch-price-monitor` — Every 1h (PUNCH token price alerts)
 
 ### Current Issues (Feb 26, 2026)
 - **Helius API:** Now set as DEFAULT for all Solana data (Solscan deprecated due to DNS failures)
