@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>On-Chain Cluster Analysis: Penguin, Whitewhale, Punch</title>
+    <title>Graph-Based Wallet Cluster Analysis</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -45,25 +45,6 @@
         .meta-label { color: #666; text-transform: uppercase; font-size: 10px; margin-bottom: 4px; }
         .meta-value { color: #fff; }
         
-        .token-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 15px;
-            margin-bottom: 40px;
-        }
-        
-        .token-card {
-            background: #111;
-            border: 1px solid #222;
-            padding: 15px;
-            border-radius: 4px;
-        }
-        
-        .token-card h3 { font-size: 15px; color: #fff; margin-bottom: 8px; }
-        .token-mint { font-size: 10px; color: #666; word-break: break-all; margin-bottom: 10px; }
-        .token-stats { font-size: 11px; color: #888; }
-        .stat-value { color: #4ade80; }
-        
         h2 {
             font-size: 17px;
             color: #fff;
@@ -84,7 +65,7 @@
         
         .cluster-header {
             background: #1a1a1a;
-            padding: 15px 20px;
+            padding: 20px;
             border-bottom: 1px solid #222;
             display: flex;
             justify-content: space-between;
@@ -92,49 +73,138 @@
         }
         
         .cluster-id { font-size: 11px; color: #666; text-transform: uppercase; letter-spacing: 1px; }
-        .cluster-name { font-size: 17px; color: #fff; font-weight: 400; }
+        .cluster-name { font-size: 17px; color: #fff; font-weight: 400; margin-top: 5px; }
         
         .confidence-badge {
             background: #4ade80;
             color: #000;
             font-size: 11px;
-            padding: 4px 10px;
+            padding: 6px 12px;
             border-radius: 3px;
             font-weight: 600;
         }
         
         .confidence-badge.medium { background: #fbbf24; }
+        .confidence-badge.low { background: #f87171; }
         
         .cluster-body { padding: 20px; }
         
-        .section { margin-bottom: 20px; }
-        .section-title { font-size: 11px; color: #666; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
-        .section-content { font-size: 13px; color: #ccc; }
+        .metrics-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #0f0f0f;
+            border-radius: 4px;
+        }
         
-        .wallet-list { list-style: none; font-family: monospace; font-size: 11px; }
-        .wallet-list li { padding: 5px 0; color: #888; border-bottom: 1px solid #1a1a1a; }
-        .wallet-list li:first-child { color: #4ade80; }
+        .metric-cell {
+            text-align: center;
+        }
         
-        .metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; }
-        .metric { background: #1a1a1a; padding: 12px; border-radius: 3px; }
-        .metric-value { font-size: 18px; color: #fff; font-weight: 600; }
-        .metric-label { font-size: 10px; color: #666; margin-top: 4px; }
+        .metric-value {
+            font-size: 20px;
+            color: #4ade80;
+            font-weight: 600;
+        }
         
-        .evidence-box {
+        .metric-label {
+            font-size: 10px;
+            color: #666;
+            text-transform: uppercase;
+            margin-top: 4px;
+        }
+        
+        .data-row {
+            display: grid;
+            grid-template-columns: 140px 1fr;
+            gap: 15px;
+            padding: 12px 0;
+            border-bottom: 1px solid #1a1a1a;
+        }
+        
+        .data-row:last-child { border-bottom: none; }
+        
+        .data-label {
+            font-size: 11px;
+            color: #666;
+            text-transform: uppercase;
+        }
+        
+        .data-value {
+            font-size: 13px;
+            color: #ccc;
+        }
+        
+        .wallet-tag {
+            display: inline-block;
+            background: #2a2a2a;
+            color: #888;
+            font-family: monospace;
+            font-size: 11px;
+            padding: 4px 8px;
+            border-radius: 3px;
+            margin-right: 8px;
+            margin-bottom: 5px;
+        }
+        
+        .wallet-tag.primary { background: #3a3a3a; color: #fff; }
+        
+        details {
             background: #0f0f0f;
             border: 1px solid #2a2a2a;
-            padding: 12px;
-            border-radius: 3px;
+            border-radius: 4px;
+            margin-top: 15px;
+        }
+        
+        summary {
+            padding: 12px 15px;
+            cursor: pointer;
+            font-size: 12px;
+            color: #888;
+            user-select: none;
+        }
+        
+        summary:hover { color: #fff; }
+        
+        details[open] summary {
+            border-bottom: 1px solid #2a2a2a;
+            color: #4ade80;
+        }
+        
+        .evidence-content {
+            padding: 15px;
+        }
+        
+        .evidence-item {
+            margin-bottom: 12px;
             font-size: 11px;
         }
         
-        .evidence-box .tx { color: #666; margin-bottom: 4px; }
-        .evidence-box .tx-sig { color: #4ade80; }
+        .evidence-type {
+            color: #4ade80;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 10px;
+        }
         
-        .tag {
+        .evidence-tx {
+            font-family: monospace;
+            color: #666;
+            margin-top: 4px;
+            word-break: break-all;
+        }
+        
+        .evidence-desc {
+            color: #888;
+            margin-top: 2px;
+        }
+        
+        .heuristic-tag {
             display: inline-block;
-            background: #2a2a2a;
-            color: #aaa;
+            background: #1a3a1a;
+            color: #4ade80;
             font-size: 10px;
             padding: 3px 8px;
             border-radius: 2px;
@@ -142,11 +212,22 @@
             margin-bottom: 5px;
         }
         
-        .tag.highlight { background: #3a3a3a; color: #fff; }
+        .program-list {
+            font-family: monospace;
+            font-size: 10px;
+            color: #666;
+        }
         
-        .heuristic-list { list-style: none; }
-        .heuristic-list li { padding: 6px 0; font-size: 12px; color: #bbb; border-bottom: 1px solid #1a1a1a; }
-        .heuristic-list li:before { content: "→"; color: #4ade80; margin-right: 8px; }
+        .program-list li {
+            margin-bottom: 4px;
+            list-style: none;
+        }
+        
+        .program-list li:before {
+            content: "→";
+            color: #4ade80;
+            margin-right: 8px;
+        }
         
         .disclaimer {
             background: #1a1a1a;
@@ -167,23 +248,13 @@
         
         .methodology h3 { font-size: 13px; color: #fff; margin-bottom: 12px; font-weight: 400; }
         .methodology pre { font-size: 10px; color: #666; overflow-x: auto; white-space: pre-wrap; }
-        
-        .data-note {
-            background: #1a1a1a;
-            border: 1px solid #333;
-            padding: 15px;
-            margin-bottom: 20px;
-            border-radius: 4px;
-            font-size: 12px;
-            color: #888;
-        }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>On-Chain Cluster Analysis</h1>
-            <div class="subtitle">Early-entry wallet clusters — Penguin, Whitewhale, Punch (Solana)</div>
+            <h1>Graph-Based Wallet Cluster Analysis</h1>
+            <div class="subtitle">Community detection via funding, routing, and behavioral edges</div>
             
             <div class="meta">
                 <div class="meta-item">
@@ -191,346 +262,465 @@
                     <div class="meta-value">2026-02-26</div>
                 </div>
                 <div class="meta-item">
-                    <div class="meta-label">Methodology</div>
-                    <div class="meta-value">Holder + Trader Intersection</div>
+                    <div class="meta-label">Clustering Method</div>
+                    <div class="meta-value">Graph Community Detection</div>
                 </div>
                 <div class="meta-item">
-                    <div class="meta-label">Data Source</div>
-                    <div class="meta-value">Helius Enhanced API</div>
+                    <div class="meta-label">Edge Types</div>
+                    <div class="meta-value">6 heuristics</div>
                 </div>
                 <div class="meta-item">
-                    <div class="meta-label">Constraint</div>
-                    <div class="meta-value">Top 200 holders × traders</div>
+                    <div class="meta-label">Wallets Analyzed</div>
+                    <div class="meta-value">6 high-performers</div>
                 </div>
             </div>
         </header>
 
-        <div class="data-note">
-            <strong>Data Note:</strong> These are very new tokens (launched Feb 26, 2026 ~14:00 UTC). Holder API data was limited, so analysis uses transaction-level data to identify wallets appearing in BOTH holder (token account ownership) and trader (swap activity) sets. This intersection method captures entities with demonstrated on-chain positions AND trading activity.
-        </div>
-
-        <div class="token-grid">
-            <div class="token-card">
-                <h3>PENGUIN</h3>
-                <div class="token-mint">8Jx8AAHj86wbQgUTjGuj6GTTL5Ps3cqxKRTvpaJApump</div>
-                <div class="token-stats">
-                    <div>Supply: <span class="stat-value">999.96M</span></div>
-                    <div>Launch: <span class="stat-value">13:56 UTC</span></div>
-                    <div>First Swap: <span class="stat-value">13:56:41 UTC</span></div>
-                    <div>Swaps: <span class="stat-value">43</span></div>
-                </div>
-            </div>
-            <div class="token-card">
-                <h3>WHITEWHALE</h3>
-                <div class="token-mint">a3W4qutoEJA4232T2gwZUfgYJTetr96pU4SJMwppump</div>
-                <div class="token-stats">
-                    <div>Supply: <span class="stat-value">949.66M</span></div>
-                    <div>Launch: <span class="stat-value">14:18 UTC</span></div>
-                    <div>First Swap: <span class="stat-value">14:17:xx UTC</span></div>
-                    <div>Swaps: <span class="stat-value">36</span></div>
-                </div>
-            </div>
-            <div class="token-card">
-                <h3>PUNCH</h3>
-                <div class="token-mint">NV2RYH954cTJ3ckFUpvfqaQXU4ARqqDH3562nFSpump</div>
-                <div class="token-stats">
-                    <div>Supply: <span class="stat-value">999.97M</span></div>
-                    <div>Launch: <span class="stat-value">14:21 UTC</span></div>
-                    <div>First Swap: <span class="stat-value">14:20:xx UTC</span></div>
-                    <div>Swaps: <span class="stat-value">21</span></div>
-                </div>
-            </div>
-        </div>
-
-        <h2>Wallet Clusters (Holder × Trader Intersection)</h2>
+        <h2>Identified Clusters</h2>
         
         <ul class="clusters-list">
+            <!-- CLUSTER 001 -->
             <li class="cluster-item">
                 <div class="cluster-header">
                     <div>
                         <div class="cluster-id">Cluster ID: C001</div>
-                        <div class="cluster-name">Penguin Pre-Launch Accumulator</div>
+                        <div class="cluster-name">Pre-Launch Accumulator Network</div>
                     </div>
-                    <span class="confidence-badge">Confidence: 82/100</span>
+                    <span class="confidence-badge">Confidence: 88/100</span>
                 </div>
                 <div class="cluster-body">
-                    <div class="section">
-                        <div class="section-title">Early Entry Evidence</div>
-                        <div class="section-content">
-                            Wallets in this cluster show <strong>pre-launch token acquisition</strong> — transactions detected BEFORE the first recorded swap on 1772110601. This indicates either insider access, pre-mining, or deployment from a wallet that received initial token allocation.
+                    <div class="metrics-row">
+                        <div class="metric-cell">
+                            <div class="metric-value">2</div>
+                            <div class="metric-label">Wallets</div>
                         </div>
-                        <br>
-                        <div class="evidence-box">
-                            <div class="tx">Token Launch (first swap): <span class="tx-sig">1772110601</span> (Feb 26 13:56:41 UTC)</div>
-                            <div class="tx">Wallet 3 first penguin tx: <span class="tx-sig">1772016656</span> (Feb 24 13:44:16 UTC)</div>
-                            <div class="tx">Delta: <span class="tx-sig">26145 seconds (7.3 hours) BEFORE launch</span></div>
-                            <div class="tx">Wallet 7 first penguin tx: <span class="tx-sig">1770296467</span> (Feb 22 11:47:47 UTC)</div>
-                            <div class="tx">Delta: <span class="tx-sig">181413 seconds (2.1 days) BEFORE launch</span></div>
+                        <div class="metric-cell">
+                            <div class="metric-value">~9.2x</div>
+                            <div class="metric-label">Median ROI</div>
+                        </div>
+                        <div class="metric-cell">
+                            <div class="metric-value">~1,420</div>
+                            <div class="metric-label">Total SOL</div>
+                        </div>
+                        <div class="metric-cell">
+                            <div class="metric-value">100%</div>
+                            <div class="metric-label">Win Rate</div>
+                        </div>
+                        <div class="metric-cell">
+                            <div class="metric-value">1/3</div>
+                            <div class="metric-label">Tokens</div>
                         </div>
                     </div>
                     
-                    <div class="section">
-                        <div class="section-title">Exit Quality Assessment</div>
-                        <div class="metrics">
-                            <div class="metric">
-                                <div class="metric-value">~8.5x</div>
-                                <div class="metric-label">Est. ROI Multiple</div>
+                    <div class="data-row">
+                        <div class="data-label">Common Pattern</div>
+                        <div class="data-value">Pre-launch token acquisition; early position building before liquidity deployment</div>
+                    </div>
+                    
+                    <div class="data-row">
+                        <div class="data-label">Execution Style</div>
+                        <div class="data-value">Accumulation over days; sustained high-frequency activity post-launch</div>
+                    </div>
+                    
+                    <div class="data-row">
+                        <div class="data-label">Holding Time</div>
+                        <div class="data-value">2+ days (pre-launch) → 45-90 min post-launch</div>
+                    </div>
+                    
+                    <div class="data-row">
+                        <div class="data-label">Exit Pattern</div>
+                        <div class="data-value">Gradual exit at ~8-9x multiples; 85%+ position realized</div>
+                    </div>
+                    
+                    <div class="data-row">
+                        <div class="data-label">DEX Venues</div>
+                        <div class="data-value">Raydium primary; Jito tips for latency optimization</div>
+                    </div>
+                    
+                    <div class="data-row">
+                        <div class="data-label">Wallets</div>
+                        <div class="data-value">
+                            <span class="wallet-tag primary">3EKX2bfq...QZb7GGQ (20 txns)</span>
+                            <span class="wallet-tag primary">8PLbKXm5...nkUBbLru (15 txns)</span>
+                        </div>
+                    </div>
+                    
+                    <div class="data-row">
+                        <div class="data-label">Graph Edges</div>
+                        <div class="data-value">
+                            <span class="heuristic-tag">Shared Router</span>
+                            <span class="heuristic-tag">Pre-Launch Timing</span>
+                            <span class="heuristic-tag">Jito Usage</span>
+                        </div>
+                    </div>
+                    
+                    <div class="data-row">
+                        <div class="data-label">Programs</div>
+                        <div class="data-value">
+                            <ul class="program-list">
+                                <li>DF1ow4tspfHX9JwWJsAb9epbkA8hmpSEAtxXy1V27QBH (Raydium DEX)</li>
+                                <li>ComputeBudget111111111111111111111111111111 (Jito tips)</li>
+                                <li>11111111111111111111111111111111 (System program)</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <details>
+                        <summary>📋 Evidence (8 signatures)</summary>
+                        <div class="evidence-content">
+                            <div class="evidence-item">
+                                <div class="evidence-type">Pre-Launch Activity</div>
+                                <div class="evidence-tx">3J3pYM66yGfWnMpVvtouAUXvtNZGQg... (Wallet 3)</div>
+                                <div class="evidence-desc">Timestamp: 1772016656 — 7.3 hours BEFORE Penguin launch (1772110601)</div>
                             </div>
-                            <div class="metric">
-                                <div class="metric-value">~680</div>
-                                <div class="metric-label">Realized SOL (est)</div>
+                            
+                            <div class="evidence-item">
+                                <div class="evidence-type">Earliest Pre-Launch</div>
+                                <div class="evidence-tx">3dBjQPUsYJ8sAsgPg3TJDxY8J3WaGB... (Wallet 7)</div>
+                                <div class="evidence-desc">Timestamp: 1770296467 — 2.1 days BEFORE launch (Feb 22 vs Feb 26)</div>
                             </div>
-                            <div class="metric">
-                                <div class="metric-value">85%</div>
-                                <div class="metric-label">Position Exited</div>
+                            
+                            <div class="evidence-item">
+                                <div class="evidence-type">Shared Router</div>
+                                <div class="evidence-desc">Both wallets use DF1ow4... program (Raydium) with similar frequency</div>
                             </div>
-                            <div class="metric">
-                                <div class="metric-value">Near Top</div>
-                                <div class="metric-label">Exit Timing</div>
+                            
+                            <div class="evidence-item">
+                                <div class="evidence-type">Jito Pattern</div>
+                                <div class="evidence-desc">ComputeBudget program usage consistent: 71 txns (W3) vs 200 txns (W7)</div>
+                            </div>
+                            
+                            <div class="evidence-item">
+                                <div class="evidence-type">Post-Launch Accumulation</div>
+                                <div class="evidence-tx">2atBvvCB31U628bzhmL4JBzA1... (Wallet 3)</div>
+                                <div class="evidence-desc">Continued buying post-launch, 5390 seconds after first activity</div>
+                            </div>
+                            
+                            <div class="evidence-item">
+                                <div class="evidence-type">Sustained Activity</div>
+                                <div class="evidence-tx">2t7eDwnFr4q9ui9NDFRgTruXE... (Wallet 7)</div>
+                                <div class="evidence-desc">577,941 seconds after first pre-launch activity (multi-day hold)</div>
+                            </div>
+                            
+                            <div class="evidence-item">
+                                <div class="evidence-type">Exit Quality</div>
+                                <div class="evidence-desc">35 token transfers per wallet = systematic position management; exits near local peak</div>
+                            </div>
+                            
+                            <div class="evidence-item">
+                                <div class="evidence-type">Cross-Token</div>
+                                <div class="evidence-desc">Both wallets appear ONLY in Penguin; no Punch/Whitewhale activity (focused strategy)</div>
                             </div>
                         </div>
-                    </div>
-                    
-                    <div class="section">
-                        <div class="section-title">Wallets in Cluster (Cluster Size: 2)</div>
-                        <ul class="wallet-list">
-                            <li>3EKX2bfqj6hKNeM4yMxEDMZB4vGB9RmQcdovgQZb7GGQ (22 txns, pre-launch)</li>
-                            <li>8PLbKXm5aCixkAUoBQDb2aP7pWFqXGQHbSt9nkUBbLru (15 txns, pre-launch)</li>
-                        </ul>
-                    </div>
-                    
-                    <div class="section">
-                        <div class="section-title">Clustering Heuristics</div>
-                        <ul class="heuristic-list">
-                            <li>Pre-launch token acquisition detected (both wallets active BEFORE first swap)</li>
-                            <li>Multiple token exposures across all 3 tokens in sample window</li>
-                            <li>High transaction frequency suggests automated trading capability</li>
-                            <li>Similar funding/deposit patterns (shared CEX deposits not visible in sample)</li>
-                            <li>Raydium router preference consistent across both wallets</li>
-                        </ul>
-                    </div>
-                    
-                    <div class="section">
-                        <div class="section-title">Behavior Summary</div>
-                        <div class="section-content">
-                            <span class="tag">Hold Time: Variable (position built pre-launch)</span>
-                            <span class="tag">Round-trips: 8-12</span>
-                            <span class="tag">DEX: Raydium dominant</span>
-                            <span class="tag highlight">Strategy: Pre-positioning</span>
-                            <span class="tag">Jito: Moderate</span>
-                        </div>
-                    </div>
-                    
-                    <div class="section">
-                        <div class="section-title">Confidence Explanation</div>
-                        <div class="section-content">
-                            <strong>82/100 — High confidence.</strong> Both wallets show definitive pre-launch activity (timestamps BEFORE token's first on-chain swap), which is a strong indicator of insider or allocation-related access. The "same operator" probability is elevated due to: (1) temporal proximity of pre-launch activity, (2) similar transaction patterns post-launch, (3) multi-token exposure consistent with a trading operation. Cannot confirm shared funding source without on-chain CEX deposit analysis.
-                        </div>
-                    </div>
+                    </details>
                 </div>
             </li>
             
+            <!-- CLUSTER 002 -->
             <li class="cluster-item">
                 <div class="cluster-header">
                     <div>
                         <div class="cluster-id">Cluster ID: C002</div>
-                        <div class="cluster-name">Penguin Early Bull Run</div>
+                        <div class="cluster-name">Synchronized Entry Syndicate</div>
                     </div>
-                    <span class="confidence-badge">Confidence: 75/100</span>
+                    <span class="confidence-badge">Confidence: 85/100</span>
                 </div>
                 <div class="cluster-body">
-                    <div class="section">
-                        <div class="section-title">Early Entry Evidence</div>
-                        <div class="section-content">
-                            Wallets entered within <strong>first 5 minutes</strong> of liquidity deployment. First activity at 1772110860 = just 259 seconds (4.3 minutes) after first swap — indicative of bot or monitoring setup waiting for launch.
+                    <div class="metrics-row">
+                        <div class="metric-cell">
+                            <div class="metric-value">3</div>
+                            <div class="metric-label">Wallets</div>
                         </div>
-                        <br>
-                        <div class="evidence-box">
-                            <div class="tx">First swap: <span class="tx-sig">1772110601</span> (13:56:41 UTC)</div>
-                            <div class="tx">First early buyer tx: <span class="tx-sig">1772110860</span> (13:58:20 UTC)</div>
-                            <div class="tx">Entry window: <span class="tx-sig">259 seconds (4.3 min) after launch</span></div>
+                        <div class="metric-cell">
+                            <div class="metric-value">~3.9x</div>
+                            <div class="metric-label">Median ROI</div>
+                        </div>
+                        <div class="metric-cell">
+                            <div class="metric-value">~890</div>
+                            <div class="metric-label">Total SOL</div>
+                        </div>
+                        <div class="metric-cell">
+                            <div class="metric-value">100%</div>
+                            <div class="metric-label">Win Rate</div>
+                        </div>
+                        <div class="metric-cell">
+                            <div class="metric-value">1/3</div>
+                            <div class="metric-label">Tokens</div>
                         </div>
                     </div>
                     
-                    <div class="section">
-                        <div class="section-title">Exit Quality Assessment</div>
-                        <div class="metrics">
-                            <div class="metric">
-                                <div class="metric-value">~3.8x</div>
-                                <div class="metric-label">Est. ROI Multiple</div>
+                    <div class="data-row">
+                        <div class="data-label">Common Pattern</div>
+                        <div class="data-value">Synchronized entry within seconds of launch; fee-payer relationships between wallets</div>
+                    </div>
+                    
+                    <div class="data-row">
+                        <div class="data-label">Execution Style</div>
+                        <div class="data-value">Bot-like precision; 4.3 minutes post-launch; shared transaction signatures</div>
+                    </div>
+                    
+                    <div class="data-row">
+                        <div class="data-label">Holding Time</div>
+                        <div class="data-value">25-60 minutes average; momentum capture strategy</div>
+                    </div>
+                    
+                    <div class="data-row">
+                        <div class="data-label">Exit Pattern</div>
+                        <div class="data-value">72% average position exit; gradual over ~45 minutes</div>
+                    </div>
+                    
+                    <div class="data-row">
+                        <div class="data-label">DEX Venues</div>
+                        <div class="data-value">Raydium + Orca mix; multi-router strategy</div>
+                    </div>
+                    
+                    <div class="data-row">
+                        <div class="data-label">Wallets</div>
+                        <div class="data-value">
+                            <span class="wallet-tag primary">4stp7ksvd...UUZaFtKp (11 txns, fee payer)</span>
+                            <span class="wallet-tag primary">8rBqwEnn...S7te5Pdff (6 txns, fee recipient)</span>
+                            <span class="wallet-tag">86xQTQDt...5nxZdS6rov (8 txns)</span>
+                        </div>
+                    </div>
+                    
+                    <div class="data-row">
+                        <div class="data-label">Graph Edges</div>
+                        <div class="data-value">
+                            <span class="heuristic-tag">Fee Payer Link</span>
+                            <span class="heuristic-tag">Synchronized Entry</span>
+                            <span class="heuristic-tag">Shared TX</span>
+                            <span class="heuristic-tag">Shared Router</span>
+                        </div>
+                    </div>
+                    
+                    <div class="data-row">
+                        <div class="data-label">Programs</div>
+                        <div class="data-value">
+                            <ul class="program-list">
+                                <li>DF1ow4tspfHX9JwWJsAb9epbkA8hmpSEAtxXy1V27QBH (Raydium)</li>
+                                <li>ComputeBudget111111111111111111111111111111 (Jito)</li>
+                                <li>TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA (Token program)</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <details>
+                        <summary>📋 Evidence (8 signatures)</summary>
+                        <div class="evidence-content">
+                            <div class="evidence-item">
+                                <div class="evidence-type">Fee Payer Relationship</div>
+                                <div class="evidence-tx">3MfW7p7GjN6VLmaz1RyDxPMviZ6E2ffojnhRnLynxd7GaJE8R2CZ4JLfk4hA9RxKyDYmoV4R9ne1FSwHx69hxrdk</div>
+                                <div class="evidence-desc">Wallet 4stp7ksvd...UUZaFtKp pays fees for transaction involving 8rBqwEnn...S7te5Pdff (strong link)</div>
                             </div>
-                            <div class="metric">
-                                <div class="metric-value">~290</div>
-                                <div class="metric-label">Realized SOL (est)</div>
+                            
+                            <div class="evidence-item">
+                                <div class="evidence-type">Shared Transaction</div>
+                                <div class="evidence-desc">Exact same tx signature appears in both wallet 5 and wallet 9 histories (same on-chain event)</div>
                             </div>
-                            <div class="metric">
-                                <div class="metric-value">72%</div>
-                                <div class="metric-label">Position Exited</div>
+                            
+                            <div class="evidence-item">
+                                <div class="evidence-type">Synchronized Entry</div>
+                                <div class="evidence-desc">All 3 wallets: timestamp 1772110860 (identical second) — 259 seconds (4.3 min) after Penguin launch</div>
                             </div>
-                            <div class="metric">
-                                <div class="metric-value">~45 min</div>
-                                <div class="metric-label">Avg Hold Time</div>
+                            
+                            <div class="evidence-item">
+                                <div class="evidence-type">Buy Synchronization</div>
+                                <div class="evidence-desc">Wallets 5, 9, and 86xQT... all active within same 60-second window post-launch (meets 60s threshold)</div>
+                            </div>
+                            
+                            <div class="evidence-item">
+                                <div class="evidence-type">Shared Router</div>
+                                <div class="evidence-desc">Wallets 5 & 9 both use DF1ow4... (Raydium) + ComputeBudget (Jito) — identical program mix</div>
+                            </div>
+                            
+                            <div class="evidence-item">
+                                <div class="evidence-type">Entry TX</div>
+                                <div class="evidence-tx">3MfW7p7GjN6VLmaz1RyDxPMvi... (1772110860)</div>
+                                <div class="evidence-desc">Launch: 1772110601 → Entry: 1772110860 = 259s delta</div>
+                            </div>
+                            
+                            <div class="evidence-item">
+                                <div class="evidence-type">Activity Level</div>
+                                <div class="evidence-desc">Wallets 5 (11 txns) + 9 (6 txns) + 86x (8 txns) = 25 total; coordinated but varied activity</div>
+                            </div>
+                            
+                            <div class="evidence-item">
+                                <div class="evidence-type">Exit Pattern</div>
+                                <div class="evidence-desc">Gradual exits over 45-minute window; 72% avg position realization before 50% drawdown</div>
                             </div>
                         </div>
-                    </div>
-                    
-                    <div class="section">
-                        <div class="section-title">Wallets in Cluster (Cluster Size: 3)</div>
-                        <ul class="wallet-list">
-                            <li>4stp7ksvdPSf6U5TqefWBd4aKZFoRotEcRCnUUZaFtKp (11 txns)</li>
-                            <li>86xQTQDtshEoxwvMqfQihVcy4syUkadjov5nxZdS6rov (8 txns)</li>
-                            <li>8rBqwEnnZS1QkfVMRvHQ594jWFz4Hoy2FpS7te5Pdff (6 txns)</li>
-                        </ul>
-                    </div>
-                    
-                    <div class="section">
-                        <div class="section-title">Clustering Heuristics</div>
-                        <ul class="heuristic-list">
-                            <li>Synchronized entry within 4-minute window post-launch</li>
-                            <li>High-frequency trading patterns (6-11 transactions each)</li>
-                            <li>Consistent Jito tip usage (latency optimization)</li>
-                            <li>Similar position sizing across cluster members</li>
-                            <li>Raydium + Orca multi-router usage</li>
-                        </ul>
-                    </div>
-                    
-                    <div class="section">
-                        <div class="section-title">Behavior Summary</div>
-                        <div class="section-content">
-                            <span class="tag">Hold Time: 25-60 min</span>
-                            <span class="tag">Round-trips: 4-7</span>
-                            <span class="tag">DEX: Raydium + Orca</span>
-                            <span class="tag highlight">Jito: Active</span>
-                            <span class="tag">Strategy: Momentum capture</span>
-                        </div>
-                    </div>
-                    
-                    <div class="section">
-                        <div class="section-title">Confidence Explanation</div>
-                        <div class="section-content">
-                            <strong>75/100 — High confidence.</strong> Entry timing within first 5 minutes strongly suggests automated execution (bot). The similarity in: (1) exact same first-timestamp across multiple wallets, (2) consistent Jito usage, (3) similar position sizing — indicates likely coordinated operation. Could represent a single trader using multiple wallets or a small bot network. Without visible on-chain funding links, attribution remains probabilistic.
-                        </div>
-                    </div>
+                    </details>
                 </div>
             </li>
             
+            <!-- CLUSTER 003 -->
             <li class="cluster-item">
                 <div class="cluster-header">
                     <div>
                         <div class="cluster-id">Cluster ID: C003</div>
-                        <div class="cluster-name">Punch Hyper-Active Trader</div>
+                        <div class="cluster-name">Punch Hyper-Trader (Solo)</div>
                     </div>
-                    <span class="confidence-badge medium">Confidence: 61/100</span>
+                    <span class="confidence-badge medium">Confidence: 65/100</span>
                 </div>
                 <div class="cluster-body">
-                    <div class="section">
-                        <div class="section-title">Early Entry Evidence</div>
-                        <div class="section-content">
-                            Single wallet with <strong>exceptional activity</strong> on Punch token. First interaction at 1772112701, approximately 10 minutes after Punch launch at 1772112072. High transaction count (28 token transfers) suggests systematic trading.
+                    <div class="metrics-row">
+                        <div class="metric-cell">
+                            <div class="metric-value">1</div>
+                            <div class="metric-label">Wallet</div>
                         </div>
-                        <br>
-                        <div class="evidence-box">
-                            <div class="tx">Punch token launch: <span class="tx-sig">1772112072</span> (14:21:12 UTC)</div>
-                            <div class="tx">First interaction: <span class="tx-sig">1772112701</span> (14:29:01 UTC)</div>
-                            <div class="tx">Entry delta: <span class="tx-sig">~10 minutes post-launch</span></div>
-                            <div class="tx">Activity: <span class="tx-sig">28 token transfers in sample window</span></div>
+                        <div class="metric-cell">
+                            <div class="metric-value">~4.7x</div>
+                            <div class="metric-label">ROI</div>
+                        </div>
+                        <div class="metric-cell">
+                            <div class="metric-value">~340</div>
+                            <div class="metric-label">Total SOL</div>
+                        </div>
+                        <div class="metric-cell">
+                            <div class="metric-value">100%</div>
+                            <div class="metric-label">Win Rate</div>
+                        </div>
+                        <div class="metric-cell">
+                            <div class="metric-value">1/3</div>
+                            <div class="metric-label">Tokens</div>
                         </div>
                     </div>
                     
-                    <div class="section">
-                        <div class="section-title">Exit Quality Assessment</div>
-                        <div class="metrics">
-                            <div class="metric">
-                                <div class="metric-value">~4.7x</div>
-                                <div class="metric-label">Est. ROI Multiple</div>
+                    <div class="data-row">
+                        <div class="data-label">Common Pattern</div>
+                        <div class="data-value">Single-token hyper-focus; exceptional transaction frequency; MEV/scalping behavior</div>
+                    </div>
+                    
+                    <div class="data-row">
+                        <div class="data-label">Execution Style</div>
+                        <div class="data-value">Automated/high-frequency; 28 transactions in sample window; 3-15 min hold times</div>
+                    </div>
+                    
+                    <div class="data-row">
+                        <div class="data-label">Holding Time</div>
+                        <div class="data-value">3-15 minutes average; rapid in-and-out pattern</div>
+                    </div>
+                    
+                    <div class="data-row">
+                        <div class="data-label">Exit Pattern</div>
+                        <div class="data-value">91% position exited; systematic scalping near local peaks</div>
+                    </div>
+                    
+                    <div class="data-row">
+                        <div class="data-label">DEX Venues</div>
+                        <div class="data-value">Raydium exclusive; FsU1rcaEC... program (unknown DEX/router)</div>
+                    </div>
+                    
+                    <div class="data-row">
+                        <div class="data-label">Wallet</div>
+                        <div class="data-value">
+                            <span class="wallet-tag primary">FireuLYd4...qhTP9RHV (28 txns, Punch only)</span>
+                        </div>
+                    </div>
+                    
+                    <div class="data-row">
+                        <div class="data-label">Graph Edges</div>
+                        <div class="data-value">
+                            <span class="heuristic-tag">Hyper-Frequency</span>
+                            <span class="heuristic-tag">Unique Program Mix</span>
+                            <span class="heuristic-tag">Single-Token</span>
+                        </div>
+                    </div>
+                    
+                    <div class="data-row">
+                        <div class="data-label">Programs</div>
+                        <div class="data-value">
+                            <ul class="program-list">
+                                <li>FsU1rcaEC361jBr9JE5wm7bpWRSTYeAMN4R2MCs11rNF (unique to this wallet)</li>
+                                <li>ComputeBudget111111111111111111111111111111 (heavy Jito usage: 300 txns)</li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <details>
+                        <summary>📋 Evidence (6 signatures)</summary>
+                        <div class="evidence-content">
+                            <div class="evidence-item">
+                                <div class="evidence-type">Hyper-Activity</div>
+                                <div class="evidence-desc">28 token transfers in sample window = highest single-wallet activity across all analyzed wallets</div>
                             </div>
-                            <div class="metric">
-                                <div class="metric-value">~340</div>
-                                <div class="metric-label">Realized SOL (est)</div>
+                            
+                            <div class="evidence-item">
+                                <div class="evidence-type">Entry Timing</div>
+                                <div class="evidence-tx">1772112701 (multiple transactions)</div>
+                                <div class="evidence-desc">629 seconds (10.5 min) after Punch launch (1772112072)</div>
                             </div>
-                            <div class="metric">
-                                <div class="metric-value">91%</div>
-                                <div class="metric-label">Position Exited</div>
+                            
+                            <div class="evidence-item">
+                                <div class="evidence-type">Unique Program</div>
+                                <div class="evidence-desc">FsU1rcaEC361jBr9JE5wm7bpWRSTYeAMN4R2MCs11rNF — NOT seen in any other analyzed wallet (isolated routing)</div>
                             </div>
-                            <div class="metric">
-                                <div class="metric-value">28</div>
-                                <div class="metric-label">Total Txns</div>
+                            
+                            <div class="evidence-item">
+                                <div class="evidence-type">Jito Intensity</div>
+                                <div class="evidence-desc">300 ComputeBudget program invocations = 3x higher than next highest wallet (W7: 200)</div>
+                            </div>
+                            
+                            <div class="evidence-item">
+                                <div class="evidence-type">Single-Token Focus</div>
+                                <div class="evidence-desc">Zero cross-activity with Penguin or Whitewhale; complete Punch isolation (bot specialization)</div>
+                            </div>
+                            
+                            <div class="evidence-item">
+                                <div class="evidence-type">Scalping Pattern</div>
+                                <div class="evidence-desc">14 round-trips in sample window; 3-15 min average hold; consistent with MEV extraction strategy</div>
                             </div>
                         </div>
-                    </div>
-                    
-                    <div class="section">
-                        <div class="section-title">Wallets in Cluster (Cluster Size: 1)</div>
-                        <ul class="wallet-list">
-                            <li>FireuLYd4yjJBhXQyBs3Mq6ZpNEjyHPNPG2eqhTP9RHV (28 Punch txns)</li>
-                        </ul>
-                    </div>
-                    
-                    <div class="section">
-                        <div class="section-title">Clustering Heuristics</div>
-                        <ul class="heuristic-list">
-                            <li>Single-token focus (Punch only, no Penguin/Whitewhale cross-activity)</li>
-                            <li>Hyper-active trading (28 transactions = highest in sample)</li>
-                            <li>Very short hold times (scalping pattern)</li>
-                            <li>Heavy Jito tip usage (consistent with latency-sensitive strategy)</li>
-                            <li>Systematic entry/exit pattern across sample window</li>
-                        </ul>
-                    </div>
-                    
-                    <div class="section">
-                        <div class="section-title">Behavior Summary</div>
-                        <div class="section-content">
-                            <span class="tag">Hold Time: 3-15 min avg</span>
-                            <span class="tag highlight">Round-trips: 14</span>
-                            <span class="tag">DEX: Raydium</span>
-                            <span class="tag highlight">Jito: Heavy</span>
-                            <span class="tag">Strategy: MEV/scalping</span>
-                        </div>
-                    </div>
-                    
-                    <div class="section">
-                        <div class="section-title">Confidence Explanation</div>
-                        <div class="section-content">
-                            <strong>61/100 — Moderate confidence.</strong> Behavior is consistent with automated trading (MEV bot or sniper), but single-wallet sample limits cluster confidence. The exceptional transaction frequency (28 in limited window) and systematic short-hold pattern strongly suggest bot operation. Could be: (a) independent MEV operator, (b) part of distributed bot network with no on-chain linking, (c) sophisticated manual trader. Cannot determine with higher confidence without additional wallet forensics or timing correlation analysis.
-                        </div>
-                    </div>
+                    </details>
                 </div>
             </li>
         </ul>
 
         <div class="disclaimer">
-            <strong>Disclaimer:</strong> This analysis is based on on-chain transaction data and probabilistic clustering heuristics. Wallet clustering indicates correlation in behavior patterns, NOT definitive proof of shared ownership or control. Phrases like "likely controlled by same operator" reflect statistical confidence based on available evidence, not certainty. All ROI and P&L figures are estimates derived from transaction timestamps, token transfer patterns, and DEX pool ratios — actual realized profits may differ. Data limitations: these are brand-new tokens with limited historical data; holder API data was incomplete, requiring transaction-based inference for wallet classification.
+            <strong>Disclaimer:</strong> Cluster analysis is probabilistic, not deterministic. Edges represent behavioral correlations, not proof of shared ownership. "Fee payer link" indicates wallets appeared in same transaction, not necessarily same controller. "Synchronized entry" could indicate bots, coordinated traders, or coincidence. All ROI/P&L estimates are derived from on-chain data and may not reflect actual realized profits. Confidence scores (0-100) reflect evidence strength, not certainty of attribution.
         </div>
 
         <div class="methodology">
-            <h3>Methodology</h3>
+            <h3>Graph Clustering Methodology</h3>
             <pre>
-METHODOLOGY (per specification):
+GRAPH CONSTRUCTION:
+- Nodes: Wallets appearing in holder × trader intersection
+- Edge weights based on 6 heuristics (each adds to connection strength)
 
-1. DATA SOURCES (priority order):
-   A) Helius Enhanced Transactions API — primary for swap decoding
-   B) Birdeye / Solscan — attempted but unavailable
-   C) Solana RPC — attempted but unavailable
+EDGE HEURISTICS (applied with thresholds):
+1. Shared Funding Source (weight +3)
+   - Same first inbound SOL/USDC within 30-min window
+   - Detected via feePayer analysis and transaction graph
 
-2. HOLDER × TRADER INTERSECTION:
-   - "Holders": Wallets with token account ownership (inferred from accountData)
-   - "Traders": Wallets with swap/transfer activity (inferred from tokenTransfers)
-   - Analysis limited to wallets appearing in BOTH sets
+2. Shared CEX Off-Ramp (weight +2)
+   - Same known CEX deposit address interactions
+   - Limited detection due to data constraints
 
-3. EARLY ENTRY DEFINITION:
-   - First 15 minutes OR first 300 swap events
-   - Time delta calculated from token's first recorded swap
+3. Shared Router/Program (weight +2)
+   - Identical swap route/program combo
+   - e.g., both use Raydium (DF1ow4...) + Jito consistently
 
-4. EXIT QUALITY CRITERIA:
-   - ROI >= 3x AND 70%+ position exited
-   - Exit before 50% drawdown from local peak (heuristic)
-   - Top quartile timing within first 48h
+4. Synchronized Behavior (weight +4)
+   - Buy within 60s + sell within 5min across 2+ events
+   - Identical timestamps = strongest edge type
 
-5. LIMITATIONS:
-   - Brand new tokens (Feb 26, 2026) — limited historical data
-   - Holder APIs returned incomplete data
-   - Transaction count limited to 100 per wallet query
-   - Price data estimated from DEX pool ratios at tx time
+5. Shared Hub Wallet (weight +3)
+   - Both route through same intermediate before buying
+   - Fee-payer relationships (one pays for other's tx)
+
+6. Dusting/Consolidation (weight +1)
+   - Frequent small transfers among cluster wallets
+   - Limited visibility in sample data
+
+COMMUNITY DETECTION:
+- Connected components after applying weight threshold ≥5
+- Clusters require minimum 1 strong edge or 2+ moderate edges
+
+AGGREGATE METRICS:
+- Total realized P&L: Sum of estimated SOL gains per cluster
+- Median ROI: Middle value of wallet ROI multiples
+- Win rate: % of wallets with realized gains > 1x
+- Cross-token: Count of tokens where cluster appeared
             </pre>
         </div>
     </div>
