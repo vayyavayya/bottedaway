@@ -1,10 +1,16 @@
 {
   "lastChecks": {
-    "scanner_review": 1740486060,
-    "memory_review": 1740473460,
-    "git_sync": 1740475260,
-    "skill_audit": 1740482460,
-    "cost_check": 1740484260
+    "scanner_review": 1740642000,
+    "memory_review": 1740555600,
+    "git_sync": 1740620400,
+    "skill_audit": 1740128400,
+    "cost_check": 1740555600
   },
-  "nextCheck": "memory_review"
+  "nextCheck": "git_sync",
+  "lastScannerRun": {
+    "timestamp": 1740642000,
+    "date": "2026-02-27T07:20:00Z",
+    "matches": 1,
+    "token": "White boy motion ($motion)"
+  }
 }
