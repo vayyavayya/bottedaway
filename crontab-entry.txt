@@ -1,0 +1,5 @@
+# Memecoin Signal Engine - Cron Setup
+# Add these lines to your crontab (run `crontab -e`)
+
+# Twice daily at 8am and 8pm CET
+0 8,20 * * * bash $HOME/.openclaw/workspace/bottedaway/scripts/run_memecoin_signals.sh >> $HOME/.openclaw/workspace/bottedaway/logs/memecoin-cron.log 2>&1
