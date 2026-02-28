@@ -1,0 +1,11 @@
+#!/bin/bash
+# Post-checkout hook template
+# Copy to .git/hooks/post-checkout to auto-install on checkout
+# Or run: make install
+
+LAUNCHD_SETUP="$(git rev-parse --show-toplevel)/scripts/setup_launchd.sh"
+
+if [ -f "$LAUNCHD_SETUP" ]; then
+    echo "🔧 Auto-installing LaunchAgent..."
+    bash "$LAUNCHD_SETUP"
+fi
