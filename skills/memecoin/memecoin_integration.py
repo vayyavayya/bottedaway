@@ -50,7 +50,8 @@ class MemecoinSignalEngine:
         
         try:
             from multi_provider import MultiProvider
-            from engine_a import EngineA, EngineAConfig
+            sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..', 'scanner_engines', 'src'))
+            from patterns.engine_a import EngineA, EngineAConfig
             
             self.provider = MultiProvider()
             self.engine_a = EngineA(
