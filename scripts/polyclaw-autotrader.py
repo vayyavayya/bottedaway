@@ -280,7 +280,7 @@ def execute_trade(trade: Dict) -> bool:
     print(f"🎯 Executing: {trade['side']} ${trade['amount']} on '{trade['question'][:50]}...'")
     
     # Build PolyClaw command
-    cmd = f"cd ~/.openclaw/skills/polyclaw && uv run python scripts/polyclaw.py buy {trade['market_id']} {trade['side']} {trade['amount']}"
+    cmd = f"cd ~/.openclaw/workspace/skills/polyclaw && python3 scripts/polyclaw.py buy {trade['market_id']} {trade['side']} {trade['amount']}"
     
     if not LIVE_TRADING:
         print(f"[DRY RUN] Command: {cmd}")
@@ -340,7 +340,7 @@ def get_open_positions() -> List[Dict]:
     try:
         import subprocess
         result = subprocess.run(
-            "cd ~/.openclaw/skills/polyclaw && uv run python scripts/polyclaw.py positions",
+            "cd ~/.openclaw/workspace/skills/polyclaw && python3 scripts/polyclaw.py positions",
             shell=True,
             capture_output=True,
             text=True,
@@ -389,7 +389,7 @@ def execute_stop_loss(position: Dict) -> bool:
     # If we bought YES, we sell YES tokens
     side_to_sell = position['side']
     
-    cmd = f"cd ~/.openclaw/skills/polyclaw && uv run python scripts/polyclaw.py sell {position['id']} {side_to_sell}"
+    cmd = f"cd ~/.openclaw/workspace/skills/polyclaw && python3 scripts/polyclaw.py sell {position['id']} {side_to_sell}"
     
     if not LIVE_TRADING:
         print(f"[DRY RUN] Would execute: {cmd}")
@@ -441,7 +441,7 @@ def scan_hedge_opportunities() -> List[Dict]:
     try:
         import subprocess
         result = subprocess.run(
-            f"cd ~/.openclaw/skills/polyclaw && uv run python scripts/polyclaw.py hedge scan --limit {HEDGE_SCAN_LIMIT}",
+            f"cd ~/.openclaw/workspace/skills/polyclaw && python3 scripts/polyclaw.py hedge scan --limit {HEDGE_SCAN_LIMIT}",
             shell=True,
             capture_output=True,
             text=True,
@@ -484,7 +484,7 @@ def analyze_hedge_pair(market1_id: str, market2_id: str) -> Optional[Dict]:
     try:
         import subprocess
         result = subprocess.run(
-            f"cd ~/.openclaw/skills/polyclaw && uv run python scripts/polyclaw.py hedge analyze {market1_id} {market2_id}",
+            f"cd ~/.openclaw/workspace/skills/polyclaw && python3 scripts/polyclaw.py hedge analyze {market1_id} {market2_id}",
             shell=True,
             capture_output=True,
             text=True,
@@ -542,7 +542,7 @@ def execute_hedge_trade(hedge: Dict, daily_exposure: float) -> Tuple[bool, float
     total_spent = 0.0
     
     for market_id, side in [(hedge['market1_id'], 'YES'), (hedge['market2_id'], 'NO')]:
-        cmd = f"cd ~/.openclaw/skills/polyclaw && uv run python scripts/polyclaw.py buy {market_id} {side} {leg_size:.2f}"
+        cmd = f"cd ~/.openclaw/workspace/skills/polyclaw && python3 scripts/polyclaw.py buy {market_id} {side} {leg_size:.2f}"
         
         if not LIVE_TRADING:
             print(f"   [DRY RUN] {cmd}")
@@ -669,7 +669,7 @@ def get_smart_money_signals() -> List[Dict]:
         # Run the smart money tracker
         import subprocess
         result = subprocess.run(
-            "cd ~/.openclaw/skills/polyclaw && uv run python scripts/polyclaw-smart-money.py",
+            "cd ~/.openclaw/workspace/skills/polyclaw && python3 scripts/polyclaw-smart-money.py",
             shell=True,
             capture_output=True,
             text=True,
@@ -711,7 +711,7 @@ def execute_smart_money_trade(signal: Dict, daily_exposure: float) -> Tuple[bool
     print(f"   Market: {market_id} | Side: {side}")
     print(f"   Size: ${position_size:.2f} | Confidence: {confidence:.0%}")
     
-    cmd = f"cd ~/.openclaw/skills/polyclaw && uv run python scripts/polyclaw.py buy {market_id} {side} {position_size:.2f}"
+    cmd = f"cd ~/.openclaw/workspace/skills/polyclaw && python3 scripts/polyclaw.py buy {market_id} {side} {position_size:.2f}"
     
     if not LIVE_TRADING:
         print(f"   [DRY RUN] {cmd}")
