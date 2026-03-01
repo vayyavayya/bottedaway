@@ -1,0 +1,1 @@
+/Users/pterion2910/.openclaw/workspace/skills/polyclaw/scripts/run_production.sh

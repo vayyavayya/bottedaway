@@ -1,0 +1,30 @@
+{
+  "holders": {
+    "CU9G7NV93eoqcS9iXWfZPtkNvB4nV4ZmdaN9LpFtPLwz": {
+      "supply_pct": 1.54,
+      "amount": 15400000.0,
+      "last_seen": "2026-03-01T21:29:46.102464"
+    },
+    "DXzg1xHzaH5bgSS53denTnxGnoqRozZYxN7BJgfWqivb": {
+      "supply_pct": 0.96,
+      "amount": 9600000.0,
+      "last_seen": "2026-03-01T21:29:46.102470"
+    },
+    "HLRAw55adZRYLR7YoiDx...": {
+      "supply_pct": 0.8170000000000001,
+      "amount": 8170000.0,
+      "last_seen": "2026-03-01T21:29:46.102473"
+    },
+    "wallet4abc123...": {
+      "supply_pct": 0.6,
+      "amount": 6000000.0,
+      "last_seen": "2026-03-01T21:29:46.102474"
+    },
+    "wallet5xyz789...": {
+      "supply_pct": 0.5499999999999999,
+      "amount": 5500000.0,
+      "last_seen": "2026-03-01T21:29:46.102476"
+    }
+  },
+  "last_check": "2026-03-01T21:29:46.102477"
+}
