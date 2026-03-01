@@ -188,7 +188,7 @@ class MultiAgentTrader:
         
         try:
             result = subprocess.run(
-                "cd ~/.openclaw/skills/polyclaw && uv run python scripts/polyclaw.py markets trending",
+                "cd ~/.openclaw/workspace/skills/polyclaw && python3 scripts/polyclaw.py markets trending",
                 shell=True, capture_output=True, text=True, timeout=30
             )
             
@@ -270,7 +270,7 @@ class MultiAgentTrader:
         
         print(f"🎯 Executing: {side} ${amount} on {market_id}")
         
-        cmd = f"cd ~/.openclaw/skills/polyclaw && uv run python scripts/polyclaw.py buy {market_id} {side} {amount}"
+        cmd = f"cd ~/.openclaw/workspace/skills/polyclaw && python3 scripts/polyclaw.py buy {market_id} {side} {amount}"
         
         if not LIVE_TRADING:
             print(f"[DRY RUN] {cmd}")
