@@ -225,31 +225,44 @@ def markets_trending_command():
         try:
             print("📡 Fetching live markets from Polymarket CLOB...")
             # Try to get markets from CLOB API
-            # The CLOB client has a get_markets method
             markets_response = client.get_markets()
             
             if markets_response and 'data' in markets_response:
                 markets = markets_response['data']
-                # Sort by volume and take top 10
-                sorted_markets = sorted(
-                    markets, 
-                    key=lambda x: float(x.get('volume', 0)), 
-                    reverse=True
-                )[:10]
                 
+                # Filter for active markets first
+                active_markets = [m for m in markets if m.get('active', False)]
+                print(f"   Found {len(active_markets)} active markets (from {len(markets)} total)")
+                
+                # Get detailed info for markets (volume/liquidity requires individual calls)
+                # For now, just show active markets with their end dates
                 formatted_markets = []
-                for m in sorted_markets:
+                for m in active_markets[:20]:  # Check first 20
+                    market_id = m.get('condition_id', 'unknown')
+                    question = m.get('question', 'Unknown')
+                    end_date = m.get('end_date_iso', 'unknown')
+                    
+                    # Skip obviously old markets (2023)
+                    if '2023' in question or '2023' in str(end_date):
+                        continue
+                    
                     formatted_markets.append({
-                        'id': m.get('condition_id', 'unknown'),
-                        'question': m.get('question', 'Unknown'),
-                        'volume': float(m.get('volume', 0)),
-                        'liquidity': float(m.get('liquidity', 0)),
+                        'id': market_id,
+                        'question': question[:80] + ('...' if len(question) > 80 else ''),
+                        'end_date': end_date,
                         'active': m.get('active', False)
                     })
+                    
+                    if len(formatted_markets) >= 10:
+                        break
                 
-                print(f"✅ Fetched {len(formatted_markets)} live markets from Polymarket")
-                print("📈 Trending Markets:")
-                print(json.dumps(formatted_markets, indent=2))
+                if formatted_markets:
+                    print(f"✅ Found {len(formatted_markets)} recent active markets")
+                    print("📈 Trending Markets:")
+                    print(json.dumps(formatted_markets, indent=2))
+                else:
+                    print("⚠️  No recent active markets found (most are 2023 events)")
+                    print("   This may indicate EU geoblock or limited market availability")
                 return formatted_markets
             else:
                 print("⚠️  No markets data returned from CLOB")
