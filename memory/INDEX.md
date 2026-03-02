@@ -32,6 +32,7 @@ Navigation map for agent orientation. Read this FIRST every session.
 | PUNCH Accumulation | 🟢 Active | 20 whales tracked |
 | POLYCLAW | 🔴 Limited | EU geoblock — paper trading only |
 | Mission Control | 🟡 Maintenance | Dashboard functional, needs updates |
+| **PolyClaw Memory** | 🟢 Active | [projects/polyclaw-history.md](projects/polyclaw-history.md) |
 
 ### Decisions
 - **POLYCLAW:** Accept EU geoblock limitation, keep as paper trading simulation

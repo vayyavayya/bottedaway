@@ -7,6 +7,7 @@ Alerts on significant increases
 
 import json
 import os
+import subprocess
 import sys
 import time
 from datetime import datetime
@@ -142,6 +143,44 @@ def format_wallet_short(address: str) -> str:
     return address
 
 
+def trigger_crypto_analyst(token_symbol: str, token_mint: str, chain: str, trigger_reason: str, wallet: str = ""):
+    """Spawn crypto analyst subagent to analyze the token"""
+    try:
+        wallet_info = f"\nAccumulating Wallet: {wallet}" if wallet else ""
+        task = f"""Analyze {token_symbol} ({token_mint}) on {chain} for trading opportunity.
+
+Trigger: {trigger_reason}{wallet_info}
+
+Provide:
+1. Token overview and fundamentals
+2. Technical analysis (support/resistance levels)
+3. On-chain metrics and holder distribution
+4. Social sentiment analysis
+5. Risk assessment
+6. Trading recommendation (if any)
+"""
+        # Spawn subagent via openclaw CLI
+        cmd = [
+            "openclaw", "subagent", "spawn",
+            "--task", task,
+            "--model", "kimi-coding/k2p5",
+            "--label", f"crypto-analyst-{token_symbol.lower()}"
+        ]
+        
+        # Run in background so monitor isn't blocked
+        subprocess.Popen(
+            cmd,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            start_new_session=True
+        )
+        print(f"🤖 Crypto analyst subagent spawned for {token_symbol}")
+        return True
+    except Exception as e:
+        print(f"⚠️ Failed to spawn crypto analyst: {e}")
+        return False
+
+
 def check_accumulation():
     """Main monitoring function"""
     print(f"🔍 PUNCH Accumulation Monitor - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
@@ -218,6 +257,16 @@ Wallet: `{wallet_short}`
         
         send_telegram_alert(message)
         print(f"✅ Alert sent: {wallet_short} increased by {change['increase']:.2f}%")
+        
+        # Trigger crypto analyst subagent
+        trigger_reason = f"Whale accumulation detected: +{change['increase']:.2f}% supply increase"
+        trigger_crypto_analyst(
+            PUNCH_SYMBOL,
+            PUNCH_MINT,
+            "solana",
+            trigger_reason,
+            wallet=change['address']
+        )
     
     # Summary output
     print("\n" + "=" * 60)

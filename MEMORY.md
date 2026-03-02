@@ -157,6 +157,29 @@
 
 ---
 
+## PolyClaw Trading Learnings
+
+*This section auto-populated from memory_tracker.py when markets resolve*
+
+### System Overview
+- **History File**: `memory/projects/polyclaw-history.md`
+- **Tracker Script**: `skills/polyclaw/memory_tracker.py`
+- **Prompt Context**: `skills/polyclaw/prompts/memory_context.md`
+
+### To Record a Resolution:
+```bash
+cd ~/.openclaw/workspace/skills/polyclaw
+python memory_tracker.py resolve <market_id> <YES|NO> --pnl <amount>
+```
+
+### Stats & Learnings:
+```bash
+python memory_tracker.py stats              # Category breakdown
+python memory_tracker.py update-prompts     # Refresh analyst context
+```
+
+---
+
 *Last updated: February 24, 2026 (7:19 PM)*
 
 ### Recent Activity

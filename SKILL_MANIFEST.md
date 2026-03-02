@@ -42,6 +42,7 @@ SKILL INVENTORY:
 --------
 [✓] memecoin-scanner    - Multi-source memecoin discovery (4-10 days, $100K-$500K MC)
 [✓] ema-monitor         - EMA50 breakdown alerts for specific tokens
+[✓] crypto-analyst      - Token analysis with Birdeye + whale tracker + LLM signals
 [✗] price-monitor       - TODO: Real-time price alerts (any token)
 [✗] watchlist-manager   - TODO: CRUD operations for watchlist
 [✗] trading-simulator   - TODO: Paper trading with alerts

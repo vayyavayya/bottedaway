@@ -1,0 +1,106 @@
+{
+  "meta": {
+    "symbol": "PUNCH",
+    "address": "NV2RYH954cTJ3ckFUpvfqaQXU4ARqqDH3562nFSpump",
+    "chain": "solana",
+    "timestamp": "2026-03-02T21:43:23.209177",
+    "analyst_version": "1.0.0"
+  },
+  "market_data": {
+    "price": 0.013919052556179588,
+    "price_change_24h": 0.0,
+    "price_change_1h": 0.0,
+    "volume_24h": 0.0,
+    "volume_change_24h": 0.0,
+    "liquidity": 1692924.3213482306,
+    "marketcap": 0.0,
+    "fdv": 13918585.088797694,
+    "buy_volume_24h": 0.0,
+    "sell_volume_24h": 0.0,
+    "buys_24h": 0,
+    "sells_24h": 0,
+    "unique_wallets_24h": 0
+  },
+  "whale_activity": {
+    "top_holders": [
+      {
+        "address": "Hp6adEEgMPUj2gmK...",
+        "amount": 37938081830937,
+        "percentage": 13.3
+      },
+      {
+        "address": "AF1Zkb4GTUJ9Kvyx...",
+        "amount": 25102439134000,
+        "percentage": 8.8
+      },
+      {
+        "address": "7UMwJfbtgS1kbT7C...",
+        "amount": 22640155810073,
+        "percentage": 7.94
+      },
+      {
+        "address": "G2EQ2TUeKYc47mnb...",
+        "amount": 18648730524450,
+        "percentage": 6.54
+      },
+      {
+        "address": "DgEdw97BFhXkSvSi...",
+        "amount": 16064903913662,
+        "percentage": 5.63
+      },
+      {
+        "address": "3X5juegVhUagFDMY...",
+        "amount": 15099775867747,
+        "percentage": 5.29
+      },
+      {
+        "address": "DPgy3ZV25vgZNsui...",
+        "amount": 12928271543881,
+        "percentage": 4.53
+      },
+      {
+        "address": "68C6StBaR8FVPs9p...",
+        "amount": 12594034369091,
+        "percentage": 4.41
+      },
+      {
+        "address": "6t1tbTv9k68bPxgs...",
+        "amount": 12499888433836,
+        "percentage": 4.38
+      },
+      {
+        "address": "8ZnvFFRYKj69CjaW...",
+        "amount": 12404748291727,
+        "percentage": 4.35
+      }
+    ],
+    "holder_count": 10
+  },
+  "technical": {
+    "ema_reclaim": {
+      "setup_present": false,
+      "reason": "Insufficient candle data"
+    },
+    "volume_divergence": {
+      "divergence_present": false,
+      "reason": "Insufficient data"
+    },
+    "candles_analyzed": 0
+  },
+  "analysis": {
+    "signal": "hold",
+    "confidence": 50,
+    "entry_price": null,
+    "stop_loss": null,
+    "take_profit": null,
+    "reasoning": "Heuristic analysis based on technical patterns",
+    "key_levels": {
+      "support": [],
+      "resistance": []
+    },
+    "risk_factors": [
+      "Heuristic mode - LLM unavailable"
+    ],
+    "catalysts": []
+  }
+}

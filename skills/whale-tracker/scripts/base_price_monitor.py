@@ -7,6 +7,7 @@ Alerts on significant price movements (>10% hourly)
 
 import json
 import os
+import subprocess
 import sys
 from datetime import datetime
 from typing import Dict, List, Optional
@@ -121,6 +122,43 @@ def format_price(price: float) -> str:
         return f"${price:.2f}"
 
 
+def trigger_crypto_analyst(token_symbol: str, token_address: str, chain: str, trigger_reason: str):
+    """Spawn crypto analyst subagent to analyze the token"""
+    try:
+        task = f"""Analyze {token_symbol} ({token_address}) on {chain} for trading opportunity.
+
+Trigger: {trigger_reason}
+
+Provide:
+1. Token overview and fundamentals
+2. Technical analysis (support/resistance levels)
+3. On-chain metrics and holder distribution
+4. Social sentiment analysis
+5. Risk assessment
+6. Trading recommendation (if any)
+"""
+        # Spawn subagent via openclaw CLI
+        cmd = [
+            "openclaw", "subagent", "spawn",
+            "--task", task,
+            "--model", "kimi-coding/k2p5",
+            "--label", f"crypto-analyst-{token_symbol.lower()}"
+        ]
+        
+        # Run in background so monitor isn't blocked
+        subprocess.Popen(
+            cmd,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            start_new_session=True
+        )
+        log(f"🤖 Crypto analyst subagent spawned for {token_symbol}")
+        return True
+    except Exception as e:
+        log(f"⚠️ Failed to spawn crypto analyst: {e}")
+        return False
+
+
 def check_prices():
     """Main monitoring function"""
     log("=" * 60)
@@ -200,6 +238,15 @@ def check_prices():
             send_telegram_alert(message)
             alerts_sent += 1
             log(f"🚨 ALERT: Significant hourly movement detected ({hourly_change:+.2f}%)")
+            
+            # Trigger crypto analyst subagent
+            trigger_reason = f"Price moved {hourly_change:+.2f}% in 1h (threshold: {ALERT_THRESHOLD_PCT}%)"
+            trigger_crypto_analyst(
+                token_config['symbol'],
+                token_config['address'],
+                token_config['chain'],
+                trigger_reason
+            )
         else:
             log(f"✅ No significant movement (threshold: {ALERT_THRESHOLD_PCT}%)")
     

@@ -1,6 +1,6 @@
 # Agent Team Manifest
 
-_Three specialized agents, one orchestrator._
+_Four specialized agents, one orchestrator._
 
 ## Architecture
 
@@ -10,7 +10,8 @@ bigbrother (you)
 nadeshan (orchestrator)
     ├──→ clawcoder (coding agent)
     ├──→ clawsec (security agent)
-    └──→ clawresearch (research agent)
+    ├──→ clawresearch (research agent)
+    └──→ clawanalyst (analysis agent)
 ```
 
 ## Agent Directory Structure
@@ -23,7 +24,10 @@ agents/
 ├── security/
 │   ├── SOUL.md
 │   └── TOOLS.md
-└── researcher/
+├── researcher/
+│   ├── SOUL.md
+│   └── TOOLS.md
+└── analyst/
     ├── SOUL.md
     └── TOOLS.md
 ```
@@ -66,6 +70,21 @@ Researcher: Find Base L2 prediction markets as alternatives to
 Polymarket. What's the current landscape? Who are the players?
 ```
 
+### 4. clawanalyst (Analysis Agent) 📊
+**Purpose:** Analyze prediction markets, crypto assets, and market sentiment. Runs sentiment analysis, plays devil's advocate, and provides data-driven insights.
+**Tools:** web_search, web_fetch, data analysis
+**Restrictions:** NEVER trades, NO credentials/access to trading accounts, produces analysis only (no actions)
+**Use for:** Market edge analysis, prediction market evaluation, sentiment scoring, risk assessment
+
+**Example dispatch:**
+```
+Analyst: What's the edge on this Polymarket election market?
+```
+
+**Cost Limits:**
+- $0.50 per analysis
+- $10/day maximum
+
 ## Orchestrator Role
 
 **nadeshan** coordinates the team:
@@ -106,6 +125,7 @@ sessions_spawn(
 - **Coder:** No web access = reduced attack surface
 - **Security:** Read-only = can't break things while auditing
 - **Researcher:** Isolated context = internal data never leaks
+- **Analyst:** Analysis-only = no trading credentials or actions
 - **Orchestrator:** Coordinates, doesn't have full access to all tools
 
 ## Cost Control
@@ -115,12 +135,14 @@ sessions_spawn(
 | Coder | $2/task | $0.50-1.50 |
 | Security | $1/audit | $0.10-0.50 |
 | Researcher | $3/task | $1-2 |
+| Analyst | $0.50/analysis | $0.20-0.40 |
 
 ## Daily Operations
 
 - **2am:** Security agent runs full audit (automated)
 - **On demand:** Coder writes/modifies code
 - **On demand:** Researcher gathers information
+- **On demand:** Analyst evaluates markets and opportunities
 - **Always:** Orchestrator coordinates
 
 ---

@@ -1,0 +1,33 @@
+{
+  "trades": [],
+  "metrics": {
+    "total_trades": 0,
+    "winning_trades": 0,
+    "losing_trades": 0,
+    "total_pnl": 0.0,
+    "best_trade": 0.0,
+    "worst_trade": 0.0,
+    "overall_win_rate": 0.0,
+    "recent_20_win_rate": 0.0,
+    "avg_predicted_edge": 0.0,
+    "avg_realized_edge": 0.0,
+    "edge_accuracy": 0.0,
+    "brier_score": 0.0,
+    "calibration_error": 0.0,
+    "peak_pnl": 0.0,
+    "current_drawdown": 0.0,
+    "max_drawdown": 0.0,
+    "max_drawdown_pct": 0.0,
+    "pnl_by_category": {},
+    "win_rate_by_category": {},
+    "trades_by_category": {},
+    "drift_detected": false,
+    "drift_magnitude": 0.0,
+    "drift_alert_threshold": 0.15,
+    "first_trade_date": null,
+    "last_trade_date": null,
+    "last_updated": "2026-03-02T22:43:37.902229"
+  },
+  "drawdown_history": [],
+  "last_updated": "2026-03-02T22:43:37.902266"
+}
