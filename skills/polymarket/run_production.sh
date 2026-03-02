@@ -29,9 +29,11 @@ echo "🔑 Private key configured: ${POLYMARKET_PK:0:10}...${POLYMARKET_PK: -6}"
 cd "$SCRIPT_DIR"
 
 # Activate virtual environment if it exists
-if [ -f "$REPO_DIR/skills/polyclaw/venv/bin/activate" ]; then
-    source "$REPO_DIR/skills/polyclaw/venv/bin/activate"
+if [ -f "$REPO_DIR/skills/polyclaw/.venv/bin/activate" ]; then
+    source "$REPO_DIR/skills/polyclaw/.venv/bin/activate"
     echo "✅ Activated virtual environment"
+else
+    echo "⚠️ Warning: Virtual environment not found at expected location"
 fi
 
 # Run the trading script
