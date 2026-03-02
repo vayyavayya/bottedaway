@@ -88,5 +88,20 @@ Skills are shared. Your setup is yours. Keeping them apart means you can update 
 ## Time Zone
 - Europe/Berlin
 
+## Spending Limits (Hard Stops)
+
+**Per-Task Limit:** $5 USD maximum per session/task
+- If exceeded, agent must ask permission before continuing
+- Applies to all API calls, model usage, external services
+
+**Daily Limit:** $20 USD maximum per day
+- Tracked in `memory/cost-tracking.json`
+- Alerts at 80% ($16) and 100% ($20)
+
+**Cron Job Limits:**
+- Max $0.50 per cron execution
+- Use local models (Qwen3, Llama) for heartbeats
+- Fall back to Gemini Flash Lite (free) before paid models
+
 ## Heartbeat Pattern
 - Rotating checks: scanner → memory → git → skill audit → cost

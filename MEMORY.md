@@ -45,12 +45,12 @@
 - `watchlist-maintenance-daily` — Daily 7am (cleanup stale entries)
 - `punch-price-monitor` — Every 1h (PUNCH token price alerts)
 
-### Current Issues (Feb 26, 2026)
-- **Helius API:** Now set as DEFAULT for all Solana data (Solscan deprecated due to DNS failures)
-- **HELIUS_API_KEY:** Required for whale tracker and Solana operations
-- **Watchlist:** 5 wallets active, stable
-- **GMGN:** Down (DNS resolution failure - service deprecated)
-- **Cron jobs:** All operational with updated Helius routing
+### Current Issues (Mar 2, 2026)
+- **Polymarket:** EU geoblock permanent — only expired 2023 markets visible, paper trading mode active
+- **Memecoin Scanner:** SSL errors to Solscan API (needs fix or removal)
+- **Watchlist Maintenance:** Error status (investigate)
+- **Birdeye API:** ✅ Fixed — now returning live Solana data
+- **Cron Jobs:** Cleaned up redundant `polyclaw-trading`, now 7 active jobs
 
 ### Whale Tracker Update (Feb 26, 2026)
 - **API Priority:** Helius primary, Solscan removed as fallback

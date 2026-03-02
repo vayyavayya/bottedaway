@@ -8,14 +8,13 @@ Navigation map for agent orientation. Read this FIRST every session.
 
 | Date | File | Summary |
 |------|------|---------|
-| 2026-02-24 | [daily/2026-02-24.md](daily/2026-02-24.md) | Morning scan: 0 sweet spot tokens, GMGN down, full token rotation |
-| 2026-02-23 | [daily/2026-02-23.md](daily/2026-02-23.md) | Scanner runs (AM/PM), whale tracker API issue, 3 sweet spot tokens |
-| 2026-02-22 | [daily/2026-02-22.md](daily/2026-02-22.md) | Discord migration complete, Mission Control dashboard built |
-| 2026-02-21 | [daily/2026-02-21.md](daily/2026-02-21.md) | Repo privatized, Discord bot testing |
-| 2026-02-20 | [daily/2026-02-20.md](daily/2026-02-20.md) | Cost optimization complete, cron jobs on free models |
-| 2026-02-17 | [daily/2026-02-17.md](daily/2026-02-17.md) | Multi-agent fixes, 6 skills created |
-| 2026-02-16 | [daily/2026-02-16.md](daily/2026-02-16.md) | Skills audit, Docker infrastructure |
-| 2026-02-15 | [archive/2026-02-15.md](archive/2026-02-15.md) | Fed trade loss (-93%), risk management overhaul |
+| 2026-03-02 | [daily/2026-03-02.md](daily/2026-03-02.md) | System cleanup: removed redundant cron, fixed Birdeye, setup audit |
+| 2026-03-01 | [daily/2026-03-01.md](daily/2026-03-01.md) | (recent) |
+| 2026-02-28 | [daily/2026-02-28-memecoin-scanner.md](daily/2026-02-28-memecoin-scanner.md) | (recent) |
+| 2026-02-27 | [daily/2026-02-27.md](daily/2026-02-27.md) | (recent) |
+| 2026-02-26 | [daily/2026-02-26.md](daily/2026-02-26.md) | (recent) |
+| 2026-02-25 | [daily/2026-02-25.md](daily/2026-02-25.md) | (recent) |
+| 2026-02-25 | [daily/2026-02-25-memecoin-scanner.md](daily/2026-02-25-memecoin-scanner.md) | (recent) |
 
 > **Rule:** Keep only last 7 days in `daily/`. Archive older to `archive/`.
 
@@ -25,12 +24,19 @@ Navigation map for agent orientation. Read this FIRST every session.
 
 | Project | Status | File |
 |---------|--------|------|
-| Mission Control | 🟢 Active | NextJS dashboard for OpenClaw operations |
 | Whale Tracker | 🟢 Active | 24h whale monitoring, auto-scoring |
-| Memecoin Scanner v4 | 🟢 Active | 3-engine pattern detection |
+| Memecoin Scanner v4 | 🟡 Degraded | SSL errors to Solscan, needs fix |
 | Discord Notifications | 🟢 Active | 5 channels, Clawsecondbot |
 | Git Auto-Backup | 🟢 Active | Every 2h to private repo |
-| Fed Trade Post-Mortem | ✅ Complete | [projects/fed-trade-postmortem.md](projects/fed-trade-postmortem.md) |
+| NOOK Price Monitor | 🟢 Active | Hourly checks, alerts working |
+| PUNCH Accumulation | 🟢 Active | 20 whales tracked |
+| POLYCLAW | 🔴 Limited | EU geoblock — paper trading only |
+| Mission Control | 🟡 Maintenance | Dashboard functional, needs updates |
+
+### Decisions
+- **POLYCLAW:** Accept EU geoblock limitation, keep as paper trading simulation
+- **Memecoin Scanner:** Fix Solscan SSL or migrate to Helius-only
+- **Future:** Consider Base/Solana prediction markets as Polymarket alternative
 
 ---
 
