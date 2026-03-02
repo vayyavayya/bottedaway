@@ -183,7 +183,19 @@ class WhaleTracker:
     
     async def fetch_wallet_transactions(self, wallet: Wallet) -> List[Dict]:
         """Fetch recent transactions for a wallet - Helius default, no fallback needed"""
-        helius_key = os.getenv("HELIUS_API_KEY")
+        # Load Helius key from env or credentials file
+        helius_key = os.getenv("HELIUS_API_KEY", "")
+        
+        if not helius_key:
+            # Try credentials file
+            creds_file = os.path.expanduser("~/.config/helius/credentials.json")
+            if os.path.exists(creds_file):
+                try:
+                    with open(creds_file, 'r') as f:
+                        creds = json.load(f)
+                        helius_key = creds.get("api_key", "")
+                except Exception:
+                    pass
         
         if not helius_key:
             logger.error(f"❌ HELIUS_API_KEY not set - cannot fetch transactions")
