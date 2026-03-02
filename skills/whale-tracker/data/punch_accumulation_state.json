@@ -24,7 +24,107 @@
       "supply_pct": 0.5499999999999999,
       "amount": 5500000.0,
       "last_seen": "2026-03-02T09:31:41.045673"
+    },
+    "Hp6adEEgMPUj2gmKvnd9y1RqzziJi5hJ6kkMa52ngxx1": {
+      "supply_pct": 3.7938081830936996,
+      "amount": 37938081.830937,
+      "last_seen": "2026-03-02T15:31:05.607850"
+    },
+    "AF1Zkb4GTUJ9KvyxZwePKUneVWznWhgRY5bZyzhzGYKZ": {
+      "supply_pct": 2.5102439134,
+      "amount": 25102439.134,
+      "last_seen": "2026-03-02T15:31:05.607876"
+    },
+    "7UMwJfbtgS1kbT7C2LjyTkGH6XWJs4vjN3nAH3utLSjj": {
+      "supply_pct": 2.4737487151879,
+      "amount": 24737487.151879,
+      "last_seen": "2026-03-02T15:31:05.607885"
+    },
+    "G2EQ2TUeKYc47mnbrE3XRHLMSk7LVZxbYeAYQs4y11tY": {
+      "supply_pct": 1.864873052445,
+      "amount": 18648730.52445,
+      "last_seen": "2026-03-02T15:31:05.607890"
+    },
+    "DgEdw97BFhXkSvSi1ZQD8V6es5vFzJ2AXimCCzdd5dhA": {
+      "supply_pct": 1.6064903913661999,
+      "amount": 16064903.913662,
+      "last_seen": "2026-03-02T15:31:05.607896"
+    },
+    "3X5juegVhUagFDMY16YqMGJw7ebSxmsg66qAWk633kfQ": {
+      "supply_pct": 1.5677358215631,
+      "amount": 15677358.215631,
+      "last_seen": "2026-03-02T15:31:05.607901"
+    },
+    "68C6StBaR8FVPs9pvkg6MGa7DdRryjjruCSx6vbbT4vW": {
+      "supply_pct": 1.4688738370916,
+      "amount": 14688738.370916,
+      "last_seen": "2026-03-02T15:31:05.607906"
+    },
+    "DPgy3ZV25vgZNsui5mS4Xrth3y6Nzx1n1bfWjeccTJrt": {
+      "supply_pct": 1.2928271543880998,
+      "amount": 12928271.543881,
+      "last_seen": "2026-03-02T15:31:05.607910"
+    },
+    "6t1tbTv9k68bPxgsTbBLLwS9kNdvATQNtn94EsWi2PRV": {
+      "supply_pct": 1.2499888433836002,
+      "amount": 12499888.433836,
+      "last_seen": "2026-03-02T15:31:05.607915"
+    },
+    "8ZnvFFRYKj69CjaW8vv7V4orRHAVxNSKcMhYcd3XppD3": {
+      "supply_pct": 1.2404748291727001,
+      "amount": 12404748.291727,
+      "last_seen": "2026-03-02T15:31:05.607919"
+    },
+    "EnfotqSiNcERLCikpKChvgymt64VvDbeSuzHDaeDXpQZ": {
+      "supply_pct": 1.182144764713,
+      "amount": 11821447.64713,
+      "last_seen": "2026-03-02T15:31:05.607923"
+    },
+    "H7Bz9US7aWdPyFjTa45B61kaN8aeCmcnNVCtwpnM1CsR": {
+      "supply_pct": 1.1099330171839001,
+      "amount": 11099330.171839,
+      "last_seen": "2026-03-02T15:31:05.607928"
+    },
+    "UuB5yTN1XeczzDs1Sv1kLDYaddDFnXSyLvRnYM6t9n3": {
+      "supply_pct": 1.0136166804669,
+      "amount": 10136166.804669,
+      "last_seen": "2026-03-02T15:31:05.607932"
+    },
+    "2YBf6jBUqcFiRULoyLSxcJkULtATQNFLJLX3bQ63MeF1": {
+      "supply_pct": 1.003433026581,
+      "amount": 10034330.26581,
+      "last_seen": "2026-03-02T15:31:05.607948"
+    },
+    "4nucRsFRrKx8yqy9GS94GbsPXzJHivpZ9xqvDekLD5pA": {
+      "supply_pct": 0.9781608647258,
+      "amount": 9781608.647258,
+      "last_seen": "2026-03-02T15:31:05.607952"
+    },
+    "CAfGYWkxYWQBW6tkx7TfsrBwgXKgvP3rNdXEeDgot4PM": {
+      "supply_pct": 0.9663861847659999,
+      "amount": 9663861.84766,
+      "last_seen": "2026-03-02T15:31:05.607956"
+    },
+    "BSVsiomQFXxNi7Vh7gNFVPYmZmE4rhXYc59FJ1Qyi1qN": {
+      "supply_pct": 0.9550988143674999,
+      "amount": 9550988.143675,
+      "last_seen": "2026-03-02T15:31:05.607961"
+    },
+    "CtnLMDUPdtkSUqGy8CyJiMfYq2seqC8UXrs8jWxFwj21": {
+      "supply_pct": 0.8997696396985,
+      "amount": 8997696.396985,
+      "last_seen": "2026-03-02T15:31:05.607966"
+    },
+    "4iDUS1xgFVxW8voa2pa4b5DjeTMoU3u3NRBTU9sh4Ye1": {
+      "supply_pct": 0.8939005060165,
+      "amount": 8939005.060165,
+      "last_seen": "2026-03-02T15:31:05.607970"
+    },
+    "F5xXJbbozrqFZXHHb5siQwK2nc5ttbK37coP3VBdoNdC": {
+      "supply_pct": 0.8415976527865999,
+      "amount": 8415976.527866,
+      "last_seen": "2026-03-02T15:31:05.607974"
     }
   },
-  "last_check": "2026-03-02T09:31:41.045674"
+  "last_check": "2026-03-02T15:31:05.607977"
 }

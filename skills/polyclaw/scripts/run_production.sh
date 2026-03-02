@@ -8,8 +8,8 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" && pwd)"
 REPO_DIR="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
-# Load credentials from keys.env (in parent directory)
-KEYS_ENV="$SCRIPT_DIR/keys.env"
+# Load credentials from keys.env (in parent directory - polyclaw/)
+KEYS_ENV="$(cd "$SCRIPT_DIR/.." && pwd)/keys.env"
 if [ -f "$KEYS_ENV" ]; then
     export $(grep -v '^#' "$KEYS_ENV" | xargs)
     echo "✅ Loaded credentials from keys.env"
@@ -30,11 +30,12 @@ echo "🔑 Private key configured: ${POLYMARKET_PK:0:10}...${POLYMARKET_PK: -6}"
 cd "$SCRIPT_DIR"
 
 # Activate virtual environment if it exists
-if [ -f "$REPO_DIR/skills/polyclaw/.venv/bin/activate" ]; then
-    source "$REPO_DIR/skills/polyclaw/.venv/bin/activate"
+VENV_PATH="$(cd "$SCRIPT_DIR/.." && pwd)/.venv/bin/activate"
+if [ -f "$VENV_PATH" ]; then
+    source "$VENV_PATH"
     echo "✅ Activated virtual environment"
 else
-    echo "⚠️ Warning: Virtual environment not found"
+    echo "⚠️ Warning: Virtual environment not found at $VENV_PATH"
 fi
 
 # Run the trading script
