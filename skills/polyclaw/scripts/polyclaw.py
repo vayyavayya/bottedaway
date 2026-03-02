@@ -224,15 +224,43 @@ def markets_trending_command():
     if client:
         try:
             print("📡 Fetching live markets from Polymarket CLOB...")
-            # In production:
-            # markets = client.get_markets()
-            # return format_markets(markets)
+            # Try to get markets from CLOB API
+            # The CLOB client has a get_markets method
+            markets_response = client.get_markets()
             
-            # For now, return placeholder with note
-            print("⚠️  Live market fetch not yet implemented")
-            print("   Using placeholder data. To enable live data, complete CLOB integration.")
+            if markets_response and 'data' in markets_response:
+                markets = markets_response['data']
+                # Sort by volume and take top 10
+                sorted_markets = sorted(
+                    markets, 
+                    key=lambda x: float(x.get('volume', 0)), 
+                    reverse=True
+                )[:10]
+                
+                formatted_markets = []
+                for m in sorted_markets:
+                    formatted_markets.append({
+                        'id': m.get('condition_id', 'unknown'),
+                        'question': m.get('question', 'Unknown'),
+                        'volume': float(m.get('volume', 0)),
+                        'liquidity': float(m.get('liquidity', 0)),
+                        'active': m.get('active', False)
+                    })
+                
+                print(f"✅ Fetched {len(formatted_markets)} live markets from Polymarket")
+                print("📈 Trending Markets:")
+                print(json.dumps(formatted_markets, indent=2))
+                return formatted_markets
+            else:
+                print("⚠️  No markets data returned from CLOB")
+                
         except Exception as e:
             print(f"❌ Failed to fetch live markets: {e}")
+            print(f"   Error type: {type(e).__name__}")
+            if "403" in str(e) or "Geoblock" in str(e) or "restricted" in str(e).lower():
+                print("   🌍 Likely EU geoblock - falling back to paper trading mode")
+    else:
+        print("⚠️  CLOB client not initialized - using placeholder data")
     
     # Fallback to mock data
     markets = [
@@ -240,7 +268,7 @@ def markets_trending_command():
         {'id': 'market2', 'question': 'Crypto price prediction', 'volume': 500000}
     ]
     
-    print("📈 Trending Markets:")
+    print("📈 Trending Markets (PLACEHOLDER):")
     print(json.dumps(markets, indent=2))
     return markets
 
