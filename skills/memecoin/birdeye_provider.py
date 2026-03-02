@@ -300,29 +300,30 @@ class BirdeyeProvider:
     
     def get_trending(self, chain: str = "solana", limit: int = 50) -> List[dict]:
         """Get trending tokens with fallback to tokenlist."""
-        # Try trending endpoint, fall back to tokenlist
+        # Use tokenlist as primary (more reliable), trending as fallback
         result = self._try_with_fallback(
-            primary_endpoint="/defi/token_trending",
-            primary_params={"sort_by": "volume24h", "sort_type": "desc", "offset": 0, "limit": limit},
-            fallback_endpoint="/defi/tokenlist",
-            fallback_params={"offset": 0, "limit": limit * 2}  # Get more for filtering
+            primary_endpoint="/defi/tokenlist",
+            primary_params={"sort_by": "v24hUSD", "sort_type": "desc", "offset": 0, "limit": limit},
+            fallback_endpoint="/defi/token_trending",
+            fallback_params={"sort_by": "volume24h", "sort_type": "desc", "offset": 0, "limit": limit}
         )
         
         tokens = result.get("data", {}).get("tokens", [])
         
-        # If we got tokenlist data (not trending), filter and format it
-        if tokens and not any(t.get('volume24hUSD') for t in tokens):
+        # Tokenlist has v24hUSD, trending has volume24hUSD
+        # If we got tokenlist data, convert format
+        if tokens and any(t.get('v24hUSD') for t in tokens):
             # This is tokenlist data, convert format
             formatted = []
             for t in tokens:
-                vol = t.get('volume24hUSD', 0) or t.get('volume24h', 0)
-                if vol > 0:
+                vol = t.get('v24hUSD', 0) or t.get('volume24hUSD', 0) or t.get('volume24h', 0)
+                if vol and float(vol) > 0:
                     formatted.append({
                         "address": t.get("address"),
                         "symbol": t.get("symbol"),
-                        "volume24hUSD": vol,
-                        "liquidity": t.get("liquidity", 0),
-                        "price": t.get("price", 0)
+                        "volume24hUSD": float(vol),
+                        "liquidity": float(t.get("liquidity", 0) or 0),
+                        "price": float(t.get("price", 0) or 0)
                     })
             # Sort by volume
             formatted.sort(key=lambda x: x.get("volume24hUSD", 0), reverse=True)
