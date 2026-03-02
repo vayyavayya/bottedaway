@@ -47,11 +47,31 @@ def save_state(state: Dict):
         json.dump(state, f, indent=2)
 
 
+def load_helius_key() -> str:
+    """Load Helius API key from credentials"""
+    # Try environment variable first
+    env_key = os.getenv("HELIUS_API_KEY", "")
+    if env_key:
+        return env_key
+    
+    # Try credentials file
+    creds_file = os.path.expanduser("~/.config/helius/credentials.json")
+    if os.path.exists(creds_file):
+        try:
+            with open(creds_file, 'r') as f:
+                creds = json.load(f)
+                return creds.get("api_key", "")
+        except Exception:
+            pass
+    
+    return ""
+
+
 def fetch_token_accounts() -> List[Dict]:
     """Fetch large PUNCH holders from Solana"""
     try:
         # Use Helius API if available
-        helius_key = os.getenv("HELIUS_API_KEY", "")
+        helius_key = load_helius_key()
         if helius_key:
             url = f"https://mainnet.helius-rpc.com/?api-key={helius_key}"
             payload = {
@@ -63,13 +83,19 @@ def fetch_token_accounts() -> List[Dict]:
             response = requests.post(url, json=payload, timeout=30)
             data = response.json()
             if "result" in data and "value" in data["result"]:
-                return data["result"]["value"]
+                holders = data["result"]["value"]
+                print(f"✅ Fetched {len(holders)} holders from Helius API")
+                return holders
+            else:
+                print(f"⚠️ Helius returned unexpected format: {data.keys()}")
+        else:
+            print("⚠️ No Helius API key found — using mock data")
         
         # Fallback: use mock data for testing
         return get_mock_holders()
         
     except Exception as e:
-        print(f"Error fetching holders: {e}")
+        print(f"Error fetching holders from Helius: {e}")
         return get_mock_holders()
 
 
