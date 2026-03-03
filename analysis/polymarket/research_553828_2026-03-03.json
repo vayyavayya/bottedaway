@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0",
-    "generated_at": "2026-03-03T01:36:19.507739",
+    "generated_at": "2026-03-03T07:37:29.646530",
     "market_id": "553828",
     "pipeline_steps": [
       "forecasting",
@@ -17,10 +17,10 @@
     "slug": "will-the-colorado-avalanche-win-the-2026-nhl-stanley-cup",
     "category": null,
     "end_date": "2026-06-30T00:00:00Z",
-    "yes_price": 0.213,
-    "no_price": 0.787,
+    "yes_price": 0.212,
+    "no_price": 0.788,
     "volume_24h": 968834.4549800005,
-    "liquidity": 103579.63937
+    "liquidity": 105340.12289
   },
   "step1_forecasting": {
     "error": "No OpenRouter API key found. Set OPENROUTER_API_KEY environment variable.",
@@ -36,16 +36,16 @@
   },
   "step4_signals": {
     "recommended_side": "YES",
-    "market_probability": 0.213,
+    "market_probability": 0.212,
     "our_probability": 0.5,
-    "edge_percent": 28.7,
+    "edge_percent": 28.8,
     "confidence": 50,
-    "kelly_fraction": 0.0912,
-    "kelly_size": 91.17,
-    "recommended_size": 91.17,
-    "expected_value": 122.84,
-    "risk_adjusted_edge": 7.18,
-    "annualized_return_estimate": 0.44
+    "kelly_fraction": 0.0914,
+    "kelly_size": 91.37,
+    "recommended_size": 91.37,
+    "expected_value": 124.13,
+    "risk_adjusted_edge": 7.2,
+    "annualized_return_estimate": 0.45
   },
   "step5_validation": {
     "overall_valid": false,
@@ -54,7 +54,7 @@
     "checks": [
       {
         "check": "Edge \u2265 5%",
-        "value": "28.7%",
+        "value": "28.8%",
         "threshold": "\u2265 5%",
         "passed": true
       },
@@ -78,7 +78,7 @@
       },
       {
         "check": "Liquidity > $100",
-        "value": "$103,579.64",
+        "value": "$105,340.12",
         "threshold": "> $100",
         "passed": true
       }
@@ -89,7 +89,7 @@
   "step6_output": {
     "recommendation": "PASS",
     "action": "No trade - insufficient edge or confidence",
-    "edge_percent": 28.7,
+    "edge_percent": 28.8,
     "confidence": null,
     "clarity": null,
     "severity": null

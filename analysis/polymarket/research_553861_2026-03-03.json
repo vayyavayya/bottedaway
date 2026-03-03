@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0",
-    "generated_at": "2026-03-03T01:36:19.391889",
+    "generated_at": "2026-03-03T07:37:29.465918",
     "market_id": "553861",
     "pipeline_steps": [
       "forecasting",
@@ -20,7 +20,7 @@
     "yes_price": 0.0005,
     "no_price": 0.9995,
     "volume_24h": 12179867.24,
-    "liquidity": 298951.93188
+    "liquidity": 275696.24854
   },
   "step1_forecasting": {
     "error": "No OpenRouter API key found. Set OPENROUTER_API_KEY environment variable.",
@@ -78,7 +78,7 @@
       },
       {
         "check": "Liquidity > $100",
-        "value": "$298,951.93",
+        "value": "$275,696.25",
         "threshold": "> $100",
         "passed": true
       }

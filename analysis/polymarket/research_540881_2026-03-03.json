@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0",
-    "generated_at": "2026-03-03T01:36:19.563572",
+    "generated_at": "2026-03-03T07:37:29.733160",
     "market_id": "540881",
     "pipeline_steps": [
       "forecasting",
@@ -17,10 +17,10 @@
     "slug": "gta-vi-released-before-june-2026",
     "category": null,
     "end_date": "2026-05-31T12:00:00Z",
-    "yes_price": 0.0205,
-    "no_price": 0.9795,
+    "yes_price": 0.0215,
+    "no_price": 0.9785,
     "volume_24h": 804405.0263710001,
-    "liquidity": 42907.13997
+    "liquidity": 42676.81903
   },
   "step1_forecasting": {
     "error": "No OpenRouter API key found. Set OPENROUTER_API_KEY environment variable.",
@@ -36,15 +36,15 @@
   },
   "step4_signals": {
     "recommended_side": "YES",
-    "market_probability": 0.0205,
+    "market_probability": 0.0215,
     "our_probability": 0.5,
-    "edge_percent": 47.95,
+    "edge_percent": 47.85,
     "confidence": 50,
-    "kelly_fraction": 0.1224,
-    "kelly_size": 122.38,
+    "kelly_fraction": 0.1223,
+    "kelly_size": 122.25,
     "recommended_size": 100.0,
-    "expected_value": 2339.02,
-    "risk_adjusted_edge": 11.99,
+    "expected_value": 2225.58,
+    "risk_adjusted_edge": 11.96,
     "annualized_return_estimate": 0.99
   },
   "step5_validation": {
@@ -54,7 +54,7 @@
     "checks": [
       {
         "check": "Edge \u2265 5%",
-        "value": "48.0%",
+        "value": "47.9%",
         "threshold": "\u2265 5%",
         "passed": true
       },
@@ -78,7 +78,7 @@
       },
       {
         "check": "Liquidity > $100",
-        "value": "$42,907.14",
+        "value": "$42,676.82",
         "threshold": "> $100",
         "passed": true
       }
@@ -89,7 +89,7 @@
   "step6_output": {
     "recommendation": "PASS",
     "action": "No trade - insufficient edge or confidence",
-    "edge_percent": 47.95,
+    "edge_percent": 47.85,
     "confidence": null,
     "clarity": null,
     "severity": null

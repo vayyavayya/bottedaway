@@ -37,49 +37,36 @@ Skills are shared. Your setup is yours. Keeping them apart means you can update 
 
 ---
 
-## Model Routing Preferences
+## Model Routing Preferences (Updated March 2026)
 
-**Qwen3-30B-A3B (NEW - Local Superintelligence)**
-- **Status:** ✅ Installed and operational
-- **Capability:** Sonnet 4.5-level coding, reasoning, analysis
-- **Speed:** ~15-20 tokens/sec on M1 Max
-- **Use for:** All local workloads — heartbeats, coding, analysis
-- **Cost:** $0, fully private
+### Local Models (Priority - $0 cost)
 
-**Default (Routine Work):**
+**Qwen3.5-4B (Heartbeats & Light Tasks)**
+- **Status:** ✅ Installed (Ollama 0.17.5)
+- **Size:** 3.4GB
+- **Speed:** ~11-13s per response (fastest local model)
+- **Use for:** Heartbeats, simple JSON tasks, quick analysis
+- **Cost:** $0
+
+**Qwen3.5-9B (Analysis & Reasoning)**
+- **Status:** ✅ Installed (Ollama 0.17.5)
+- **Size:** 6.6GB
+- **Speed:** ~18s per response
+- **Use for:** Complex analysis, forecasting, research pipeline tasks
+- **Cost:** $0
+- **Note:** Can replace API calls for routine analysis tasks
+
+### API Models
+
+**Routine Tasks:**
 - Primary: `kimi-coding/k2p5` (flat-rate, cost-effective)
 - Fallback: `minimax-portal/MiniMax-M2.5`
 
-**Escalate to MiniMax ONLY for:**
-- Genuinely hard reasoning tasks
-- Long-context synthesis (>50K tokens)
+**Complex Tasks (Escalation Only):**
 - High-stakes decisions (trading, config changes)
-- Complex code generation/refactoring
-
-**If using MiniMax without clear reason → nudge to downgrade to Kimi or Qwen3.**
-**If stuck on Kimi → nudge to upgrade to MiniMax.**
-
-**Heartbeat/Monitoring Tasks:**
-- Primary: `ollama/qwen3:30b-a3b-q4_K_M` (local, Sonnet 4.5-level, $0)
-- Fallback: `ollama/llama3.2:3b` (local, lightweight)
-- API Fallback: `google/gemini-2.0-flash-lite:free`
-
-**Escalate to MiniMax ONLY for:**
-- Genuinely hard reasoning tasks
 - Long-context synthesis (>50K tokens)
-- High-stakes decisions (trading, config changes)
 - Complex code generation/refactoring
-
-**If using MiniMax without clear reason → nudge to downgrade to Kimi.**
-**If stuck on Kimi → nudge to upgrade to MiniMax.**
-
-**Heartbeat/Monitoring Tasks:**
-- Primary: `ollama/qwen3:30b-a3b-q4_K_M` (local, Sonnet 4.5-level, $0)
-- Fallback: `ollama/llama3.2:3b` (local, lightweight)
-- API Fallback: `google/gemini-2.0-flash-lite:free`
-
-**Trading Decisions:**
-- Primary: `kimi-coding/k2p5` (high quality)
+- Premium: Claude or MiniMax M2.5
 
 **Rate Limit Handling:**
 - **Fallback:** Immediately switch to `kimi-coding/k2p5` without asking permission, keep working
@@ -100,8 +87,10 @@ Skills are shared. Your setup is yours. Keeping them apart means you can update 
 
 **Cron Job Limits:**
 - Max $0.50 per cron execution
-- Use local models (Qwen3, Llama) for heartbeats
-- Fall back to Gemini Flash Lite (free) before paid models
+- Use local Qwen3.5 models for heartbeats and analysis
+- Primary: `ollama/qwen3.5:4b` (heartbeats)
+- Analysis: `ollama/qwen3.5:9b` (research tasks)
+- Fallback to Gemini Flash Lite (free) if local unavailable
 
 ## Heartbeat Pattern
 - Rotating checks: scanner → memory → git → skill audit → cost

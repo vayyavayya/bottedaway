@@ -1,7 +1,7 @@
 {
   "meta": {
     "version": "1.0",
-    "generated_at": "2026-03-03T01:36:19.450014",
+    "generated_at": "2026-03-03T07:37:29.559003",
     "market_id": "553882",
     "pipeline_steps": [
       "forecasting",
@@ -17,10 +17,10 @@
     "slug": "will-the-charlotte-hornets-win-the-2026-nba-finals",
     "category": null,
     "end_date": "2026-07-01T00:00:00Z",
-    "yes_price": 0.0065,
-    "no_price": 0.9935,
+    "yes_price": 0.0075,
+    "no_price": 0.9925,
     "volume_24h": 2035157.4550629996,
-    "liquidity": 345971.60448
+    "liquidity": 657271.77736
   },
   "step1_forecasting": {
     "error": "No OpenRouter API key found. Set OPENROUTER_API_KEY environment variable.",
@@ -36,15 +36,15 @@
   },
   "step4_signals": {
     "recommended_side": "YES",
-    "market_probability": 0.0065,
+    "market_probability": 0.0075,
     "our_probability": 0.5,
-    "edge_percent": 49.35,
+    "edge_percent": 49.25,
     "confidence": 50,
-    "kelly_fraction": 0.1242,
-    "kelly_size": 124.18,
+    "kelly_fraction": 0.1241,
+    "kelly_size": 124.06,
     "recommended_size": 100.0,
-    "expected_value": 7592.31,
-    "risk_adjusted_edge": 12.34,
+    "expected_value": 6566.67,
+    "risk_adjusted_edge": 12.31,
     "annualized_return_estimate": 0.76
   },
   "step5_validation": {
@@ -54,7 +54,7 @@
     "checks": [
       {
         "check": "Edge \u2265 5%",
-        "value": "49.4%",
+        "value": "49.2%",
         "threshold": "\u2265 5%",
         "passed": true
       },
@@ -78,7 +78,7 @@
       },
       {
         "check": "Liquidity > $100",
-        "value": "$345,971.60",
+        "value": "$657,271.78",
         "threshold": "> $100",
         "passed": true
       }
@@ -89,7 +89,7 @@
   "step6_output": {
     "recommendation": "PASS",
     "action": "No trade - insufficient edge or confidence",
-    "edge_percent": 49.35,
+    "edge_percent": 49.25,
     "confidence": null,
     "clarity": null,
     "severity": null

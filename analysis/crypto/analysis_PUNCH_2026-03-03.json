@@ -3,17 +3,17 @@
     "symbol": "PUNCH",
     "address": "NV2RYH954cTJ3ckFUpvfqaQXU4ARqqDH3562nFSpump",
     "chain": "solana",
-    "timestamp": "2026-03-03T01:36:30.847249",
+    "timestamp": "2026-03-03T11:31:00.033666",
     "analyst_version": "1.0.0"
   },
   "market_data": {
-    "price": 0.01562709120305038,
+    "price": 0.013530262245398328,
     "price_change_24h": 0,
     "price_change_1h": 0,
     "volume_24h": 0,
-    "liquidity": 1739839.310290931,
+    "liquidity": 1632410.1874006875,
     "marketcap": 0,
-    "fdv": 15626566.37011836,
+    "fdv": 13529807.808872743,
     "buy_ratio": 0,
     "sell_ratio": 0,
     "unique_wallet_24h": 0
@@ -43,5 +43,5 @@
     "risk_factors": [],
     "catalysts": []
   },
-  "raw_prompt": "Analyze this token for trading opportunity:\n\nTOKEN: PUNCH on solana\n\nMARKET DATA:\n- Current Price: $0.01562709\n- 24h Change: 0.00%\n- 24h Volume: $0\n- Liquidity: $1,739,839\n- Market Cap: $0\n\nTECHNICAL INDICATORS:\n- EMA50 Reclaim Setup: NO\n  - Price above EMA50: False\n  - Price above EMA20: False\n  - EMA50: $0.00000000\n- Volume Pattern: neutral\n  - Current vs Avg: 0 vs 0\n  - Volume Surge: NO\n\nWHALE ACTIVITY:\n\n- Tracked by whale wallets: No\n- Whale buy signals (last 7 days): 0\n- Unique whale wallets holding: 0\n- Top holders count: 0\n\n\nANALYSIS CHECKLIST:\n1. EMA Reclaim Setup - Is price reclaiming EMA50 with volume?\n2. Volume Divergence - Is there bullish accumulation or bearish distribution?\n3. Whale Accumulation Pattern - Are smart money wallets accumulating?\n4. Risk/Reward - What are key support/resistance levels?\n\nRespond with valid JSON in this exact format:\n{\n    \"signal\": \"buy|sell|hold\",\n    \"confidence\": 0-100,\n    \"entry_price\": float or null,\n    \"stop_loss\": float or null,\n    \"take_profit\": float or null,\n    \"reasoning\": \"concise explanation of the trade thesis\",\n    \"key_levels\": {\n        \"support\": float,\n        \"resistance\": float\n    },\n    \"risk_factors\": [\"list\", \"of\", \"risks\"],\n    \"catalysts\": [\"potential\", \"upcoming\", \"catalysts\"]\n}"
+  "raw_prompt": "Analyze this token for trading opportunity:\n\nTOKEN: PUNCH on solana\n\nMARKET DATA:\n- Current Price: $0.01353026\n- 24h Change: 0.00%\n- 24h Volume: $0\n- Liquidity: $1,632,410\n- Market Cap: $0\n\nTECHNICAL INDICATORS:\n- EMA50 Reclaim Setup: NO\n  - Price above EMA50: False\n  - Price above EMA20: False\n  - EMA50: $0.00000000\n- Volume Pattern: neutral\n  - Current vs Avg: 0 vs 0\n  - Volume Surge: NO\n\nWHALE ACTIVITY:\n\n- Tracked by whale wallets: No\n- Whale buy signals (last 7 days): 0\n- Unique whale wallets holding: 0\n- Top holders count: 0\n\n\nANALYSIS CHECKLIST:\n1. EMA Reclaim Setup - Is price reclaiming EMA50 with volume?\n2. Volume Divergence - Is there bullish accumulation or bearish distribution?\n3. Whale Accumulation Pattern - Are smart money wallets accumulating?\n4. Risk/Reward - What are key support/resistance levels?\n\nRespond with valid JSON in this exact format:\n{\n    \"signal\": \"buy|sell|hold\",\n    \"confidence\": 0-100,\n    \"entry_price\": float or null,\n    \"stop_loss\": float or null,\n    \"take_profit\": float or null,\n    \"reasoning\": \"concise explanation of the trade thesis\",\n    \"key_levels\": {\n        \"support\": float,\n        \"resistance\": float\n    },\n    \"risk_factors\": [\"list\", \"of\", \"risks\"],\n    \"catalysts\": [\"potential\", \"upcoming\", \"catalysts\"]\n}"
 }

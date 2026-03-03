@@ -1,0 +1,89 @@
+{
+  "meta": {
+    "version": "1.0",
+    "generated_at": "2026-03-03T07:37:29.119938",
+    "run_type": "scheduled",
+    "markets_analyzed": 5,
+    "estimated_cost_usd": 1.5,
+    "markets_resolved_in_run": 0
+  },
+  "summary": {
+    "total": 5,
+    "trade_recommendations": 0,
+    "paper_trades": 0,
+    "pass": 5,
+    "errors": 0
+  },
+  "markets": [
+    {
+      "market_id": "553861",
+      "market_question": "Will the Indiana Pacers win the 2026 NBA Finals?",
+      "recommendation": "PASS",
+      "action": "No trade - insufficient edge or confidence",
+      "edge_percent": 49.95,
+      "confidence": null,
+      "clarity": null,
+      "severity": null,
+      "liquidity": 275696.24854,
+      "research_file": "/Users/pterion2910/.openclaw/workspace/analysis/polymarket/research_553861_2026-03-03.json",
+      "portfolio_integration": null,
+      "timestamp": "2026-03-03T07:37:29.467754"
+    },
+    {
+      "market_id": "553882",
+      "market_question": "Will the Charlotte Hornets win the 2026 NBA Finals?",
+      "recommendation": "PASS",
+      "action": "No trade - insufficient edge or confidence",
+      "edge_percent": 49.25,
+      "confidence": null,
+      "clarity": null,
+      "severity": null,
+      "liquidity": 657271.77736,
+      "research_file": "/Users/pterion2910/.openclaw/workspace/analysis/polymarket/research_553882_2026-03-03.json",
+      "portfolio_integration": null,
+      "timestamp": "2026-03-03T07:37:29.559677"
+    },
+    {
+      "market_id": "553828",
+      "market_question": "Will the Colorado Avalanche win the 2026 NHL Stanley Cup?",
+      "recommendation": "PASS",
+      "action": "No trade - insufficient edge or confidence",
+      "edge_percent": 28.8,
+      "confidence": null,
+      "clarity": null,
+      "severity": null,
+      "liquidity": 105340.12289,
+      "research_file": "/Users/pterion2910/.openclaw/workspace/analysis/polymarket/research_553828_2026-03-03.json",
+      "portfolio_integration": null,
+      "timestamp": "2026-03-03T07:37:29.647059"
+    },
+    {
+      "market_id": "540881",
+      "market_question": "GTA VI released before June 2026?",
+      "recommendation": "PASS",
+      "action": "No trade - insufficient edge or confidence",
+      "edge_percent": 47.85,
+      "confidence": null,
+      "clarity": null,
+      "severity": null,
+      "liquidity": 42676.81903,
+      "research_file": "/Users/pterion2910/.openclaw/workspace/analysis/polymarket/research_540881_2026-03-03.json",
+      "portfolio_integration": null,
+      "timestamp": "2026-03-03T07:37:29.734279"
+    },
+    {
+      "market_id": "553872",
+      "market_question": "Will the Milwaukee Bucks win the 2026 NBA Finals?",
+      "recommendation": "PASS",
+      "action": "No trade - insufficient edge or confidence",
+      "edge_percent": 49.85,
+      "confidence": null,
+      "clarity": null,
+      "severity": null,
+      "liquidity": 862345.01952,
+      "research_file": "/Users/pterion2910/.openclaw/workspace/analysis/polymarket/research_553872_2026-03-03.json",
+      "portfolio_integration": null,
+      "timestamp": "2026-03-03T07:37:29.822702"
+    }
+  ]
+}
