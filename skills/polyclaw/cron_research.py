@@ -65,9 +65,9 @@ def main():
     
     try:
         # Import and run research pipeline
-        from research import research_trending_markets
+        from research import research_top_markets
         
-        results = research_trending_markets(limit=5, model="kimi-coding/k2p5")
+        results = research_top_markets(top_n=5)
         
         # Build daily brief
         daily_brief = {
