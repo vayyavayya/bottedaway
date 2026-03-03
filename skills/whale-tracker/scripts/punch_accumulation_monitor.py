@@ -144,40 +144,37 @@ def format_wallet_short(address: str) -> str:
 
 
 def trigger_crypto_analyst(token_symbol: str, token_mint: str, chain: str, trigger_reason: str, wallet: str = ""):
-    """Spawn crypto analyst subagent to analyze the token"""
+    """Trigger crypto analyst to analyze the token"""
     try:
-        wallet_info = f"\nAccumulating Wallet: {wallet}" if wallet else ""
-        task = f"""Analyze {token_symbol} ({token_mint}) on {chain} for trading opportunity.
+        wallet_info = f" | Wallet: {wallet[:16]}..." if wallet else ""
+        print(f"🤖 Triggering crypto analyst for {token_symbol}...")
+        print(f"   Reason: {trigger_reason}{wallet_info}")
 
-Trigger: {trigger_reason}{wallet_info}
+        # Build command to run crypto analyst directly
+        workspace_dir = os.path.expanduser("~/.openclaw/workspace")
+        analyze_script = os.path.join(workspace_dir, "skills/crypto-analyst/analyze.py")
 
-Provide:
-1. Token overview and fundamentals
-2. Technical analysis (support/resistance levels)
-3. On-chain metrics and holder distribution
-4. Social sentiment analysis
-5. Risk assessment
-6. Trading recommendation (if any)
-"""
-        # Spawn subagent via openclaw CLI
         cmd = [
-            "openclaw", "subagent", "spawn",
-            "--task", task,
-            "--model", "kimi-coding/k2p5",
-            "--label", f"crypto-analyst-{token_symbol.lower()}"
+            sys.executable, analyze_script,
+            token_symbol,
+            "--address", token_mint,
+            "--chain", chain
         ]
-        
+
         # Run in background so monitor isn't blocked
-        subprocess.Popen(
-            cmd,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
-            start_new_session=True
-        )
-        print(f"🤖 Crypto analyst subagent spawned for {token_symbol}")
+        log_file = os.path.join(STATE_DIR, f"crypto_analyst_{token_symbol.lower()}.log")
+        with open(log_file, 'a') as log_out:
+            subprocess.Popen(
+                cmd,
+                stdout=log_out,
+                stderr=subprocess.STDOUT,
+                cwd=workspace_dir,
+                start_new_session=True
+            )
+        print(f"✅ Crypto analyst launched for {token_symbol} (log: {log_file})")
         return True
     except Exception as e:
-        print(f"⚠️ Failed to spawn crypto analyst: {e}")
+        print(f"⚠️ Failed to trigger crypto analyst: {e}")
         return False
 
 

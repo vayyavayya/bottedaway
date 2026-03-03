@@ -46,6 +46,14 @@ except ImportError as e:
 ANALYSIS_DIR = os.path.expanduser('~/.openclaw/workspace/analysis/polymarket')
 os.makedirs(ANALYSIS_DIR, exist_ok=True)
 
+# Import resolution watcher for tracking
+try:
+    sys.path.insert(0, SCRIPT_DIR)
+    from resolution_watcher import add_market_to_tracking
+    RESOLUTION_AVAILABLE = True
+except ImportError:
+    RESOLUTION_AVAILABLE = False
+
 # ============================================================================
 # MEMORY CONTEXT - Load historical base rates and lessons
 # ============================================================================
@@ -668,6 +676,21 @@ def process_portfolio_integration(
     if verbose:
         print(f"   ✅ Paper trade logged: {trade['trade_id']}")
     
+    # Add to resolution watcher tracking
+    if RESOLUTION_AVAILABLE:
+        try:
+            research_data = {
+                'research_file': filepath if 'filepath' in locals() else None,
+                'step1_forecasting': forecast,
+                'step4_signals': signals
+            }
+            add_market_to_tracking(market_id, market_data, research_data)
+            if verbose:
+                print(f"   🔍 Added to resolution tracking")
+        except Exception as e:
+            if verbose:
+                print(f"   ⚠️  Could not add to tracking: {e}")
+    
     # Send Telegram alert
     alert_sent = False
     try:
@@ -826,8 +849,17 @@ def run_research_pipeline(market_id: str, model: str = "kimi-coding/k2p5", verbo
     # ------------------------------------------------------------------------
     # STEP 7: PORTFOLIO INTEGRATION (Risk check + Paper trade logging)
     # ------------------------------------------------------------------------
+    if verbose:
+        print(f"\n💼 STEP 7: Portfolio Integration...")
+    
     portfolio_result = process_portfolio_integration(
-        market_id, market_data, forecast, resolution, signals, validation, verbose=verbose
+        market_id=market_id,
+        market_data=market_data,
+        forecast=forecast,
+        resolution=resolution,
+        signals=signals,
+        validation=validation,
+        verbose=verbose
     )
     
     # Summary

@@ -1,0 +1,47 @@
+{
+  "meta": {
+    "symbol": "SOL",
+    "address": "So11111111111111111111111111111111111111112",
+    "chain": "solana",
+    "timestamp": "2026-03-03T01:36:40.565167",
+    "analyst_version": "1.0.0"
+  },
+  "market_data": {
+    "price": 87.01682918392612,
+    "price_change_24h": 0,
+    "price_change_1h": 0,
+    "volume_24h": 0,
+    "liquidity": 5169942139.172031,
+    "marketcap": 0,
+    "fdv": 54077873563.49187,
+    "buy_ratio": 0,
+    "sell_ratio": 0,
+    "unique_wallet_24h": 0
+  },
+  "whale_activity": {
+    "tracked_by_whales": false,
+    "whale_buy_signals_7d": 0,
+    "whale_wallets_holding": [],
+    "top_holders_count": 0,
+    "top_holders": []
+  },
+  "technical": {
+    "ema_reclaim": {},
+    "volume_divergence": {},
+    "support_resistance": {},
+    "price_change_24h_pct": null,
+    "price_change_1h_pct": null
+  },
+  "analysis": {
+    "signal": "hold",
+    "confidence": 0,
+    "entry_price": null,
+    "stop_loss": null,
+    "take_profit": null,
+    "reasoning": "LLM analysis failed",
+    "key_levels": {},
+    "risk_factors": [],
+    "catalysts": []
+  },
+  "raw_prompt": "Analyze this token for trading opportunity:\n\nTOKEN: SOL on solana\n\nMARKET DATA:\n- Current Price: $87.01682918\n- 24h Change: 0.00%\n- 24h Volume: $0\n- Liquidity: $5,169,942,139\n- Market Cap: $0\n\nTECHNICAL INDICATORS:\n- EMA50 Reclaim Setup: NO\n  - Price above EMA50: False\n  - Price above EMA20: False\n  - EMA50: $0.00000000\n- Volume Pattern: neutral\n  - Current vs Avg: 0 vs 0\n  - Volume Surge: NO\n\nWHALE ACTIVITY:\n\n- Tracked by whale wallets: No\n- Whale buy signals (last 7 days): 0\n- Unique whale wallets holding: 0\n- Top holders count: 0\n\n\nANALYSIS CHECKLIST:\n1. EMA Reclaim Setup - Is price reclaiming EMA50 with volume?\n2. Volume Divergence - Is there bullish accumulation or bearish distribution?\n3. Whale Accumulation Pattern - Are smart money wallets accumulating?\n4. Risk/Reward - What are key support/resistance levels?\n\nRespond with valid JSON in this exact format:\n{\n    \"signal\": \"buy|sell|hold\",\n    \"confidence\": 0-100,\n    \"entry_price\": float or null,\n    \"stop_loss\": float or null,\n    \"take_profit\": float or null,\n    \"reasoning\": \"concise explanation of the trade thesis\",\n    \"key_levels\": {\n        \"support\": float,\n        \"resistance\": float\n    },\n    \"risk_factors\": [\"list\", \"of\", \"risks\"],\n    \"catalysts\": [\"potential\", \"upcoming\", \"catalysts\"]\n}"
+}

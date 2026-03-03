@@ -18,11 +18,20 @@ if [ ! -f ~/.config/telegram/bot_token ]; then
     exit 1
 fi
 
+# Activate virtual environment
+if [ -f "venv/bin/activate" ]; then
+    source venv/bin/activate
+    PYTHON="venv/bin/python3"
+else
+    echo "⚠️  Virtual environment not found, using system python3"
+    PYTHON="python3"
+fi
+
 echo "🤖 Starting Polyclaw Telegram Bot..."
 echo "   Log: ./data/bot.log"
 
 # Run with nohup for persistence
-nohup python3 bot.py > data/bot.log 2>&1 &
+nohup $PYTHON bot.py > data/bot.log 2>&1 &
 echo $! > data/bot.pid
 
 echo "✅ Bot started with PID: $(cat data/bot.pid)"

@@ -158,6 +158,12 @@
 ---
 
 ## PolyClaw Trading Learnings
+### 2026-03-03 - Crypto: Will Bitcoin close above $100K by end of March 202...
+- **Outcome**: YES (✅ Correct)
+- **Our Prediction**: 65.0% | **Actual**: YES (Brier: 0.122)
+- **P&L**: $+25.50
+- **Lessons**: high_edge_predicted_correctly; crypto_momentum_strong
+
 
 *This section auto-populated from memory_tracker.py when markets resolve*
 

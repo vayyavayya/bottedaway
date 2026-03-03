@@ -7,7 +7,9 @@ Auto-generated from memory tracker system.
 
 ## 📊 Category Base Rates
 
-*No resolved markets yet - waiting for first real resolutions*
+| Category | Resolved | Accuracy | Base Rate YES | Avg P&L |
+|----------|----------|----------|---------------|---------|
+| Crypto | 1 | 100.0% | 100.0% | $+25.50 |
 
 ---
 
@@ -19,58 +21,29 @@ Auto-generated from memory tracker system.
 - **✅/❌**: Whether our prediction was directionally correct
 - **P&L**: Profit/loss from trading this market
 
-*No markets resolved yet. Use `python memory_tracker.py resolve <market_id> <outcome>` to record resolutions.*
+### Crypto
 
----
+**Will Bitcoin close above $100K by end of March 2026?**
+- Date: 2026-03-03
+- Our Prediction: 65.0% | Outcome: YES ✅
+- Edge: 15.0% | Confidence: 70%
+- P&L: $+25.50
+- Lessons: high_edge_predicted_correctly, crypto_momentum_strong
 
-## 📝 How to Record Resolutions
-
-### After a market resolves:
-
-```bash
-cd ~/.openclaw/workspace/skills/polyclaw
-
-# Basic resolution record (auto-loads from research note)
-python memory_tracker.py resolve <market_id> YES --pnl 25.50
-
-# With lessons learned
-python memory_tracker.py resolve <market_id> NO \
-  --pnl -15.00 \
-  --lessons "ignored base rate,overconfident on timing"
+```json
+{
+  "market_id": "0x-sample-001",
+  "question": "Will Bitcoin close above $100K by end of March 2026?",
+  "category": "Crypto",
+  "prediction": 65.0,
+  "outcome": "YES",
+  "pnl": 25.5,
+  "confidence": 70,
+  "edge_percent": 15.0,
+  "timestamp": "2026-03-03",
+  "lessons": [
+    "high_edge_predicted_correctly",
+    "crypto_momentum_strong"
+  ]
+}
 ```
-
-### Check stats:
-
-```bash
-# All categories
-python memory_tracker.py stats
-
-# Specific category
-python memory_tracker.py stats --category Politics
-```
-
-### Update ClawAnalyst prompts with learnings:
-
-```bash
-python memory_tracker.py update-prompts
-```
-
----
-
-## 🔄 Memory System Flow
-
-```
-Research → Trade → Resolve → Record → Learn → Improve Forecasts
-```
-
-1. **research.py** generates forecast with memory context
-2. **Trade** (real or paper) based on recommendation
-3. **Market resolves** with actual outcome
-4. **memory_tracker.py** records the resolution
-5. **MEMORY.md** updated with learnings
-6. **prompts/memory_context.md** regenerated with new insights
-7. **Next forecast** benefits from historical data
-
----
-
-*Last updated: 2026-03-02 - System initialized*

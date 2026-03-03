@@ -1,171 +1,282 @@
 #!/usr/bin/env python3
 """
-Crypto Analyst - Token analysis pipeline using Birdeye price data + whale tracker activity
-Generates structured trading signals via LLM analysis
+Crypto Analyst - Token Analysis Pipeline
+
+Analyzes a crypto token using:
+1. Birdeye API for price/volume/market data
+2. Whale tracker for smart money activity
+3. LLM analysis for trading signals
+
+Usage:
+    python analyze.py PUNCH
+    python analyze.py NV2RYH954cTJ3ckFUpvfqaQXU4ARqqDH3562nFSpump
+    python analyze.py TOKEN --chain ethereum --address 0x123...
 """
 
+import argparse
 import json
 import os
 import sys
 import time
 from datetime import datetime
-from pathlib import Path
 from typing import Dict, List, Optional, Any
-from dataclasses import dataclass, asdict
+from pathlib import Path
+
 import requests
 
-# Add scanner_engines to path for Birdeye provider
-sys.path.insert(0, "/Users/pterion2910/.openclaw/workspace/scanner_engines")
-from src.data.birdeye import (
-    fetch_token_market_data_birdeye,
-    fetch_candles_birdeye,
-    fetch_token_metadata_birdeye,
-)
-
 # Configuration
-DATA_DIR = Path("/Users/pterion2910/.openclaw/workspace/analysis/crypto")
-WHALE_TRACKER_DIR = Path("/Users/pterion2910/.openclaw/workspace/skills/whale-tracker")
+SCRIPT_DIR = Path(__file__).parent.resolve()
+WORKSPACE_DIR = SCRIPT_DIR.parent.parent
+OUTPUT_DIR = WORKSPACE_DIR / "analysis" / "crypto"
+SCANNER_DIR = WORKSPACE_DIR / "scanner_engines"
+WHALE_TRACKER_DIR = WORKSPACE_DIR / "skills" / "whale-tracker"
 
-# Ensure output directory exists
-DATA_DIR.mkdir(parents=True, exist_ok=True)
+# Add scanner_engines to path for Birdeye imports
+sys.path.insert(0, str(SCANNER_DIR / "src" / "data"))
 
-# Default chain (can be overridden)
-DEFAULT_CHAIN = "solana"
-
-
-@dataclass
-class TokenPriceData:
-    """Price and market data from Birdeye"""
-    price: float
-    price_change_24h: float
-    price_change_1h: float
-    volume_24h: float
-    volume_change_24h: float
-    liquidity: float
-    marketcap: float
-    fdv: float
-    buy_volume_24h: float
-    sell_volume_24h: float
-    buys_24h: int
-    sells_24h: int
-    unique_wallets_24h: int
-
-
-@dataclass
-class WhaleActivity:
-    """Whale activity for a token"""
-    token_address: str
-    symbol: str
-    whale_buys_24h: int
-    whale_sells_24h: int
-    whale_volume_buy_24h: float
-    whale_volume_sell_24h: float
-    net_whale_flow_24h: float
-    top_holders: List[Dict[str, Any]]
-    recent_transactions: List[Dict[str, Any]]
-
-
-@dataclass
-class AnalysisResult:
-    """Structured analysis result"""
-    signal: str  # buy, sell, hold
-    confidence: float  # 0-100
-    entry_price: Optional[float]
-    stop_loss: Optional[float]
-    take_profit: Optional[float]
-    reasoning: str
-    key_levels: Dict[str, Any]
-    risk_factors: List[str]
-    catalysts: List[str]
-
-
-def load_helius_key() -> str:
-    """Load Helius API key from credentials"""
-    env_key = os.getenv("HELIUS_API_KEY", "")
-    if env_key:
-        return env_key
-    
-    creds_paths = [
-        os.path.expanduser("~/.config/helius/credentials.json"),
-        "/Users/pterion2910/.config/helius/credentials.json",
-    ]
-    for creds_file in creds_paths:
-        if os.path.exists(creds_file):
-            try:
-                with open(creds_file, 'r') as f:
-                    creds = json.load(f)
-                    return creds.get("api_key", "")
-            except Exception:
-                continue
-    return ""
-
-
-def fetch_price_data(chain: str, address: str) -> Optional[TokenPriceData]:
-    """Fetch price and market data from Birdeye"""
-    print(f"📊 Fetching price data for {address[:12]}...")
-    
-    market_data = fetch_token_market_data_birdeye(chain, address, debug=True)
-    if not market_data:
-        print(f"⚠️ No market data available from Birdeye")
-        return None
-    
-    return TokenPriceData(
-        price=float(market_data.get("price", 0) or 0),
-        price_change_24h=float(market_data.get("priceChange24h", 0) or 0),
-        price_change_1h=float(market_data.get("priceChange1h", 0) or 0),
-        volume_24h=float(market_data.get("volume24h", 0) or 0),
-        volume_change_24h=float(market_data.get("volumeChange24h", 0) or 0),
-        liquidity=float(market_data.get("liquidity", 0) or 0),
-        marketcap=float(market_data.get("marketCap", 0) or 0),
-        fdv=float(market_data.get("fdv", 0) or 0),
-        buy_volume_24h=float(market_data.get("buyVolume24h", 0) or 0),
-        sell_volume_24h=float(market_data.get("sellVolume24h", 0) or 0),
-        buys_24h=int(market_data.get("buys24h", 0) or 0),
-        sells_24h=int(market_data.get("sells24h", 0) or 0),
-        unique_wallets_24h=int(market_data.get("uniqueWallet24h", 0) or 0),
+try:
+    from birdeye import (
+        fetch_token_market_data_birdeye,
+        fetch_token_metadata_birdeye,
+        fetch_candles_birdeye,
+        BIRDEYE_API_KEY,
     )
+except ImportError:
+    print("⚠️ Could not import Birdeye module. Using fallback implementation.")
+    fetch_token_market_data_birdeye = None
+    fetch_token_metadata_birdeye = None
+    fetch_candles_birdeye = None
+    BIRDEYE_API_KEY = os.getenv("BIRDEYE_API_KEY", "bb463164ead7429686f982258664fdb9")
+
+# Known token mappings
+KNOWN_TOKENS = {
+    "PUNCH": {
+        "address": "NV2RYH954cTJ3ckFUpvfqaQXU4ARqqDH3562nFSpump",
+        "chain": "solana",
+        "symbol": "PUNCH"
+    },
+    "SOL": {
+        "address": "So11111111111111111111111111111111111111112",
+        "chain": "solana",
+        "symbol": "SOL"
+    },
+    "USDC": {
+        "address": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+        "chain": "solana",
+        "symbol": "USDC"
+    },
+    "BONK": {
+        "address": "DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263",
+        "chain": "solana",
+        "symbol": "BONK"
+    },
+    "WIF": {
+        "address": "EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm",
+        "chain": "solana",
+        "symbol": "WIF"
+    },
+    "PEPE": {
+        "address": "0x6982508145454Ce325dDbE47a25d4ec3d2311933",
+        "chain": "ethereum",
+        "symbol": "PEPE"
+    },
+    "SHIB": {
+        "address": "0x95ad61b0a150d79219dcf64e1e6cc01f0b64c4ce",
+        "chain": "ethereum",
+        "symbol": "SHIB"
+    },
+}
+
+# Helius API
+HELIUS_API_KEY = os.getenv("HELIUS_API_KEY", "")
+HELIUS_BASE_URL = "https://mainnet.helius-rpc.com"
+
+# LLM Configuration
+OPENCLAW_GATEWAY_URL = os.getenv("OPENCLAW_GATEWAY_URL", "http://localhost:8080")
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY", "")
 
 
-def fetch_whale_activity(chain: str, address: str, symbol: str) -> WhaleActivity:
-    """Fetch whale activity from whale tracker snapshots"""
-    print(f"🐋 Fetching whale activity for {symbol}...")
+def resolve_token(input_str: str) -> Optional[Dict[str, str]]:
+    """Resolve token symbol or address to token info."""
+    input_upper = input_str.upper()
     
-    # Try to load recent whale tracker data
-    snapshots_dir = WHALE_TRACKER_DIR / "data" / "whales" / "snapshots"
-    recent_activity = {
-        "token_address": address,
-        "symbol": symbol,
-        "whale_buys_24h": 0,
-        "whale_sells_24h": 0,
-        "whale_volume_buy_24h": 0.0,
-        "whale_volume_sell_24h": 0.0,
-        "net_whale_flow_24h": 0.0,
-        "top_holders": [],
-        "recent_transactions": []
+    # Check known tokens by symbol
+    if input_upper in KNOWN_TOKENS:
+        return KNOWN_TOKENS[input_upper].copy()
+    
+    # Check if input looks like a Solana address (base58, 32-44 chars)
+    if len(input_str) >= 32 and len(input_str) <= 44:
+        # Assume Solana by default
+        return {
+            "address": input_str,
+            "chain": "solana",
+            "symbol": input_str[:8] + "..." if len(input_str) > 8 else input_str
+        }
+    
+    # Check if input looks like an Ethereum address (0x + 40 hex chars)
+    if input_str.startswith("0x") and len(input_str) == 42:
+        return {
+            "address": input_str,
+            "chain": "ethereum",
+            "symbol": input_str[:10] + "..."
+        }
+    
+    return None
+
+
+def fetch_market_data_birdeye_fallback(chain: str, address: str) -> Optional[Dict]:
+    """Fallback implementation for fetching market data from Birdeye."""
+    url = "https://public-api.birdeye.so/defi/v3/token/market-data"
+    params = {"chain": chain, "address": address}
+    headers = {
+        "accept": "application/json",
+        "X-API-KEY": BIRDEYE_API_KEY,
     }
     
-    # Load most recent snapshot if available
-    if snapshots_dir.exists():
-        snapshot_files = sorted(snapshots_dir.glob("*.json"), reverse=True)
-        if snapshot_files:
-            try:
-                with open(snapshot_files[0], 'r') as f:
-                    snapshot = json.load(f)
-                    # Look for this token in the snapshot
-                    for token in snapshot.get("tokens", []):
-                        if token.get("address") == address:
-                            recent_activity["whale_buys_24h"] = token.get("buys", 0)
-                            recent_activity["composite_score"] = token.get("composite", 0)
-                            recent_activity["status"] = token.get("status", "unknown")
-                            break
-            except Exception as e:
-                print(f"⚠️ Error reading whale snapshot: {e}")
+    try:
+        resp = requests.get(url, params=params, headers=headers, timeout=30)
+        data = resp.json()
+        
+        if data.get("success"):
+            return data.get("data", {})
+        return None
+    except Exception as e:
+        print(f"⚠️ Birdeye market data error: {e}")
+        return None
+
+
+def fetch_metadata_birdeye_fallback(chain: str, address: str) -> Optional[Dict]:
+    """Fallback implementation for fetching token metadata."""
+    url = "https://public-api.birdeye.so/defi/v3/token/meta-data/single"
+    params = {"chain": chain, "address": address}
+    headers = {
+        "accept": "application/json",
+        "X-API-KEY": BIRDEYE_API_KEY,
+    }
     
-    # Try to fetch on-chain holder data via Helius
-    helius_key = load_helius_key()
-    if helius_key:
+    try:
+        resp = requests.get(url, params=params, headers=headers, timeout=30)
+        data = resp.json()
+        
+        if data.get("success"):
+            return data.get("data", {})
+        return None
+    except Exception as e:
+        print(f"⚠️ Birdeye metadata error: {e}")
+        return None
+
+
+def fetch_candles_birdeye_fallback(chain: str, address: str, timeframe: str = "1H", limit: int = 100) -> List[Dict]:
+    """Fallback implementation for fetching OHLCV candles."""
+    url = "https://public-api.birdeye.so/defi/ohlcv"
+    
+    now = int(time.time())
+    tf_seconds = {
+        "1m": 60, "5m": 300, "15m": 900, "30m": 1800,
+        "1H": 3600, "2H": 7200, "4H": 14400, "6H": 21600,
+        "8H": 28800, "12H": 43200, "1D": 86400,
+        "3D": 259200, "1W": 604800, "1M": 2592000
+    }
+    
+    seconds = tf_seconds.get(timeframe, 3600)
+    time_from = now - (limit * seconds)
+    
+    params = {
+        "address": address,
+        "type": timeframe,
+        "time_from": time_from,
+        "time_to": now,
+    }
+    headers = {
+        "accept": "application/json",
+        "X-API-KEY": BIRDEYE_API_KEY,
+    }
+    
+    try:
+        resp = requests.get(url, params=params, headers=headers, timeout=30)
+        data = resp.json()
+        
+        if data.get("success"):
+            items = data.get("data", {}).get("items", [])
+            candles = []
+            for item in items:
+                candles.append({
+                    "ts": int(item.get("unixTime", 0)),
+                    "o": float(item.get("o", 0)),
+                    "h": float(item.get("h", 0)),
+                    "l": float(item.get("l", 0)),
+                    "c": float(item.get("c", 0)),
+                    "v": float(item.get("v", 0)),
+                })
+            return candles
+        return []
+    except Exception as e:
+        print(f"⚠️ Birdeye candles error: {e}")
+        return []
+
+
+def fetch_token_market_data(chain: str, address: str) -> Optional[Dict]:
+    """Fetch market data using available method."""
+    if fetch_token_market_data_birdeye:
+        return fetch_token_market_data_birdeye(chain, address)
+    return fetch_market_data_birdeye_fallback(chain, address)
+
+
+def fetch_token_metadata(chain: str, address: str) -> Optional[Dict]:
+    """Fetch token metadata using available method."""
+    if fetch_token_metadata_birdeye:
+        return fetch_token_metadata_birdeye(chain, address)
+    return fetch_metadata_birdeye_fallback(chain, address)
+
+
+def fetch_token_candles(chain: str, address: str, timeframe: str = "1H", limit: int = 100) -> List[Dict]:
+    """Fetch OHLCV candles using available method."""
+    if fetch_candles_birdeye:
+        return fetch_candles_birdeye(chain, address, timeframe, limit)
+    return fetch_candles_birdeye_fallback(chain, address, timeframe, limit)
+
+
+def fetch_whale_activity(chain: str, address: str, symbol: str) -> Dict:
+    """
+    Fetch whale activity data from whale tracker.
+    Checks recent snapshots for this token and fetches top holders via Helius.
+    """
+    whale_data = {
+        "tracked_by_whales": False,
+        "whale_buy_signals": 0,
+        "whale_wallets_holding": [],
+        "top_holders": [],
+        "recent_accumulation": []
+    }
+    
+    # Check whale tracker snapshots
+    snapshots_dir = WHALE_TRACKER_DIR / "data" / "whales" / "snapshots"
+    if snapshots_dir.exists():
+        # Get last 7 days of snapshots
+        snapshot_files = sorted(snapshots_dir.glob("*.json"), reverse=True)[:7]
+        
+        for snapshot_file in snapshot_files:
+            try:
+                with open(snapshot_file, 'r') as f:
+                    snapshot = json.load(f)
+                
+                for token_data in snapshot.get("tokens", []):
+                    token_addr = token_data.get("address", "").lower()
+                    if token_addr == address.lower():
+                        whale_data["tracked_by_whales"] = True
+                        whale_data["whale_buy_signals"] += 1
+                        
+                        # Track which wallets bought
+                        for wallet in token_data.get("buying_wallets", []):
+                            if wallet not in whale_data["whale_wallets_holding"]:
+                                whale_data["whale_wallets_holding"].append(wallet)
+            except Exception:
+                pass
+    
+    # Fetch top holders via Helius (Solana only)
+    if chain == "solana" and HELIUS_API_KEY:
         try:
-            url = f"https://mainnet.helius-rpc.com/?api-key={helius_key}"
+            url = f"{HELIUS_BASE_URL}/?api-key={HELIUS_API_KEY}"
             payload = {
                 "jsonrpc": "2.0",
                 "id": 1,
@@ -174,456 +285,439 @@ def fetch_whale_activity(chain: str, address: str, symbol: str) -> WhaleActivity
             }
             response = requests.post(url, json=payload, timeout=30)
             data = response.json()
+            
             if "result" in data and "value" in data["result"]:
                 holders = data["result"]["value"][:10]  # Top 10 holders
-                total_supply = sum(int(h.get("amount", 0)) for h in data["result"]["value"])
-                
-                formatted_holders = []
-                for h in holders:
-                    amount = int(h.get("amount", 0))
-                    pct = (amount / total_supply * 100) if total_supply > 0 else 0
-                    formatted_holders.append({
-                        "address": h.get("address", "")[:16] + "...",
-                        "amount": amount,
-                        "percentage": round(pct, 2)
+                for holder in holders:
+                    whale_data["top_holders"].append({
+                        "address": holder.get("address", ""),
+                        "amount": holder.get("amount", "0"),
+                        "decimals": holder.get("decimals", 0)
                     })
-                recent_activity["top_holders"] = formatted_holders
-                print(f"  Found {len(formatted_holders)} top holders")
         except Exception as e:
-            print(f"⚠️ Helius holder fetch failed: {e}")
+            print(f"⚠️ Helius top holders fetch failed: {e}")
     
-    return WhaleActivity(**recent_activity)
+    return whale_data
 
 
-def calculate_ema_reclaim_setup(candles: List[Dict]) -> Dict[str, Any]:
-    """Check for EMA reclaim setup pattern"""
+def calculate_technical_indicators(candles: List[Dict]) -> Dict:
+    """Calculate technical indicators from OHLCV data."""
     if len(candles) < 50:
-        return {"setup_present": False, "reason": "Insufficient candle data"}
+        return {"error": "Insufficient data for technical analysis"}
     
-    # Calculate EMA50
-    closes = [c["c"] for c in candles]
-    ema50 = sum(closes[-50:]) / 50  # Simple SMA for approximation
+    # Sort by timestamp
+    candles_sorted = sorted(candles, key=lambda x: x["ts"])
+    closes = [c["c"] for c in candles_sorted]
+    volumes = [c["v"] for c in candles_sorted]
+    
+    # EMA calculations
+    def ema(data: List[float], period: int) -> List[float]:
+        multiplier = 2 / (period + 1)
+        ema_values = [data[0]]
+        for price in data[1:]:
+            ema_values.append((price - ema_values[-1]) * multiplier + ema_values[-1])
+        return ema_values
+    
+    ema50 = ema(closes, 50)
+    ema20 = ema(closes, 20)
     
     current_price = closes[-1]
-    prev_price = closes[-2] if len(closes) > 1 else current_price
+    current_ema50 = ema50[-1]
+    current_ema20 = ema20[-1]
     
-    # Check if price just reclaimed EMA50
-    was_below = prev_price < ema50
-    is_above = current_price > ema50
-    
-    setup = {
-        "setup_present": was_below and is_above,
-        "ema50": round(ema50, 6),
-        "current_price": round(current_price, 6),
-        "distance_from_ema": round((current_price - ema50) / ema50 * 100, 2),
-        "trend": "reclaiming" if (was_below and is_above) else "above" if is_above else "below"
+    # EMA Reclaim detection
+    ema_reclaim = {
+        "setup_present": False,
+        "price_above_ema50": current_price > current_ema50,
+        "price_above_ema20": current_price > current_ema20,
+        "ema50_above_ema20": current_ema50 > current_ema20,
+        "current_price": current_price,
+        "ema50": current_ema50,
+        "ema20": current_ema20
     }
     
-    return setup
-
-
-def calculate_volume_divergence(candles: List[Dict]) -> Dict[str, Any]:
-    """Check for volume divergence signals"""
-    if len(candles) < 20:
-        return {"divergence_present": False, "reason": "Insufficient data"}
+    # Check for EMA50 reclaim (price crossed above EMA50 recently)
+    if len(closes) >= 5:
+        prev_price = closes[-5]
+        if prev_price < ema50[-5] and current_price > current_ema50:
+            ema_reclaim["setup_present"] = True
+            ema_reclaim["reclaim_type"] = "bullish_ema50_reclaim"
     
-    recent = candles[-10:]
-    previous = candles[-20:-10]
+    # Volume analysis
+    avg_volume = sum(volumes[-20:]) / 20 if len(volumes) >= 20 else sum(volumes) / len(volumes)
+    current_volume = volumes[-1]
+    volume_surge = current_volume > avg_volume * 1.5
     
-    recent_avg_price = sum(c["c"] for c in recent) / len(recent)
-    prev_avg_price = sum(c["c"] for c in previous) / len(previous)
-    
-    recent_avg_vol = sum(c["v"] for c in recent) / len(recent)
-    prev_avg_vol = sum(c["v"] for c in previous) / len(previous)
-    
-    price_change = (recent_avg_price - prev_avg_price) / prev_avg_price * 100
-    volume_change = (recent_avg_vol - prev_avg_vol) / prev_avg_vol * 100 if prev_avg_vol > 0 else 0
-    
-    # Bullish divergence: price down, volume up (accumulation)
-    # Bearish divergence: price up, volume down (weak momentum)
-    divergence = {
-        "divergence_present": (price_change < 0 and volume_change > 20) or (price_change > 0 and volume_change < -20),
-        "type": "bullish_accumulation" if (price_change < 0 and volume_change > 20) else "bearish_weakness" if (price_change > 0 and volume_change < -20) else "none",
-        "price_change_10candles": round(price_change, 2),
-        "volume_change_10candles": round(volume_change, 2)
+    volume_divergence = {
+        "type": "neutral",
+        "current_volume": current_volume,
+        "avg_volume_20": avg_volume,
+        "volume_surge": volume_surge
     }
     
-    return divergence
-
-
-def build_llm_prompt(
-    symbol: str,
-    chain: str,
-    price_data: TokenPriceData,
-    whale_activity: WhaleActivity,
-    candles: List[Dict]
-) -> str:
-    """Build the prompt for LLM analysis"""
+    if volume_surge and current_price > closes[-2]:
+        volume_divergence["type"] = "bullish_accumulation"
+    elif volume_surge and current_price < closes[-2]:
+        volume_divergence["type"] = "bearish_distribution"
     
-    # Calculate technical indicators
-    ema_setup = calculate_ema_reclaim_setup(candles)
-    vol_divergence = calculate_volume_divergence(candles)
+    # Support/Resistance levels
+    recent_lows = [c["l"] for c in candles_sorted[-20:]]
+    recent_highs = [c["h"] for c in candles_sorted[-20:]]
     
-    # Format whale activity
-    whale_summary = f"""
-- Whale tracker status: {whale_activity.recent_transactions if whale_activity.recent_transactions else 'No recent whale data'}
-- Top holders concentration: {len(whale_activity.top_holders)} major holders tracked
-"""
+    support_resistance = {
+        "nearest_support": min(recent_lows) if recent_lows else None,
+        "nearest_resistance": max(recent_highs) if recent_highs else None,
+        "recent_range_low": min(closes[-10:]) if len(closes) >= 10 else min(closes),
+        "recent_range_high": max(closes[-10:]) if len(closes) >= 10 else max(closes)
+    }
     
-    if whale_activity.top_holders:
-        top3 = whale_activity.top_holders[:3]
-        whale_summary += f"- Largest holder: {top3[0]['percentage']:.2f}% of supply\n"
+    return {
+        "ema_reclaim": ema_reclaim,
+        "volume_divergence": volume_divergence,
+        "support_resistance": support_resistance,
+        "price_change_24h_pct": ((closes[-1] - closes[-24]) / closes[-24] * 100) if len(closes) >= 24 else None,
+        "price_change_1h_pct": ((closes[-1] - closes[-2]) / closes[-2] * 100) if len(closes) >= 2 else None,
+    }
+
+
+def call_llm_analysis(prompt: str) -> Optional[Dict]:
+    """Call LLM for analysis via OpenClaw gateway or OpenRouter fallback."""
     
-    prompt = f"""Analyze this crypto token for a short-to-medium term trade setup:
-
-TOKEN: {symbol} on {chain}
-CURRENT PRICE: ${price_data.price:.8f}
-
-MARKET DATA (24h):
-- Price change: {price_data.price_change_24h:+.2f}%
-- 1h change: {price_data.price_change_1h:+.2f}%
-- Volume 24h: ${price_data.volume_24h:,.2f}
-- Volume change: {price_data.volume_change_24h:+.2f}%
-- Liquidity: ${price_data.liquidity:,.2f}
-- Market Cap: ${price_data.marketcap:,.2f}
-- Buy/Sell Ratio: {price_data.buys_24h} buys / {price_data.sells_24h} sells
-- Buy Volume: ${price_data.buy_volume_24h:,.2f} vs Sell Volume: ${price_data.sell_volume_24h:,.2f}
-- Unique wallets 24h: {price_data.unique_wallets_24h}
-
-TECHNICAL PATTERNS:
-- EMA50 Reclaim Setup: {"YES - " + ema_setup.get('trend', 'unknown') if ema_setup.get('setup_present') else "No - " + ema_setup.get('reason', 'Insufficient data')} {"(price $" + f"{ema_setup.get('current_price', 0):.8f}" + " vs EMA50 $" + f"{ema_setup.get('ema50', 0):.8f}" + ", " + f"{ema_setup.get('distance_from_ema', 0):+.2f}" + "% distance)" if ema_setup.get('setup_present') else ""}
-- Volume Divergence: {vol_divergence.get('type', 'none').upper() if vol_divergence.get('divergence_present') else "None detected"} {"(price " + f"{vol_divergence.get('price_change_10candles', 0):+.2f}" + "%, volume " + f"{vol_divergence.get('volume_change_10candles', 0):+.2f}" + "%)" if vol_divergence.get('divergence_present') else ""}
-
-WHALE ACTIVITY:
-{whale_summary}
-
-TASK: Generate a structured trading analysis. Consider:
-1. EMA reclaim setup - is price reclaiming key EMA with volume?
-2. Volume divergence - any accumulation/distribution patterns?
-3. Whale accumulation pattern - are smart money wallets buying?
-4. Social/retail sentiment - buy/sell ratio and wallet activity
-
-Return ONLY a JSON object with this exact structure:
-{{
-  "signal": "buy" or "sell" or "hold",
-  "confidence": 0-100,
-  "entry_price": number or null,
-  "stop_loss": number or null,
-  "take_profit": number or null,
-  "reasoning": "2-3 sentences explaining the setup and conviction",
-  "key_levels": {{
-    "support": [price1, price2],
-    "resistance": [price1, price2]
-  }},
-  "risk_factors": ["risk1", "risk2"],
-  "catalysts": ["catalyst1", "catalyst2"]
-}}
-
-Be objective. High confidence only when multiple factors align."""
-    
-    return prompt
-
-
-def call_llm_analyst(prompt: str) -> Optional[AnalysisResult]:
-    """Send prompt to LLM and parse response"""
-    print("🧠 Sending to ClawAnalyst for analysis...")
-    
-    # Try OpenClaw's local model first, then fall back to API
+    # Try OpenClaw gateway first (local models)
     try:
-        # Check if we have OpenClaw gateway for local inference
-        gateway_url = os.getenv("OPENCLAW_GATEWAY_URL", "http://localhost:8080")
-        
-        # Try local Qwen3 model via ollama/OpenClaw
         response = requests.post(
-            f"{gateway_url}/v1/chat/completions",
+            f"{OPENCLAW_GATEWAY_URL}/v1/chat/completions",
             json={
-                "model": "ollama/qwen3:30b-a3b-q4_K_M",
+                "model": "qwen3:30b-a3b-q4_K_M",
                 "messages": [
-                    {"role": "system", "content": "You are an expert crypto trader analyst. Provide objective technical analysis with specific entry/exit levels."},
+                    {"role": "system", "content": "You are a crypto trading analyst. Respond with valid JSON only."},
                     {"role": "user", "content": prompt}
                 ],
                 "temperature": 0.3,
-                "max_tokens": 800
+                "max_tokens": 1500
             },
             timeout=60
         )
         
         if response.status_code == 200:
-            content = response.json()["choices"][0]["message"]["content"]
-        else:
-            raise Exception(f"Local model failed: {response.status_code}")
+            data = response.json()
+            content = data.get("choices", [{}])[0].get("message", {}).get("content", "")
             
-    except Exception as local_error:
-        print(f"  Local model unavailable ({local_error}), trying API fallback...")
-        
-        # Fallback: Use OpenRouter or other configured API
-        api_key = os.getenv("OPENROUTER_API_KEY", "")
-        if not api_key:
-            print("⚠️ No LLM API available - using heuristic analysis")
-            return heuristic_analysis(prompt)
-        
+            # Try to parse JSON from the content
+            try:
+                # Handle markdown code blocks
+                if "```json" in content:
+                    content = content.split("```json")[1].split("```")[0].strip()
+                elif "```" in content:
+                    content = content.split("```")[1].split("```")[0].strip()
+                
+                return json.loads(content)
+            except json.JSONDecodeError:
+                # Return raw content if JSON parsing fails
+                return {"raw_response": content}
+    except Exception as e:
+        print(f"⚠️ OpenClaw gateway failed: {e}")
+    
+    # Fallback to OpenRouter
+    if OPENROUTER_API_KEY:
         try:
             response = requests.post(
                 "https://openrouter.ai/api/v1/chat/completions",
                 headers={
-                    "Authorization": f"Bearer {api_key}",
+                    "Authorization": f"Bearer {OPENROUTER_API_KEY}",
                     "Content-Type": "application/json"
                 },
                 json={
-                    "model": "google/gemini-2.0-flash-lite:free",
+                    "model": "qwen/qwen3-30b-a3b:free",
                     "messages": [
-                        {"role": "system", "content": "You are an expert crypto trader analyst."},
+                        {"role": "system", "content": "You are a crypto trading analyst. Respond with valid JSON only."},
                         {"role": "user", "content": prompt}
                     ],
                     "temperature": 0.3,
-                    "max_tokens": 800
+                    "max_tokens": 1500
                 },
                 timeout=60
             )
-            content = response.json()["choices"][0]["message"]["content"]
+            
+            if response.status_code == 200:
+                data = response.json()
+                content = data.get("choices", [{}])[0].get("message", {}).get("content", "")
+                
+                try:
+                    if "```json" in content:
+                        content = content.split("```json")[1].split("```")[0].strip()
+                    elif "```" in content:
+                        content = content.split("```")[1].split("```")[0].strip()
+                    
+                    return json.loads(content)
+                except json.JSONDecodeError:
+                    return {"raw_response": content}
         except Exception as e:
-            print(f"⚠️ API fallback failed: {e}")
-            return heuristic_analysis(prompt)
+            print(f"⚠️ OpenRouter failed: {e}")
     
-    # Parse JSON from response
-    try:
-        # Extract JSON from response (handle markdown code blocks)
-        content_clean = content
-        if "```json" in content:
-            content_clean = content.split("```json")[1].split("```")[0]
-        elif "```" in content:
-            content_clean = content.split("```")[1].split("```")[0]
-        
-        result = json.loads(content_clean.strip())
-        
-        return AnalysisResult(
-            signal=result.get("signal", "hold"),
-            confidence=float(result.get("confidence", 50)),
-            entry_price=result.get("entry_price"),
-            stop_loss=result.get("stop_loss"),
-            take_profit=result.get("take_profit"),
-            reasoning=result.get("reasoning", ""),
-            key_levels=result.get("key_levels", {}),
-            risk_factors=result.get("risk_factors", []),
-            catalysts=result.get("catalysts", [])
-        )
-    except Exception as e:
-        print(f"⚠️ Failed to parse LLM response: {e}")
-        print(f"Raw response: {content[:500]}")
-        return heuristic_analysis(prompt)
+    return None
 
 
-def heuristic_analysis(prompt: str) -> AnalysisResult:
-    """Fallback heuristic analysis when LLM is unavailable"""
-    print("📊 Running heuristic analysis...")
+def build_analysis_prompt(
+    symbol: str,
+    chain: str,
+    market_data: Dict,
+    whale_data: Dict,
+    technical: Dict
+) -> str:
+    """Build the prompt for LLM analysis."""
     
-    # Extract key data points from prompt using simple rules
-    signal = "hold"
-    confidence = 50
-    entry = None
-    stop = None
-    target = None
-    reasoning = "Heuristic analysis based on technical patterns"
+    price = market_data.get("price", 0)
+    price_change_24h = market_data.get("priceChange24h", 0)
+    volume_24h = market_data.get("volume24h", 0) or market_data.get("v24hUSD", 0)
+    liquidity = market_data.get("liquidity", 0)
+    marketcap = market_data.get("marketcap", 0) or market_data.get("marketCap", 0)
     
-    # Simple rule-based logic
-    if "EMA50 Reclaim Setup: YES" in prompt and "bullish_accumulation" in prompt:
-        signal = "buy"
-        confidence = 70
-        reasoning = "EMA50 reclaim with bullish volume divergence detected"
-    elif "bearish_weakness" in prompt:
-        signal = "sell"
-        confidence = 60
-        reasoning = "Bearish volume divergence - momentum weakening"
+    ema_reclaim = technical.get("ema_reclaim", {})
+    volume_divergence = technical.get("volume_divergence", {})
     
-    return AnalysisResult(
-        signal=signal,
-        confidence=confidence,
-        entry_price=entry,
-        stop_loss=stop,
-        take_profit=target,
-        reasoning=reasoning,
-        key_levels={"support": [], "resistance": []},
-        risk_factors=["Heuristic mode - LLM unavailable"],
-        catalysts=[]
-    )
+    whale_summary = f"""
+- Tracked by whale wallets: {'Yes' if whale_data.get('tracked_by_whales') else 'No'}
+- Whale buy signals (last 7 days): {whale_data.get('whale_buy_signals', 0)}
+- Unique whale wallets holding: {len(whale_data.get('whale_wallets_holding', []))}
+- Top holders count: {len(whale_data.get('top_holders', []))}
+"""
+    
+    prompt = f"""Analyze this token for trading opportunity:
+
+TOKEN: {symbol} on {chain}
+
+MARKET DATA:
+- Current Price: ${price:.8f}
+- 24h Change: {price_change_24h:.2f}%
+- 24h Volume: ${volume_24h:,.0f}
+- Liquidity: ${liquidity:,.0f}
+- Market Cap: ${marketcap:,.0f}
+
+TECHNICAL INDICATORS:
+- EMA50 Reclaim Setup: {'YES' if ema_reclaim.get('setup_present') else 'NO'}
+  - Price above EMA50: {ema_reclaim.get('price_above_ema50', False)}
+  - Price above EMA20: {ema_reclaim.get('price_above_ema20', False)}
+  - EMA50: ${ema_reclaim.get('ema50', 0):.8f}
+- Volume Pattern: {volume_divergence.get('type', 'neutral')}
+  - Current vs Avg: {volume_divergence.get('current_volume', 0):,.0f} vs {volume_divergence.get('avg_volume_20', 0):,.0f}
+  - Volume Surge: {'YES' if volume_divergence.get('volume_surge') else 'NO'}
+
+WHALE ACTIVITY:
+{whale_summary}
+
+ANALYSIS CHECKLIST:
+1. EMA Reclaim Setup - Is price reclaiming EMA50 with volume?
+2. Volume Divergence - Is there bullish accumulation or bearish distribution?
+3. Whale Accumulation Pattern - Are smart money wallets accumulating?
+4. Risk/Reward - What are key support/resistance levels?
+
+Respond with valid JSON in this exact format:
+{{
+    "signal": "buy|sell|hold",
+    "confidence": 0-100,
+    "entry_price": float or null,
+    "stop_loss": float or null,
+    "take_profit": float or null,
+    "reasoning": "concise explanation of the trade thesis",
+    "key_levels": {{
+        "support": float,
+        "resistance": float
+    }},
+    "risk_factors": ["list", "of", "risks"],
+    "catalysts": ["potential", "upcoming", "catalysts"]
+}}"""
+    
+    return prompt
 
 
-def analyze_token(address: str, symbol: str, chain: str = DEFAULT_CHAIN) -> Dict[str, Any]:
+def analyze_token(symbol_or_address: str, chain: Optional[str] = None, address: Optional[str] = None) -> Dict:
     """
-    Main analysis pipeline for a token
+    Main analysis function.
     
     Args:
-        address: Token contract address
-        symbol: Token symbol/name
-        chain: Blockchain (default: solana)
+        symbol_or_address: Token symbol (e.g., "PUNCH") or address
+        chain: Blockchain (solana, ethereum, etc.)
+        address: Explicit token address (overrides symbol lookup)
     
     Returns:
         Complete analysis result dictionary
     """
-    print(f"\n{'='*60}")
-    print(f"🔍 CRYPTO ANALYST: {symbol} on {chain}")
-    print(f"   Address: {address}")
-    print(f"{'='*60}\n")
+    print(f"🔍 Analyzing {symbol_or_address}...")
+    print("=" * 60)
     
-    # Step 1: Fetch price data from Birdeye
-    price_data = fetch_price_data(chain, address)
-    if not price_data:
-        return {
-            "error": "Failed to fetch price data",
-            "symbol": symbol,
+    # Resolve token
+    if address:
+        token_info = {
             "address": address,
-            "timestamp": datetime.now().isoformat()
+            "chain": chain or "solana",
+            "symbol": symbol_or_address.upper()
         }
-    
-    print(f"✅ Price data: ${price_data.price:.8f} ({price_data.price_change_24h:+.2f}%)")
-    
-    # Step 2: Fetch whale activity
-    whale_activity = fetch_whale_activity(chain, address, symbol)
-    print(f"✅ Whale data: {len(whale_activity.top_holders)} top holders tracked")
-    
-    # Step 3: Fetch candle data for technical analysis
-    print("📈 Fetching candle data for technical analysis...")
-    candles = fetch_candles_birdeye(chain, address, timeframe="1H", limit=100, debug=True)
-    if not candles:
-        print("⚠️ No candle data available, using limited analysis")
-        candles = []
     else:
-        print(f"✅ Loaded {len(candles)} candles")
+        token_info = resolve_token(symbol_or_address)
     
-    # Step 4: Build LLM prompt and get analysis
-    prompt = build_llm_prompt(symbol, chain, price_data, whale_activity, candles)
-    analysis = call_llm_analyst(prompt)
+    if not token_info:
+        print(f"❌ Could not resolve token: {symbol_or_address}")
+        return {"error": f"Could not resolve token: {symbol_or_address}"}
     
-    if not analysis:
-        return {
-            "error": "Analysis failed",
-            "symbol": symbol,
-            "address": address,
-            "timestamp": datetime.now().isoformat()
-        }
+    symbol = token_info["symbol"]
+    addr = token_info["address"]
+    chain = token_info["chain"]
     
-    # Step 5: Compile full result
+    print(f"📋 Token: {symbol}")
+    print(f"🔗 Address: {addr}")
+    print(f"⛓️  Chain: {chain}")
+    print()
+    
+    # 1. Fetch market data
+    print("📊 Fetching market data from Birdeye...")
+    market_data = fetch_token_market_data(chain, addr)
+    
+    if not market_data:
+        print("⚠️ No market data available")
+        market_data = {}
+    else:
+        print(f"   Price: ${market_data.get('price', 0):.8f}")
+        print(f"   24h Change: {market_data.get('priceChange24h', 0):.2f}%")
+        print(f"   24h Volume: ${market_data.get('volume24h', market_data.get('v24hUSD', 0)):,.0f}")
+    
+    # 2. Fetch whale activity
+    print("\n🐋 Fetching whale activity...")
+    whale_data = fetch_whale_activity(chain, addr, symbol)
+    
+    print(f"   Tracked by whales: {'Yes' if whale_data['tracked_by_whales'] else 'No'}")
+    print(f"   Whale buy signals: {whale_data['whale_buy_signals']}")
+    print(f"   Top holders: {len(whale_data['top_holders'])}")
+    
+    # 3. Calculate technical indicators
+    print("\n📈 Calculating technical indicators...")
+    candles = fetch_token_candles(chain, addr, timeframe="1H", limit=100)
+    technical = calculate_technical_indicators(candles)
+    
+    ema_reclaim = technical.get("ema_reclaim", {})
+    print(f"   EMA50 Reclaim: {'YES' if ema_reclaim.get('setup_present') else 'NO'}")
+    print(f"   Price above EMA50: {ema_reclaim.get('price_above_ema50', False)}")
+    
+    # 4. LLM Analysis
+    print("\n🤖 Sending to LLM for analysis...")
+    prompt = build_analysis_prompt(symbol, chain, market_data, whale_data, technical)
+    llm_result = call_llm_analysis(prompt)
+    
+    if llm_result:
+        print(f"   Signal: {llm_result.get('signal', 'unknown').upper()}")
+        print(f"   Confidence: {llm_result.get('confidence', 0)}%")
+        print(f"   Entry: ${llm_result.get('entry_price', 'N/A')}")
+    else:
+        print("   ⚠️ LLM analysis failed")
+        llm_result = {"error": "LLM analysis failed"}
+    
+    # Build final result
+    timestamp = datetime.now().isoformat()
+    date_str = datetime.now().strftime("%Y-%m-%d")
+    
     result = {
         "meta": {
             "symbol": symbol,
-            "address": address,
+            "address": addr,
             "chain": chain,
-            "timestamp": datetime.now().isoformat(),
+            "timestamp": timestamp,
             "analyst_version": "1.0.0"
         },
-        "market_data": asdict(price_data),
+        "market_data": {
+            "price": market_data.get("price", 0),
+            "price_change_24h": market_data.get("priceChange24h", 0),
+            "price_change_1h": market_data.get("priceChange1h", 0),
+            "volume_24h": market_data.get("volume24h", market_data.get("v24hUSD", 0)),
+            "liquidity": market_data.get("liquidity", 0),
+            "marketcap": market_data.get("marketcap", market_data.get("marketCap", 0)),
+            "fdv": market_data.get("fdv", 0),
+            "buy_ratio": market_data.get("buyRatio", 0),
+            "sell_ratio": market_data.get("sellRatio", 0),
+            "unique_wallet_24h": market_data.get("uniqueWallet24h", 0)
+        },
         "whale_activity": {
-            "top_holders": whale_activity.top_holders,
-            "holder_count": len(whale_activity.top_holders)
+            "tracked_by_whales": whale_data["tracked_by_whales"],
+            "whale_buy_signals_7d": whale_data["whale_buy_signals"],
+            "whale_wallets_holding": whale_data["whale_wallets_holding"],
+            "top_holders_count": len(whale_data["top_holders"]),
+            "top_holders": whale_data["top_holders"][:5]  # Top 5 only
         },
         "technical": {
-            "ema_reclaim": calculate_ema_reclaim_setup(candles),
-            "volume_divergence": calculate_volume_divergence(candles),
-            "candles_analyzed": len(candles)
+            "ema_reclaim": technical.get("ema_reclaim", {}),
+            "volume_divergence": technical.get("volume_divergence", {}),
+            "support_resistance": technical.get("support_resistance", {}),
+            "price_change_24h_pct": technical.get("price_change_24h_pct"),
+            "price_change_1h_pct": technical.get("price_change_1h_pct")
         },
-        "analysis": {
-            "signal": analysis.signal,
-            "confidence": analysis.confidence,
-            "entry_price": analysis.entry_price,
-            "stop_loss": analysis.stop_loss,
-            "take_profit": analysis.take_profit,
-            "reasoning": analysis.reasoning,
-            "key_levels": analysis.key_levels,
-            "risk_factors": analysis.risk_factors,
-            "catalysts": analysis.catalysts
-        }
+        "analysis": llm_result if not llm_result.get("error") else {
+            "signal": "hold",
+            "confidence": 0,
+            "entry_price": None,
+            "stop_loss": None,
+            "take_profit": None,
+            "reasoning": llm_result.get("error", "Analysis failed"),
+            "key_levels": {},
+            "risk_factors": [],
+            "catalysts": []
+        },
+        "raw_prompt": prompt  # Include for debugging
     }
     
-    # Step 6: Save to file
-    date_str = datetime.now().strftime("%Y-%m-%d")
-    output_file = DATA_DIR / f"analysis_{symbol}_{date_str}.json"
+    # 5. Save to file
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    output_file = OUTPUT_DIR / f"analysis_{symbol}_{date_str}.json"
     
     with open(output_file, 'w') as f:
         json.dump(result, f, indent=2)
     
-    print(f"\n{'='*60}")
-    print(f"✅ ANALYSIS COMPLETE")
-    print(f"{'='*60}")
-    print(f"Signal: {analysis.signal.upper()} (confidence: {analysis.confidence}%)")
-    print(f"Reasoning: {analysis.reasoning[:100]}...")
-    print(f"Saved to: {output_file}")
-    print(f"{'='*60}\n")
+    print(f"\n💾 Analysis saved to: {output_file}")
+    print("=" * 60)
     
     return result
 
 
 def main():
-    import argparse
-    
     parser = argparse.ArgumentParser(
-        description="Crypto Analyst - Token analysis with Birdeye + whale tracker"
+        description="Crypto Analyst - Token analysis pipeline",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+    python analyze.py PUNCH
+    python analyze.py NV2RYH954cTJ3ckFUpvfqaQXU4ARqqDH3562nFSpump
+    python analyze.py MYTOKEN --chain ethereum --address 0x123...
+        """
     )
-    parser.add_argument(
-        "token",
-        help="Token address or symbol (e.g., 'PUNCH' or 'NV2RYH954cTJ3ckFUpvfqaQXU4ARqqDH3562nFSpump')"
-    )
-    parser.add_argument(
-        "--chain",
-        default=DEFAULT_CHAIN,
-        help=f"Blockchain (default: {DEFAULT_CHAIN})"
-    )
-    parser.add_argument(
-        "--address",
-        help="Token contract address (if token is a symbol)"
-    )
-    parser.add_argument(
-        "--output",
-        "-o",
-        help="Output file path (default: auto-generated)"
-    )
+    
+    parser.add_argument("token", help="Token symbol (e.g., PUNCH) or address")
+    parser.add_argument("--chain", help="Blockchain (solana, ethereum, etc.)", default=None)
+    parser.add_argument("--address", help="Explicit token address", default=None)
+    parser.add_argument("--json", action="store_true", help="Output raw JSON to stdout")
     
     args = parser.parse_args()
     
-    # Resolve token symbol to address if needed
-    symbol = args.token.upper()
-    address = args.address
+    result = analyze_token(args.token, args.chain, args.address)
     
-    # Common token mappings
-    token_mappings = {
-        "PUNCH": "NV2RYH954cTJ3ckFUpvfqaQXU4ARqqDH3562nFSpump",
-        "SOL": "So11111111111111111111111111111111111111112",
-        "USDC": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
-        "BONK": "DezXAZ8z7PnrnRJjz3wXBoRgixCa6xjnB7YaB1pPB263",
-        "WIF": "EKpQGSJtjMFqKZ9KQanSqYXRcF8fBopzLHYxdM65zcjm",
-    }
-    
-    if not address:
-        if args.token in token_mappings:
-            address = token_mappings[args.token]
-        elif len(args.token) > 30:
-            # Looks like an address
-            address = args.token
-        else:
-            print(f"❌ Unknown token symbol: {args.token}")
-            print(f"Known symbols: {', '.join(token_mappings.keys())}")
-            print(f"Or provide --address with the contract address")
-            sys.exit(1)
-    
-    # Run analysis
-    result = analyze_token(address, symbol, args.chain)
-    
-    if "error" in result:
-        print(f"❌ Error: {result['error']}")
-        sys.exit(1)
-    
-    # Print summary
-    analysis = result["analysis"]
-    print("\n📊 SUMMARY:")
-    print(f"  Signal: {analysis['signal'].upper()}")
-    print(f"  Confidence: {analysis['confidence']}%")
-    if analysis['entry_price']:
-        print(f"  Entry: ${analysis['entry_price']:.8f}")
-    if analysis['stop_loss']:
-        print(f"  Stop Loss: ${analysis['stop_loss']:.8f}")
-    if analysis['take_profit']:
-        print(f"  Take Profit: ${analysis['take_profit']:.8f}")
-    print(f"\n  Reasoning:")
-    print(f"    {analysis['reasoning']}")
+    if args.json:
+        print(json.dumps(result, indent=2))
+    else:
+        # Print summary
+        analysis = result.get("analysis", {})
+        signal = analysis.get("signal", "unknown").upper()
+        confidence = analysis.get("confidence", 0)
+        
+        print(f"\n📊 ANALYSIS SUMMARY")
+        print(f"   Signal: {signal}")
+        print(f"   Confidence: {confidence}%")
+        
+        if analysis.get("entry_price"):
+            print(f"   Entry: ${analysis['entry_price']:.8f}")
+        if analysis.get("stop_loss"):
+            print(f"   Stop: ${analysis['stop_loss']:.8f}")
+        if analysis.get("take_profit"):
+            print(f"   Target: ${analysis['take_profit']:.8f}")
+        
+        if analysis.get("reasoning"):
+            print(f"\n📝 Reasoning: {analysis['reasoning'][:200]}...")
 
 
 if __name__ == "__main__":

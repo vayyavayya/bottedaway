@@ -1,0 +1,97 @@
+{
+  "meta": {
+    "version": "1.0",
+    "generated_at": "2026-03-03T01:36:19.563572",
+    "market_id": "540881",
+    "pipeline_steps": [
+      "forecasting",
+      "resolution",
+      "devils_advocate",
+      "signals",
+      "validation"
+    ]
+  },
+  "market": {
+    "id": "540881",
+    "question": "GTA VI released before June 2026?",
+    "slug": "gta-vi-released-before-june-2026",
+    "category": null,
+    "end_date": "2026-05-31T12:00:00Z",
+    "yes_price": 0.0205,
+    "no_price": 0.9795,
+    "volume_24h": 804405.0263710001,
+    "liquidity": 42907.13997
+  },
+  "step1_forecasting": {
+    "error": "No OpenRouter API key found. Set OPENROUTER_API_KEY environment variable.",
+    "parse_error": true
+  },
+  "step2_resolution": {
+    "error": "No OpenRouter API key found. Set OPENROUTER_API_KEY environment variable.",
+    "parse_error": true
+  },
+  "step3_devils_advocate": {
+    "error": "No OpenRouter API key found. Set OPENROUTER_API_KEY environment variable.",
+    "parse_error": true
+  },
+  "step4_signals": {
+    "recommended_side": "YES",
+    "market_probability": 0.0205,
+    "our_probability": 0.5,
+    "edge_percent": 47.95,
+    "confidence": 50,
+    "kelly_fraction": 0.1224,
+    "kelly_size": 122.38,
+    "recommended_size": 100.0,
+    "expected_value": 2339.02,
+    "risk_adjusted_edge": 11.99,
+    "annualized_return_estimate": 0.99
+  },
+  "step5_validation": {
+    "overall_valid": false,
+    "recommendation": "PASS",
+    "recommended_action": "No trade - insufficient edge or confidence",
+    "checks": [
+      {
+        "check": "Edge \u2265 5%",
+        "value": "48.0%",
+        "threshold": "\u2265 5%",
+        "passed": true
+      },
+      {
+        "check": "Confidence \u2265 60%",
+        "value": "0%",
+        "threshold": "\u2265 60%",
+        "passed": false
+      },
+      {
+        "check": "Clarity \u2265 50%",
+        "value": "0%",
+        "threshold": "\u2265 50%",
+        "passed": false
+      },
+      {
+        "check": "Severity < 80%",
+        "value": "100%",
+        "threshold": "< 80%",
+        "passed": false
+      },
+      {
+        "check": "Liquidity > $100",
+        "value": "$42,907.14",
+        "threshold": "> $100",
+        "passed": true
+      }
+    ],
+    "passed_count": 2,
+    "total_checks": 5
+  },
+  "step6_output": {
+    "recommendation": "PASS",
+    "action": "No trade - insufficient edge or confidence",
+    "edge_percent": 47.95,
+    "confidence": null,
+    "clarity": null,
+    "severity": null
+  }
+}

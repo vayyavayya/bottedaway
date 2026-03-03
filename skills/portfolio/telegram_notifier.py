@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import Optional, Dict, Any
 
 # BigBrother's Telegram user ID (hardcoded for security)
-BIGBROTHER_USER_ID = 123456789  # TODO: Replace with actual user ID
+BIGBROTHER_USER_ID = 8492071912  # BigBrother's Telegram user ID
 
 # Token file path
 TOKEN_FILE = Path.home() / ".config" / "telegram" / "bot_token"

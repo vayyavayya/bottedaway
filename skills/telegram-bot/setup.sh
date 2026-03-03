@@ -20,9 +20,13 @@ else
     echo "   export WHALE_TELEGRAM_BOT_TOKEN='your_token_here'"
 fi
 
+# Create virtual environment
+echo "📦 Creating virtual environment..."
+python3 -m venv venv
+
 # Install dependencies
 echo "📦 Installing Python dependencies..."
-pip install -q -r requirements.txt
+venv/bin/pip install -q -r requirements.txt
 
 # Make bot.py executable
 chmod +x bot.py
@@ -33,10 +37,11 @@ mkdir -p data
 echo ""
 echo "✅ Setup complete!"
 echo ""
-echo "📝 Next steps:"
-echo "   1. Update AUTHORIZED_USER_ID in bot.py with your Telegram user ID"
-echo "   2. Run the bot: python3 bot.py"
+echo "🚀 Start the bot:"
+echo "   ./run.sh"
 echo ""
-echo "🔍 To find your Telegram user ID:"
+echo "📝 To find your Telegram user ID:"
 echo "   - Message @userinfobot on Telegram"
 echo "   - Or use @raw_data_bot"
+echo ""
+echo "🔒 Security: Only user ID 8492071912 (BigBrother) can use this bot"

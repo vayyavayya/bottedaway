@@ -45,7 +45,7 @@ from telegram.ext import (
 
 # Hardcoded BigBrother's Telegram user ID for security
 # Only this user can interact with the bot
-AUTHORIZED_USER_ID = 123456789  # TODO: Replace with actual user ID
+AUTHORIZED_USER_ID = 8492071912  # BigBrother's Telegram user ID
 
 # Paths
 WORKSPACE = Path("/Users/pterion2910/.openclaw/workspace")

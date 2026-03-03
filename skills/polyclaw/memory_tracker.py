@@ -259,7 +259,7 @@ class PolyclawMemory:
         return resolution
     
     def _update_memory_md(self, lessons: List[str], resolution: MarketResolution):
-        """Update MEMORY.md with learnings"""
+        """Update MEMORY.md with learnings - curated long-term memory"""
         if not os.path.exists(MEMORY_FILE):
             return
         
@@ -269,25 +269,65 @@ class PolyclawMemory:
         # Find or create PolyClaw section
         polyclaw_section = "## PolyClaw Trading Learnings"
         
+        # Determine Brier score (lower is better, 0 = perfect, 2 = worst)
+        # For binary outcomes: Brier = (predicted - actual)^2
+        actual_prob = 1.0 if resolution.outcome == "YES" else 0.0
+        predicted_prob = resolution.prediction / 100.0
+        brier_score = (predicted_prob - actual_prob) ** 2
+        
         new_entry = f"""
-### {resolution.timestamp} - {resolution.question[:50]}...
+### {resolution.timestamp} - {resolution.category}: {resolution.question[:50]}...
 - **Outcome**: {resolution.outcome} ({'✅ Correct' if resolution.was_correct() else '❌ Wrong'})
-- **Our Prediction**: {resolution.prediction:.1f}% | **Actual**: {resolution.outcome}
+- **Our Prediction**: {resolution.prediction:.1f}% | **Actual**: {resolution.outcome} (Brier: {brier_score:.3f})
 - **P&L**: ${resolution.pnl:+.2f}"""
         
         if lessons:
             new_entry += "\n- **Lessons**: " + "; ".join(lessons)
         
+        # Add category-specific insight
+        if resolution.category in self.category_stats:
+            stats = self.category_stats[resolution.category]
+            if stats.total_resolved >= 3:
+                if stats.accuracy() < 0.5:
+                    new_entry += f"\n- **⚠️ Warning**: {resolution.category} accuracy only {stats.accuracy()*100:.0f}% — consider avoiding"
+                elif stats.accuracy() > 0.7:
+                    new_entry += f"\n- **✅ Edge Confirmed**: {resolution.category} accuracy {stats.accuracy()*100:.0f}% — we have genuine edge here"
+        
         if polyclaw_section in content:
-            # Insert after section header
+            # Insert after section header, before existing entries
             parts = content.split(polyclaw_section, 1)
-            new_content = parts[0] + polyclaw_section + new_entry + parts[1]
+            new_content = parts[0] + polyclaw_section + new_entry + "\n" + parts[1]
         else:
-            # Add new section at end
-            new_content = content + f"\n\n{polyclaw_section}\n{new_entry}"
+            # Add new section at end with helpful instructions
+            new_section = f"""
+
+{polyclaw_section}
+
+*This section auto-populated from memory_tracker.py when markets resolve*
+
+### System Overview
+- **History File**: `memory/projects/polyclaw-history.md`
+- **Tracker Script**: `skills/polyclaw/memory_tracker.py`
+- **Prompt Context**: `skills/polyclaw/prompts/memory_context.md`
+
+### To Record a Resolution:
+```bash
+cd ~/.openclaw/workspace/skills/polyclaw
+python memory_tracker.py resolve <market_id> <YES|NO> --pnl <amount>
+```
+
+### Stats & Learnings:
+```bash
+python memory_tracker.py stats              # Category breakdown
+python memory_tracker.py update-prompts     # Refresh analyst context
+```
+{new_entry}"""
+            new_content = content + new_section
         
         with open(MEMORY_FILE, 'w') as f:
             f.write(new_content)
+        
+        print(f"   📝 Updated MEMORY.md with {resolution.category} learning")
     
     def get_base_rate_prompt(self) -> str:
         """Generate base rate context for ClawAnalyst prompts"""
@@ -338,6 +378,47 @@ class PolyclawMemory:
                         content += f"\n- **{cat}**: We tend to be OVERCONFIDENT (only {stats.accuracy() * 100:.0f}% accuracy). Consider adjusting estimates down by 10-15%."
                     elif stats.accuracy() > 0.7:
                         content += f"\n- **{cat}**: We have EDGE in this category ({stats.accuracy() * 100:.0f}% accuracy). Trust our process."
+                    
+                    # Add P&L insight
+                    if stats.total_pnl > 0:
+                        content += f" Profitable: ${stats.total_pnl:+.2f} total."
+                    else:
+                        content += f" Unprofitable: ${stats.total_pnl:+.2f} total."
+        
+        # Add pattern insights from lessons
+        content += "\n\n### Pattern Insights from Resolved Markets:\n"
+        
+        # Collect and analyze lessons
+        lesson_counts: Dict[str, int] = {}
+        correct_lessons: Dict[str, int] = {}
+        wrong_lessons: Dict[str, int] = {}
+        
+        for rec in self.history:
+            for lesson in rec.lessons:
+                lesson_counts[lesson] = lesson_counts.get(lesson, 0) + 1
+                if rec.was_correct():
+                    correct_lessons[lesson] = correct_lessons.get(lesson, 0) + 1
+                else:
+                    wrong_lessons[lesson] = wrong_lessons.get(lesson, 0) + 1
+        
+        # Add insights about recurring lessons
+        for lesson, count in sorted(lesson_counts.items(), key=lambda x: -x[1])[:5]:
+            wrong_count = wrong_lessons.get(lesson, 0)
+            if wrong_count > 0:
+                content += f"\n- ⚠️ '{lesson}' appears when we fail ({wrong_count}/{count} associated with losses)"
+            else:
+                content += f"\n- ✓ '{lesson}' appears in successful trades"
+        
+        # Add general guidance
+        content += """
+
+### Forecasting Guidance:
+1. **Start with base rate** - What's the historical frequency in this category?
+2. **Adjust for edge** - Do we have specific information the market doesn't?
+3. **Confidence calibration** - High confidence requires high-quality evidence
+4. **Avoid overconfidence** - Markets are efficient; assume we're wrong until proven otherwise
+5. **Record predictions** - Every forecast feeds back into our learning system
+"""
         
         return content
     

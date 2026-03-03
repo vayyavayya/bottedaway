@@ -1,439 +1,437 @@
-#!/usr/bin/env python3
 """
 Portfolio Tracker - Paper Trading Only
-Tracks positions, calculates P&L, enforces risk rules.
+Manages positions, P&L tracking, and risk management for prediction market trading.
 """
 
 import json
 import os
-from datetime import datetime, timezone
 from dataclasses import dataclass, field, asdict
-from typing import Dict, List, Optional, Tuple, Any
-from pathlib import Path
+from datetime import datetime
+from typing import Optional, List, Dict, Literal
+from enum import Enum
 
-# Configuration
-PORTFOLIO_DIR = Path("/Users/pterion2910/.openclaw/workspace/portfolio")
-POSITIONS_FILE = PORTFOLIO_DIR / "positions.json"
+# Storage path
+POSITIONS_FILE = "workspace/portfolio/positions.json"
 
-# Risk Limits (Paper Trading)
-MAX_POSITION_SIZE = 100.0  # USD
-MAX_TOTAL_EXPOSURE = 1000.0  # USD
-MAX_DRAWDOWN_PCT = 15.0  # Circuit breaker
-MAX_CORRELATED_EXPOSURE_PCT = 40.0  # Same theme
-KELLY_FRACTION = 0.25  # Quarter Kelly
+# Risk Configuration (Paper Trading)
+MAX_POSITION_SIZE = 100  # USD
+MAX_TOTAL_EXPOSURE = 1000  # USD
+MAX_DRAWDOWN_PCT = 0.15  # 15% circuit breaker
+MAX_CORRELATED_EXPOSURE_PCT = 0.40  # 40% of portfolio
+KELLY_FRACTION = 0.25  # Quarter Kelly sizing
 
-# Default starting balance for paper trading
-DEFAULT_CASH_BALANCE = 1000.0
+
+class PositionSide(Enum):
+    LONG = "long"
+    SHORT = "short"
 
 
 @dataclass
 class Position:
-    """Represents a single trading position."""
+    """Individual position tracking"""
     market_id: str
-    side: str  # 'long' or 'short'
+    side: str  # "long" or "short"
     entry_price: float
     size_usd: float
-    current_price: float = field(default=0.0)
-    unrealized_pnl: float = field(default=0.0)
-    opened_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    current_price: float
+    unrealized_pnl: float
+    opened_at: str
     
-    def calculate_pnl(self, current_price: float) -> float:
-        """Calculate unrealized P&L based on current price."""
-        if self.side == 'long':
-            price_change = (current_price - self.entry_price) / self.entry_price
+    def update_price(self, new_price: float):
+        """Update current price and recalculate unrealized P&L"""
+        self.current_price = new_price
+        if self.side == "long":
+            self.unrealized_pnl = (new_price - self.entry_price) * self.size_usd / self.entry_price
         else:  # short
-            price_change = (self.entry_price - current_price) / self.entry_price
-        
-        self.current_price = current_price
-        self.unrealized_pnl = self.size_usd * price_change
+            self.unrealized_pnl = (self.entry_price - new_price) * self.size_usd / self.entry_price
         return self.unrealized_pnl
     
-    def to_dict(self) -> Dict:
+    def calculate_value(self) -> float:
+        """Current market value of position"""
+        if self.side == "long":
+            return self.size_usd * (self.current_price / self.entry_price)
+        else:  # short
+            return self.size_usd * (2 - self.current_price / self.entry_price)
+    
+    def close(self, exit_price: float) -> float:
+        """Close position and return realized P&L"""
+        if self.side == "long":
+            realized_pnl = (exit_price - self.entry_price) * self.size_usd / self.entry_price
+        else:
+            realized_pnl = (self.entry_price - exit_price) * self.size_usd / self.entry_price
+        return realized_pnl
+    
+    def to_dict(self) -> dict:
         return asdict(self)
     
     @classmethod
-    def from_dict(cls, data: Dict) -> 'Position':
+    def from_dict(cls, data: dict) -> "Position":
         return cls(**data)
 
 
 @dataclass
 class Portfolio:
-    """Portfolio state containing all positions and metrics."""
+    """Portfolio state container"""
     positions: List[Position] = field(default_factory=list)
-    cash_balance: float = DEFAULT_CASH_BALANCE
-    total_value: float = DEFAULT_CASH_BALANCE
+    cash_balance: float = 10000.0  # Start with $10k paper money
+    total_value: float = 10000.0
     drawdown: float = 0.0
     realized_pnl: float = 0.0
-    peak_value: float = DEFAULT_CASH_BALANCE
-    updated_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    peak_value: float = 10000.0  # Track for drawdown calculation
     
-    def to_dict(self) -> Dict:
+    def to_dict(self) -> dict:
         return {
-            'positions': [p.to_dict() for p in self.positions],
-            'cash_balance': self.cash_balance,
-            'total_value': self.total_value,
-            'drawdown': self.drawdown,
-            'realized_pnl': self.realized_pnl,
-            'peak_value': self.peak_value,
-            'updated_at': self.updated_at
+            "positions": [p.to_dict() for p in self.positions],
+            "cash_balance": self.cash_balance,
+            "total_value": self.total_value,
+            "drawdown": self.drawdown,
+            "realized_pnl": self.realized_pnl,
+            "peak_value": self.peak_value
         }
     
     @classmethod
-    def from_dict(cls, data: Dict) -> 'Portfolio':
+    def from_dict(cls, data: dict) -> "Portfolio":
         portfolio = cls(
-            positions=[Position.from_dict(p) for p in data.get('positions', [])],
-            cash_balance=data.get('cash_balance', DEFAULT_CASH_BALANCE),
-            total_value=data.get('total_value', DEFAULT_CASH_BALANCE),
-            drawdown=data.get('drawdown', 0.0),
-            realized_pnl=data.get('realized_pnl', 0.0),
-            peak_value=data.get('peak_value', DEFAULT_CASH_BALANCE),
-            updated_at=data.get('updated_at', datetime.now(timezone.utc).isoformat())
+            positions=[Position.from_dict(p) for p in data.get("positions", [])],
+            cash_balance=data.get("cash_balance", 10000.0),
+            total_value=data.get("total_value", 10000.0),
+            drawdown=data.get("drawdown", 0.0),
+            realized_pnl=data.get("realized_pnl", 0.0),
+            peak_value=data.get("peak_value", 10000.0)
         )
         return portfolio
 
 
-class PortfolioTracker:
-    """Main portfolio tracker class."""
-    
-    def __init__(self):
-        self.portfolio = self._load_portfolio()
-        self.live_mode = False  # HARD CODED: Paper trading only
-        
-    def _load_portfolio(self) -> Portfolio:
-        """Load portfolio from disk or create new."""
-        if POSITIONS_FILE.exists():
+# Global portfolio instance
+_portfolio: Optional[Portfolio] = None
+
+
+def _load_portfolio() -> Portfolio:
+    """Load portfolio from disk or create new"""
+    global _portfolio
+    if _portfolio is None:
+        if os.path.exists(POSITIONS_FILE):
             with open(POSITIONS_FILE, 'r') as f:
                 data = json.load(f)
-                return Portfolio.from_dict(data)
-        return Portfolio()
-    
-    def _save_portfolio(self):
-        """Save portfolio to disk."""
-        PORTFOLIO_DIR.mkdir(parents=True, exist_ok=True)
-        with open(POSITIONS_FILE, 'w') as f:
-            json.dump(self.portfolio.to_dict(), f, indent=2)
-    
-    def _calculate_kelly_size(self, win_rate: float, avg_win: float, avg_loss: float) -> float:
-        """
-        Calculate Kelly criterion position size.
-        Returns quarter Kelly sizing.
-        """
-        if avg_loss == 0:
-            return 0.0
-        
-        # Full Kelly: f* = (bp - q) / b
-        # where b = avg_win/avg_loss, p = win_rate, q = 1-p
-        b = avg_win / avg_loss
-        q = 1 - win_rate
-        
-        kelly = (b * win_rate - q) / b if b != 0 else 0
-        kelly = max(0, min(kelly, 1))  # Bound between 0 and 1
-        
-        # Quarter Kelly for safety
-        return kelly * KELLY_FRACTION * self.portfolio.total_value
-    
-    def _get_theme_exposure(self, market_id: str) -> float:
-        """
-        Calculate total exposure for a market theme.
-        Simple theme extraction from market_id (e.g., 'btc-usd' -> 'btc')
-        """
-        theme = market_id.split('-')[0].lower()
-        theme_exposure = sum(
-            p.size_usd for p in self.portfolio.positions 
-            if p.market_id.split('-')[0].lower() == theme
-        )
-        return theme_exposure
-    
-    def check_risk(self, market_id: str, side: str, size: float, price: float) -> Dict[str, Any]:
-        """
-        Check if a new trade passes risk rules.
-        Returns approval status with reasons.
-        """
-        reasons = []
-        approved = True
-        
-        # Rule 1: Max position size
-        if size > MAX_POSITION_SIZE:
-            approved = False
-            reasons.append(f"Position size ${size:.2f} exceeds max ${MAX_POSITION_SIZE}")
-        
-        # Rule 2: Max total exposure
-        current_exposure = sum(p.size_usd for p in self.portfolio.positions)
-        new_exposure = current_exposure + size
-        if new_exposure > MAX_TOTAL_EXPOSURE:
-            approved = False
-            reasons.append(f"Total exposure ${new_exposure:.2f} exceeds max ${MAX_TOTAL_EXPOSURE}")
-        
-        # Rule 3: Max drawdown circuit breaker
-        if self.portfolio.drawdown >= MAX_DRAWDOWN_PCT:
-            approved = False
-            reasons.append(f"Circuit breaker: drawdown {self.portfolio.drawdown:.1f}% >= {MAX_DRAWDOWN_PCT}%")
-        
-        # Rule 4: Max correlated exposure
-        theme = market_id.split('-')[0].lower()
-        theme_exposure = self._get_theme_exposure(market_id) + size
-        theme_limit = MAX_CORRELATED_EXPOSURE_PCT / 100 * self.portfolio.total_value
-        if theme_exposure > theme_limit:
-            approved = False
-            reasons.append(f"Theme '{theme}' exposure ${theme_exposure:.2f} exceeds {MAX_CORRELATED_EXPOSURE_PCT}% limit (${theme_limit:.2f})")
-        
-        # Rule 5: Sufficient cash
-        cost = size  # For simplicity, assume 1x leverage
-        if cost > self.portfolio.cash_balance:
-            approved = False
-            reasons.append(f"Insufficient cash: need ${cost:.2f}, have ${self.portfolio.cash_balance:.2f}")
-        
-        # Rule 6: Quarter Kelly sizing recommendation
-        # Assume 55% win rate, 1.5:1 reward/risk for rough estimate
-        kelly_size = self._calculate_kelly_size(0.55, 1.5, 1.0)
-        if size > kelly_size * 1.5:  # Allow 50% buffer over Kelly
-            reasons.append(f"Warning: Size ${size:.2f} > 1.5x Kelly recommendation ${kelly_size:.2f}")
-        
-        if approved and not reasons:
-            reasons.append("All risk checks passed")
-        elif approved and reasons:
-            reasons.append("Approved with warnings")
-        
-        return {
-            'approved': approved,
-            'reasons': reasons,
-            'market_id': market_id,
-            'side': side,
-            'size': size,
-            'price': price,
-            'current_exposure': current_exposure,
-            'new_exposure': new_exposure,
-            'theme_exposure': theme_exposure,
-            'cash_remaining': self.portfolio.cash_balance - cost if approved else self.portfolio.cash_balance
-        }
-    
-    def add_position(self, market_id: str, side: str, size: float, price: float) -> Dict[str, Any]:
-        """
-        Add a new position to the portfolio.
-        Performs risk check first.
-        """
-        # Normalize inputs
-        side = side.lower()
-        market_id = market_id.lower()
-        
-        # Risk check
-        risk_check = self.check_risk(market_id, side, size, price)
-        if not risk_check['approved']:
-            return {
-                'success': False,
-                'error': 'Risk check failed',
-                'risk_check': risk_check
-            }
-        
-        # Create position
-        position = Position(
-            market_id=market_id,
-            side=side,
-            entry_price=price,
-            size_usd=size,
-            current_price=price,
-            unrealized_pnl=0.0
-        )
-        
-        # Update portfolio
-        self.portfolio.positions.append(position)
-        self.portfolio.cash_balance -= size
-        self._update_portfolio_value()
-        self._save_portfolio()
-        
-        return {
-            'success': True,
-            'position': position.to_dict(),
-            'risk_check': risk_check,
-            'portfolio_value': self.portfolio.total_value
-        }
-    
-    def close_position(self, market_id: str, exit_price: float) -> Dict[str, Any]:
-        """
-        Close a position and realize P&L.
-        """
-        market_id = market_id.lower()
-        
-        # Find position
-        position_idx = None
-        position = None
-        for idx, p in enumerate(self.portfolio.positions):
-            if p.market_id == market_id:
-                position_idx = idx
-                position = p
-                break
-        
-        if position is None:
-            return {
-                'success': False,
-                'error': f'No position found for {market_id}'
-            }
-        
-        # Calculate realized P&L
-        realized_pnl = position.calculate_pnl(exit_price)
-        
-        # Update portfolio
-        self.portfolio.realized_pnl += realized_pnl
-        self.portfolio.cash_balance += position.size_usd + realized_pnl
-        del self.portfolio.positions[position_idx]
-        
-        self._update_portfolio_value()
-        self._save_portfolio()
-        
-        return {
-            'success': True,
-            'market_id': market_id,
-            'realized_pnl': realized_pnl,
-            'exit_price': exit_price,
-            'total_realized_pnl': self.portfolio.realized_pnl,
-            'cash_balance': self.portfolio.cash_balance
-        }
-    
-    def _update_portfolio_value(self):
-        """Recalculate total portfolio value and drawdown."""
-        positions_value = sum(
-            p.size_usd + p.unrealized_pnl for p in self.portfolio.positions
-        )
-        self.portfolio.total_value = self.portfolio.cash_balance + positions_value
-        self.portfolio.updated_at = datetime.now(timezone.utc).isoformat()
-        
-        # Update peak and drawdown
-        if self.portfolio.total_value > self.portfolio.peak_value:
-            self.portfolio.peak_value = self.portfolio.total_value
-        
-        if self.portfolio.peak_value > 0:
-            self.portfolio.drawdown = (
-                (self.portfolio.peak_value - self.portfolio.total_value) 
-                / self.portfolio.peak_value * 100
-            )
-    
-    def refresh_prices(self, price_fetcher: Optional[callable] = None) -> Dict[str, Any]:
-        """
-        Update all position prices and recalculate P&L.
-        
-        Args:
-            price_fetcher: Optional function to fetch current prices.
-                          Should return {market_id: price} dict.
-                          If None, uses placeholder prices.
-        """
-        if not self.portfolio.positions:
-            return {
-                'success': True,
-                'message': 'No positions to update',
-                'positions_updated': 0
-            }
-        
-        # Get prices
-        if price_fetcher:
-            try:
-                prices = price_fetcher([p.market_id for p in self.portfolio.positions])
-            except Exception as e:
-                return {
-                    'success': False,
-                    'error': f'Price fetch failed: {str(e)}'
-                }
+                _portfolio = Portfolio.from_dict(data)
         else:
-            # Placeholder: prices remain unchanged
-            prices = {p.market_id: p.current_price for p in self.portfolio.positions}
-        
-        # Update each position
-        updated = 0
-        for position in self.portfolio.positions:
-            if position.market_id in prices:
-                position.calculate_pnl(prices[position.market_id])
-                updated += 1
-        
-        self._update_portfolio_value()
-        self._save_portfolio()
-        
-        return {
-            'success': True,
-            'positions_updated': updated,
-            'total_unrealized_pnl': sum(p.unrealized_pnl for p in self.portfolio.positions),
-            'portfolio_value': self.portfolio.total_value,
-            'drawdown': self.portfolio.drawdown
-        }
+            _portfolio = Portfolio()
+            _save_portfolio()
+    return _portfolio
+
+
+def _save_portfolio():
+    """Save portfolio to disk"""
+    os.makedirs(os.path.dirname(POSITIONS_FILE), exist_ok=True)
+    with open(POSITIONS_FILE, 'w') as f:
+        json.dump(_portfolio.to_dict(), f, indent=2)
+
+
+def get_portfolio() -> Portfolio:
+    """Get current portfolio state"""
+    return _load_portfolio()
+
+
+def add_position(market_id: str, side: str, size: float, price: float, theme: Optional[str] = None) -> dict:
+    """
+    Add a new position to the portfolio.
     
-    def get_summary(self) -> Dict[str, Any]:
-        """Get comprehensive portfolio overview."""
-        self._update_portfolio_value()
-        
-        total_unrealized = sum(p.unrealized_pnl for p in self.portfolio.positions)
-        total_exposure = sum(p.size_usd for p in self.portfolio.positions)
-        
-        # Group positions by theme
-        theme_exposure = {}
-        for p in self.portfolio.positions:
-            theme = p.market_id.split('-')[0].lower()
-            if theme not in theme_exposure:
-                theme_exposure[theme] = {'size': 0, 'unrealized_pnl': 0}
-            theme_exposure[theme]['size'] += p.size_usd
-            theme_exposure[theme]['unrealized_pnl'] += p.unrealized_pnl
-        
-        return {
-            'portfolio_value': self.portfolio.total_value,
-            'cash_balance': self.portfolio.cash_balance,
-            'total_exposure': total_exposure,
-            'available_to_trade': min(
-                self.portfolio.cash_balance,
-                MAX_POSITION_SIZE,
-                MAX_TOTAL_EXPOSURE - total_exposure
-            ),
-            'unrealized_pnl': total_unrealized,
-            'realized_pnl': self.portfolio.realized_pnl,
-            'total_pnl': total_unrealized + self.portfolio.realized_pnl,
-            'drawdown_pct': self.portfolio.drawdown,
-            'peak_value': self.portfolio.peak_value,
-            'circuit_breaker_triggered': self.portfolio.drawdown >= MAX_DRAWDOWN_PCT,
-            'position_count': len(self.portfolio.positions),
-            'mode': 'LIVE' if self.live_mode else 'PAPER',
-            'positions': [p.to_dict() for p in self.portfolio.positions],
-            'theme_exposure': theme_exposure,
-            'risk_limits': {
-                'max_position_size': MAX_POSITION_SIZE,
-                'max_total_exposure': MAX_TOTAL_EXPOSURE,
-                'max_drawdown_pct': MAX_DRAWDOWN_PCT,
-                'max_correlated_exposure_pct': MAX_CORRELATED_EXPOSURE_PCT,
-                'kelly_fraction': KELLY_FRACTION
-            },
-            'updated_at': self.portfolio.updated_at
-        }
+    Args:
+        market_id: Unique identifier for the market
+        side: "long" or "short"
+        size: Position size in USD
+        price: Entry price
+        theme: Optional theme/category for correlation tracking
     
-    def reset(self, confirm: bool = False) -> Dict[str, Any]:
-        """
-        Reset portfolio to initial state (for testing).
-        Requires explicit confirmation.
-        """
-        if not confirm:
-            return {
-                'success': False,
-                'error': 'Reset requires confirm=True'
-            }
-        
-        self.portfolio = Portfolio()
-        self._save_portfolio()
-        
-        return {
-            'success': True,
-            'message': 'Portfolio reset to initial state',
-            'starting_balance': DEFAULT_CASH_BALANCE
+    Returns:
+        dict with success status, position data, and any messages
+    """
+    portfolio = _load_portfolio()
+    
+    # Normalize side
+    side = side.lower()
+    if side not in ["long", "short"]:
+        return {"success": False, "error": f"Invalid side: {side}. Must be 'long' or 'short'"}
+    
+    # Check if position already exists
+    for pos in portfolio.positions:
+        if pos.market_id == market_id:
+            return {"success": False, "error": f"Position already exists for {market_id}. Close it first."}
+    
+    # Risk check
+    risk_check = check_risk(market_id, side, size, theme)
+    if not risk_check["approved"]:
+        return {"success": False, "error": f"Risk check failed: {risk_check['reason']}"}
+    
+    # Create position
+    position = Position(
+        market_id=market_id,
+        side=side,
+        entry_price=price,
+        size_usd=size,
+        current_price=price,
+        unrealized_pnl=0.0,
+        opened_at=datetime.utcnow().isoformat()
+    )
+    
+    # Update portfolio
+    portfolio.positions.append(position)
+    portfolio.cash_balance -= size
+    
+    # Recalculate total value
+    _update_portfolio_value(portfolio)
+    
+    _save_portfolio()
+    
+    return {
+        "success": True,
+        "position": position.to_dict(),
+        "portfolio_value": portfolio.total_value,
+        "cash_balance": portfolio.cash_balance,
+        "risk_check": risk_check
+    }
+
+
+def close_position(market_id: str, exit_price: float) -> dict:
+    """
+    Close an existing position.
+    
+    Args:
+        market_id: Market identifier
+        exit_price: Price at which position is closed
+    
+    Returns:
+        dict with success status, realized P&L, and updated portfolio
+    """
+    portfolio = _load_portfolio()
+    
+    # Find position
+    position = None
+    for i, pos in enumerate(portfolio.positions):
+        if pos.market_id == market_id:
+            position = pos
+            position_idx = i
+            break
+    
+    if position is None:
+        return {"success": False, "error": f"No open position found for {market_id}"}
+    
+    # Calculate realized P&L
+    realized_pnl = position.close(exit_price)
+    
+    # Update portfolio
+    portfolio.cash_balance += position.size_usd + realized_pnl
+    portfolio.realized_pnl += realized_pnl
+    del portfolio.positions[position_idx]
+    
+    # Recalculate total value
+    _update_portfolio_value(portfolio)
+    
+    _save_portfolio()
+    
+    return {
+        "success": True,
+        "market_id": market_id,
+        "realized_pnl": realized_pnl,
+        "exit_price": exit_price,
+        "portfolio_value": portfolio.total_value,
+        "cash_balance": portfolio.cash_balance,
+        "total_realized_pnl": portfolio.realized_pnl
+    }
+
+
+def refresh_prices(price_fetcher: Optional[callable] = None) -> dict:
+    """
+    Update all position prices from APIs.
+    
+    Args:
+        price_fetcher: Optional function to fetch prices. Should return dict {market_id: price}
+                      If None, prices remain unchanged (manual refresh)
+    
+    Returns:
+        dict with updated positions and portfolio summary
+    """
+    portfolio = _load_portfolio()
+    
+    if price_fetcher:
+        try:
+            prices = price_fetcher([p.market_id for p in portfolio.positions])
+            for position in portfolio.positions:
+                if position.market_id in prices:
+                    position.update_price(prices[position.market_id])
+        except Exception as e:
+            return {"success": False, "error": f"Price fetch failed: {str(e)}"}
+    
+    # Recalculate total value and check drawdown
+    _update_portfolio_value(portfolio)
+    
+    # Check circuit breaker
+    circuit_breaker = portfolio.drawdown >= MAX_DRAWDOWN_PCT
+    
+    _save_portfolio()
+    
+    return {
+        "success": True,
+        "positions": [p.to_dict() for p in portfolio.positions],
+        "portfolio": {
+            "total_value": portfolio.total_value,
+            "cash_balance": portfolio.cash_balance,
+            "unrealized_pnl": sum(p.unrealized_pnl for p in portfolio.positions),
+            "realized_pnl": portfolio.realized_pnl,
+            "drawdown": portfolio.drawdown,
+            "circuit_breaker": circuit_breaker
         }
+    }
 
 
-# Convenience functions for direct usage
-def get_tracker() -> PortfolioTracker:
-    """Get a new portfolio tracker instance."""
-    return PortfolioTracker()
+def get_summary() -> dict:
+    """
+    Get complete portfolio overview with P&L.
+    
+    Returns:
+        dict with positions, totals, and risk metrics
+    """
+    portfolio = _load_portfolio()
+    
+    positions_data = [p.to_dict() for p in portfolio.positions]
+    total_unrealized = sum(p.unrealized_pnl for p in portfolio.positions)
+    total_exposure = sum(p.size_usd for p in portfolio.positions)
+    
+    # Calculate exposure by side
+    long_exposure = sum(p.size_usd for p in portfolio.positions if p.side == "long")
+    short_exposure = sum(p.size_usd for p in portfolio.positions if p.side == "short")
+    
+    return {
+        "success": True,
+        "portfolio": {
+            "cash_balance": round(portfolio.cash_balance, 2),
+            "total_value": round(portfolio.total_value, 2),
+            "peak_value": round(portfolio.peak_value, 2),
+            "realized_pnl": round(portfolio.realized_pnl, 2),
+            "unrealized_pnl": round(total_unrealized, 2),
+            "total_pnl": round(portfolio.realized_pnl + total_unrealized, 2),
+            "drawdown_pct": round(portfolio.drawdown * 100, 2),
+            "circuit_breaker_active": portfolio.drawdown >= MAX_DRAWDOWN_PCT,
+            "total_exposure": round(total_exposure, 2),
+            "long_exposure": round(long_exposure, 2),
+            "short_exposure": round(short_exposure, 2),
+            "position_count": len(portfolio.positions)
+        },
+        "positions": positions_data,
+        "risk_limits": {
+            "max_position_size": MAX_POSITION_SIZE,
+            "max_total_exposure": MAX_TOTAL_EXPOSURE,
+            "max_drawdown_pct": MAX_DRAWDOWN_PCT * 100,
+            "max_correlated_exposure_pct": MAX_CORRELATED_EXPOSURE_PCT * 100,
+            "kelly_fraction": KELLY_FRACTION
+        }
+    }
 
 
-def quick_summary() -> Dict[str, Any]:
-    """Quick portfolio summary without creating tracker."""
-    tracker = PortfolioTracker()
-    return tracker.get_summary()
+def check_risk(market_id: str, side: str, size: float, theme: Optional[str] = None) -> dict:
+    """
+    Check if a proposed trade passes risk rules.
+    
+    Args:
+        market_id: Market identifier
+        side: "long" or "short"
+        size: Proposed position size in USD
+        theme: Optional theme for correlation checking
+    
+    Returns:
+        dict with approved (bool), reason (str), and metrics
+    """
+    portfolio = _load_portfolio()
+    
+    reasons = []
+    
+    # Check 1: Max position size
+    if size > MAX_POSITION_SIZE:
+        reasons.append(f"Position size ${size:.2f} exceeds max ${MAX_POSITION_SIZE}")
+    
+    # Check 2: Total exposure
+    current_exposure = sum(p.size_usd for p in portfolio.positions)
+    new_exposure = current_exposure + size
+    if new_exposure > MAX_TOTAL_EXPOSURE:
+        reasons.append(f"Total exposure ${new_exposure:.2f} would exceed max ${MAX_TOTAL_EXPOSURE}")
+    
+    # Check 3: Circuit breaker (drawdown)
+    if portfolio.drawdown >= MAX_DRAWDOWN_PCT:
+        reasons.append(f"Circuit breaker active: drawdown {portfolio.drawdown*100:.1f}% >= {MAX_DRAWDOWN_PCT*100:.1f}%")
+    
+    # Check 4: Correlated exposure (if theme provided)
+    if theme:
+        theme_exposure = sum(
+            p.size_usd for p in portfolio.positions 
+            if getattr(p, 'theme', None) == theme
+        )
+        correlated_exposure = theme_exposure + size
+        max_theme_exposure = portfolio.total_value * MAX_CORRELATED_EXPOSURE_PCT
+        if correlated_exposure > max_theme_exposure:
+            reasons.append(f"Theme '{theme}' exposure ${correlated_exposure:.2f} exceeds ${max_theme_exposure:.2f} (40% of portfolio)")
+    
+    # Check 5: Quarter Kelly sizing recommendation
+    kelly_recommended = portfolio.total_value * KELLY_FRACTION * 0.01  # Simplified Kelly
+    if size > kelly_recommended * 4:  # Warning if significantly over quarter Kelly
+        reasons.append(f"Position size ${size:.2f} exceeds recommended Kelly sizing (~${kelly_recommended:.2f})")
+    
+    # Check 6: Cash availability
+    if size > portfolio.cash_balance:
+        reasons.append(f"Insufficient cash: ${portfolio.cash_balance:.2f} available, need ${size:.2f}")
+    
+    approved = len(reasons) == 0
+    
+    return {
+        "approved": approved,
+        "reason": "; ".join(reasons) if reasons else "All risk checks passed",
+        "metrics": {
+            "position_size": size,
+            "max_position_size": MAX_POSITION_SIZE,
+            "current_exposure": current_exposure,
+            "new_exposure": new_exposure,
+            "max_exposure": MAX_TOTAL_EXPOSURE,
+            "cash_available": portfolio.cash_balance,
+            "drawdown_pct": portfolio.drawdown * 100,
+            "max_drawdown_pct": MAX_DRAWDOWN_PCT * 100
+        }
+    }
 
 
-if __name__ == '__main__':
-    # Demo/test
-    tracker = PortfolioTracker()
-    print("=== Portfolio Tracker (Paper Trading) ===")
-    print(json.dumps(tracker.get_summary(), indent=2))
+def _update_portfolio_value(portfolio: Portfolio):
+    """Recalculate total portfolio value and drawdown"""
+    positions_value = sum(p.calculate_value() for p in portfolio.positions)
+    portfolio.total_value = portfolio.cash_balance + positions_value
+    
+    # Update peak value and drawdown
+    if portfolio.total_value > portfolio.peak_value:
+        portfolio.peak_value = portfolio.total_value
+    
+    if portfolio.peak_value > 0:
+        portfolio.drawdown = (portfolio.peak_value - portfolio.total_value) / portfolio.peak_value
+    else:
+        portfolio.drawdown = 0.0
+
+
+def reset_portfolio(confirm: bool = False) -> dict:
+    """
+    Reset portfolio to initial state. DANGER!
+    
+    Args:
+        confirm: Must be True to actually reset
+    
+    Returns:
+        dict with status
+    """
+    global _portfolio
+    
+    if not confirm:
+        return {"success": False, "error": "Must pass confirm=True to reset portfolio"}
+    
+    _portfolio = Portfolio()
+    _save_portfolio()
+    
+    return {"success": True, "message": "Portfolio reset to initial state", "initial_balance": 10000.0}
+
+
+# Module initialization - ensure directory exists
+os.makedirs(os.path.dirname(POSITIONS_FILE), exist_ok=True)

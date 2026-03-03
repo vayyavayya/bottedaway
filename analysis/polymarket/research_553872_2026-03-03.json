@@ -1,0 +1,97 @@
+{
+  "meta": {
+    "version": "1.0",
+    "generated_at": "2026-03-03T01:36:19.618496",
+    "market_id": "553872",
+    "pipeline_steps": [
+      "forecasting",
+      "resolution",
+      "devils_advocate",
+      "signals",
+      "validation"
+    ]
+  },
+  "market": {
+    "id": "553872",
+    "question": "Will the Milwaukee Bucks win the 2026 NBA Finals?",
+    "slug": "will-the-milwaukee-bucks-win-the-2026-nba-finals",
+    "category": null,
+    "end_date": "2026-07-01T00:00:00Z",
+    "yes_price": 0.0015,
+    "no_price": 0.9985,
+    "volume_24h": 441201.90683299984,
+    "liquidity": 863065.37082
+  },
+  "step1_forecasting": {
+    "error": "No OpenRouter API key found. Set OPENROUTER_API_KEY environment variable.",
+    "parse_error": true
+  },
+  "step2_resolution": {
+    "error": "No OpenRouter API key found. Set OPENROUTER_API_KEY environment variable.",
+    "parse_error": true
+  },
+  "step3_devils_advocate": {
+    "error": "No OpenRouter API key found. Set OPENROUTER_API_KEY environment variable.",
+    "parse_error": true
+  },
+  "step4_signals": {
+    "recommended_side": "YES",
+    "market_probability": 0.0015,
+    "our_probability": 0.5,
+    "edge_percent": 49.85,
+    "confidence": 50,
+    "kelly_fraction": 0.1248,
+    "kelly_size": 124.81,
+    "recommended_size": 100.0,
+    "expected_value": 33233.33,
+    "risk_adjusted_edge": 12.46,
+    "annualized_return_estimate": 0.76
+  },
+  "step5_validation": {
+    "overall_valid": false,
+    "recommendation": "PASS",
+    "recommended_action": "No trade - insufficient edge or confidence",
+    "checks": [
+      {
+        "check": "Edge \u2265 5%",
+        "value": "49.9%",
+        "threshold": "\u2265 5%",
+        "passed": true
+      },
+      {
+        "check": "Confidence \u2265 60%",
+        "value": "0%",
+        "threshold": "\u2265 60%",
+        "passed": false
+      },
+      {
+        "check": "Clarity \u2265 50%",
+        "value": "0%",
+        "threshold": "\u2265 50%",
+        "passed": false
+      },
+      {
+        "check": "Severity < 80%",
+        "value": "100%",
+        "threshold": "< 80%",
+        "passed": false
+      },
+      {
+        "check": "Liquidity > $100",
+        "value": "$863,065.37",
+        "threshold": "> $100",
+        "passed": true
+      }
+    ],
+    "passed_count": 2,
+    "total_checks": 5
+  },
+  "step6_output": {
+    "recommendation": "PASS",
+    "action": "No trade - insufficient edge or confidence",
+    "edge_percent": 49.85,
+    "confidence": null,
+    "clarity": null,
+    "severity": null
+  }
+}

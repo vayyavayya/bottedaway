@@ -1,4 +1,3 @@
----
 # ClawAnalyst Tools
 
 ## Allowed
@@ -16,4 +15,3 @@
 - No trade execution
 - No credential access
 - No write access outside workspace/analysis/
----

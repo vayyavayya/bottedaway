@@ -34,6 +34,37 @@ Navigation map for agent orientation. Read this FIRST every session.
 | Mission Control | 🟡 Maintenance | Dashboard functional, needs updates |
 | **PolyClaw Memory** | 🟢 Active | [projects/polyclaw-history.md](projects/polyclaw-history.md) |
 
+### Memory System Overview
+```
+Research → Trade → Resolve → Record → Learn → Improve Forecasts
+```
+
+**Components:**
+- `memory/projects/polyclaw-history.md` — Historical resolutions, base rates, P&L
+- `skills/polyclaw/memory_tracker.py` — Records outcomes, updates learnings
+- `skills/polyclaw/resolution_watcher.py` — Monitors markets for resolution
+- `skills/polyclaw/prompts/memory_context.md` — Auto-generated analyst context
+- `MEMORY.md` — Curated long-term learnings (PolyClaw Trading Learnings section)
+
+**How it works:**
+1. **Research** generates forecast with memory context (base rates + lessons)
+2. **Trade** (paper) based on recommendation → market added to tracking
+3. **Resolution Watcher** checks tracked markets every research cycle
+4. **On resolution:** Records outcome, P&L, lessons → updates all memory files
+5. **Next forecast** benefits from historical data + calibration notes
+
+**To manually record a resolution:**
+```bash
+cd ~/.openclaw/workspace/skills/polyclaw
+python memory_tracker.py resolve <market_id> YES --pnl 25.50 --lessons "overconfidence,ignored_base_rate"
+```
+
+**To view stats:**
+```bash
+python memory_tracker.py stats              # All categories
+python memory_tracker.py stats --category Politics  # Specific category
+```
+
 ### Decisions
 - **POLYCLAW:** Accept EU geoblock limitation, keep as paper trading simulation
 - **Memecoin Scanner:** Fix Solscan SSL or migrate to Helius-only
