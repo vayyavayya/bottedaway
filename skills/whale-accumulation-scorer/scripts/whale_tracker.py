@@ -47,9 +47,12 @@ from dataclasses import dataclass, field
 from enum import Enum
 from collections import defaultdict
 import requests
-from dotenv import load_dotenv
-
-load_dotenv("keys.env")
+import requests
+try:
+    from dotenv import load_dotenv
+    load_dotenv("keys.env")
+except ImportError:
+    pass  # dotenv not installed, skip
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger("clawbot.whale_tracker")

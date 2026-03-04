@@ -339,14 +339,18 @@ class SignalEngine:
         """
         Translate signal to execution parameters.
         
+        IMPORTANT: PASS signals result in ZERO position size (action: SKIP).
+        This is enforced at the execution layer, regardless of raw Kelly calculation.
+        
         Returns dict with:
-        - action: "BUY" or "WATCH"
-        - size_usd: Dollar amount to deploy
+        - action: "BUY", "WATCH", or "SKIP" (for PASS)
+        - size_usd: Dollar amount to deploy ($0 for PASS)
         - stop_loss: Recommended stop price
         - take_profit: Recommended target
         - rationale: Full reasoning
         """
         if signal.action == "PASS":
+            # PASS signals get ZERO allocation - enforced at execution layer
             return {"action": "SKIP", "rationale": signal.rationale}
         
         size_usd = self.bankroll * signal.position_size_pct
