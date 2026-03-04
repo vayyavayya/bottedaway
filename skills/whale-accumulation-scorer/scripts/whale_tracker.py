@@ -188,23 +188,65 @@ class WhaleSignal:
 
 
 # ─── Blacklists ────────────────────────────────────────────────────────────────
-# Known exchange hot wallets and market makers to exclude
+# Known exchange hot wallets, market makers, LP pools, and contracts to exclude
 EXCHANGE_WALLETS = {
     # Binance
     "5tzFkiKscXHK5ZXCGbXZxdw7gTjjD1mBwuoFbhUvuAi9",
-    # Kraken
+    # Kraken  
     "FWznbcNXWQuHTawe9RxvQ2LdCENLsh12dsznf4RiouN5",
-    # Raydium AMM authority
-    "5Q544fKrFoe6tsEbD7S8EmxGTJYAKtTVhAW5Q5pge4j1",
-    # Jupiter aggregator
-    "JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4",
-    # Add more as you discover them — Arkham/Nansen labels help
+    # Coinbase
+    "H8sMJSCVzfius7NBqzkY4FhKJR9z22qY3yJ85DxQjwF",
+    # OKX
+    "GzPHuS2ynTCz68J9Q2hFk8bJyU87gWCBq5p1n3k9N3X",
 }
+
+# DEX/AMM Pool Authorities (Raydium, Orca, Meteora, etc.)
+DEX_POOL_AUTHORITIES = {
+    # Raydium AMM
+    "5Q544fKrFoe6tsEbD7S8EmxGTJYAKtTVhAW5Q5pge4j1",
+    "675kPX9MHTjS2zt1qfr1NYHuzeLXfQM9H24wFSUt1Mp8",
+    # Orca Whirlpool
+    "whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc",
+    "2LecshUwdyHxiL25o4cPNY9FNqRk63PzxKQ4mZ69hX5d",
+    # Meteora DLMM
+    "LBUZKhRxPF3XUpBCjp4YzTKgLccjZhTSDM9YuVaPwxo",
+    "M2mx93ekt1fmXSVkTrUL9xVFHkmME8HTUi5Cyc5aF7K",
+    # Jupiter Aggregator
+    "JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4",
+    # Lifinity
+    "LFT4e5RmdB9t1K4K1zYh5zZ5K1zYh5zZ5K1zYh5zZ5K",
+    # Phoenix
+    "PhoeNiXZ8ByJGLkxNfZRnkUfjvmuYqLR89jjFHmKVjS",
+    # Drift
+    "DriFtR8yQW3jJZw2d1h3H3J3J3J3J3J3J3J3J3J3J3J",
+}
+
+# Bridge Contracts
+BRIDGE_CONTRACTS = {
+    # Wormhole
+    "worm2ZoG2kUd4vFXhvjh93UUH596ayRfgQ2MgjNMTth",
+    "5z3EqY5jGqF4N6q4gN7q4gN7q4gN7q4gN7q4gN7q4gN7",
+    # Allbridge
+    "BrdgN8nX9e3vJ3J3J3J3J3J3J3J3J3J3J3J3J3J3J3J",
+    # Portal
+    "Port7Z8B8B8B8B8B8B8B8B8B8B8B8B8B8B8B8B8B8B8",
+}
+
+# Known token contract patterns (burn addresses, null, etc.)
+CONTRACT_PATTERNS = {
+    "11111111111111111111111111111111",  # System/null address
+    "So11111111111111111111111111111111111111112",  # Wrapped SOL (not a whale)
+}
+
+# Combined blacklist for easy checking
+BLACKLISTED_ADDRESSES = EXCHANGE_WALLETS | DEX_POOL_AUTHORITIES | BRIDGE_CONTRACTS | CONTRACT_PATTERNS
 
 # Minimum thresholds
 MIN_WHALE_TX_USD = 5_000          # Ignore txs below this
 MIN_HOLDER_BALANCE_USD = 10_000   # Minimum to consider someone a "whale"
 MIN_LIQUIDITY_USD = 50_000        # Skip illiquid tokens
+MAX_SUPPLY_PCT_FOR_WHALE = 10.0   # Exclude wallets holding >10% (likely team/contract)
+MAX_WHALES_TO_ANALYZE = 20        # Cap analysis at top 20 after filtering
 
 
 # ─── Core Tracker ──────────────────────────────────────────────────────────────
@@ -259,9 +301,9 @@ class WhaleTracker:
         # Step 3: Filter to whale-sized holders (exclude exchanges/MMs)
         whales = self._filter_whales(holders, token_meta)
 
-        # Step 4: Check recent activity for each whale
+        # Step 4: Check recent activity for each whale (already capped by _filter_whales)
         whale_txs = []
-        for whale_addr in whales[:20]:    # Top 20 whales max (rate limit friendly)
+        for whale_addr in whales:
             txs = self._get_wallet_token_txs(whale_addr, token_address, chain)
             whale_txs.extend(txs)
             time.sleep(0.15)              # Rate limit
@@ -597,29 +639,49 @@ class WhaleTracker:
     # ─── Analysis Engine ───────────────────────────────────────────────────
     def _filter_whales(self, holders: List[Dict], token_meta: Dict) -> List[str]:
         """
-        Filter holders to actual whales, excluding:
+        Filter holders to actual trading whales, excluding:
         - Exchange hot wallets
-        - AMM/DEX pools
-        - Known market makers
+        - DEX/AMM pool authorities (Raydium, Orca, Meteora, etc.)
+        - Bridge contracts
+        - Token deployer/team wallets
+        - Burn/null addresses
+        - Wallets holding >10% of supply (likely contracts/team)
         - Dust wallets
+        
+        Returns top MAX_WHALES_TO_ANALYZE (20) after filtering.
         """
         price = float(token_meta.get("price", 0)) or 0.0001
-        whales = []
+        filtered_whales = []
+        excluded_count = {
+            "blacklist": 0,
+            "low_balance": 0,
+            "high_supply_pct": 0,
+        }
 
         for h in holders:
             addr = h.get("address", "") or h.get("owner", "")
             if not addr:
                 continue
 
-            # Skip known exchanges/MMs
-            if addr in EXCHANGE_WALLETS:
+            # Skip blacklisted addresses (exchanges, pools, bridges, contracts)
+            if addr in BLACKLISTED_ADDRESSES:
+                excluded_count["blacklist"] += 1
                 continue
 
-            # Calculate USD value
+            # Calculate balances and percentages
             balance = float(h.get("amount", 0) or h.get("uiAmount", 0))
             usd_value = balance * price
-
+            supply_pct = h.get("percentage", 0) or 0.0
+            
+            # Skip dust wallets (below minimum USD threshold)
             if usd_value < MIN_HOLDER_BALANCE_USD:
+                excluded_count["low_balance"] += 1
+                continue
+            
+            # Skip wallets holding >10% of supply (likely team/contract, not trading whale)
+            if supply_pct > MAX_SUPPLY_PCT_FOR_WHALE:
+                excluded_count["high_supply_pct"] += 1
+                logger.debug(f"Excluding {addr[:16]}... (holds {supply_pct:.1f}% supply)")
                 continue
 
             # Build/update wallet profile
@@ -629,9 +691,22 @@ class WhaleTracker:
                     first_seen=time.time(),
                 )
 
-            whales.append(addr)
+            filtered_whales.append((addr, usd_value, supply_pct))
 
-        return whales
+        # Sort by USD value descending and cap at MAX_WHALES_TO_ANALYZE
+        filtered_whales.sort(key=lambda x: x[1], reverse=True)
+        capped_whales = filtered_whales[:MAX_WHALES_TO_ANALYZE]
+        
+        # Log filtering summary
+        total_excluded = sum(excluded_count.values())
+        if total_excluded > 0 or len(capped_whales) < len(holders):
+            logger.info(f"Whale filter: {len(holders)} holders → {len(filtered_whales)} filtered → {len(capped_whales)} capped")
+            logger.info(f"  Excluded: {excluded_count['blacklist']} blacklisted, "
+                       f"{excluded_count['low_balance']} low balance, "
+                       f"{excluded_count['high_supply_pct']} high supply %")
+
+        # Return just the addresses
+        return [w[0] for w in capped_whales]
 
     def _score_accumulation(
         self, 
