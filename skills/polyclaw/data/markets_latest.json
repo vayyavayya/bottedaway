@@ -9,7 +9,7 @@
     "end_date_iso": "2026-07-01",
     "volume_total": 86898496.61217,
     "volume_24h": 24819819.75000001,
-    "liquidity": 467976.52324,
+    "liquidity": 468546.25126,
     "yes_price": 0.0005,
     "no_price": 0.9995,
     "yes_odds": "0.1%",
@@ -18,7 +18,7 @@
     "active": true,
     "closed": false,
     "image": "https://polymarket-upload.s3.us-east-2.amazonaws.com/nba-finals-points-leader-7g2ZEZvMXxLb.jpg",
-    "updated_at": "2026-03-04T20:42:50.358174Z"
+    "updated_at": "2026-03-04T21:40:02.820109Z"
   },
   {
     "id": "553828",
@@ -28,18 +28,18 @@
     "description": "This market will resolve to \u201cYes\u201d if the Colorado Avalanche win the 2026 NHL Stanley Cup. Otherwise, this market will resolve to \u201cNo\u201d.\n\nThis market will resolve to \u201cNo\u201d if it becomes impossible for th",
     "end_date": "2026-06-30T00:00:00Z",
     "end_date_iso": "2026-06-30",
-    "volume_total": 9573815.508558,
+    "volume_total": 9604500.122702,
     "volume_24h": 813100.5379559993,
-    "liquidity": 104634.05305,
-    "yes_price": 0.2165,
-    "no_price": 0.7835,
+    "liquidity": 108689.85771,
+    "yes_price": 0.216,
+    "no_price": 0.784,
     "yes_odds": "21.6%",
-    "no_odds": "78.3%",
+    "no_odds": "78.4%",
     "category": null,
     "active": true,
     "closed": false,
     "image": "https://polymarket-upload.s3.us-east-2.amazonaws.com/stanley-cup-champion-2026-05M0VRODAaEb.jpg",
-    "updated_at": "2026-03-04T20:42:46.841968Z"
+    "updated_at": "2026-03-04T21:39:58.939619Z"
   },
   {
     "id": "540881",
@@ -49,9 +49,9 @@
     "description": "This market will resolve to \"Yes\" if it Grand Theft Auto VI is officially released in the US by May 31, 2026, 11:59 PM ET. Otherwise, this market will resolve to \"No\".\n\nFor the purposes of this market",
     "end_date": "2026-05-31T12:00:00Z",
     "end_date_iso": "2026-05-31",
-    "volume_total": 9466638.902299,
+    "volume_total": 9485052.347353,
     "volume_24h": 720580.3089430002,
-    "liquidity": 39938.26731,
+    "liquidity": 41847.2277,
     "yes_price": 0.0235,
     "no_price": 0.9765,
     "yes_odds": "2.4%",
@@ -60,7 +60,7 @@
     "active": true,
     "closed": false,
     "image": "https://polymarket-upload.s3.us-east-2.amazonaws.com/gta-vi-released-before-june-2026-igCgZsDMejF1.jpg",
-    "updated_at": "2026-03-04T20:42:57.807453Z"
+    "updated_at": "2026-03-04T21:42:49.072687Z"
   },
   {
     "id": "553882",
@@ -70,9 +70,9 @@
     "description": "This market will resolve to \u201cYes\u201d if the Charlotte Hornets win the 2026 NBA Finals. Otherwise, this market will resolve to \u201cNo\u201d.\n\nThis market will resolve to \u201cNo\u201d if it becomes impossible for this tea",
     "end_date": "2026-07-01T00:00:00Z",
     "end_date_iso": "2026-07-01",
-    "volume_total": 22839961.92298,
+    "volume_total": 22841174.42998,
     "volume_24h": 323092.171776,
-    "liquidity": 377652.00262,
+    "liquidity": 374901.65236,
     "yes_price": 0.0085,
     "no_price": 0.9915,
     "yes_odds": "0.9%",
@@ -81,7 +81,7 @@
     "active": true,
     "closed": false,
     "image": "https://polymarket-upload.s3.us-east-2.amazonaws.com/nba-finals-points-leader-7g2ZEZvMXxLb.jpg",
-    "updated_at": "2026-03-04T20:42:57.84601Z"
+    "updated_at": "2026-03-04T21:42:43.010801Z"
   },
   {
     "id": "558943",
@@ -93,16 +93,16 @@
     "end_date_iso": "2026-07-20",
     "volume_total": 3038223.457449,
     "volume_24h": 294226.427971,
-    "liquidity": 669603.2166,
-    "yes_price": 0.017,
-    "no_price": 0.983,
-    "yes_odds": "1.7%",
-    "no_odds": "98.3%",
+    "liquidity": 669819.75819,
+    "yes_price": 0.0175,
+    "no_price": 0.9825,
+    "yes_odds": "1.8%",
+    "no_odds": "98.2%",
     "category": null,
     "active": true,
     "closed": false,
     "image": "https://polymarket-upload.s3.us-east-2.amazonaws.com/will-usa-win-the-2026-fifa-world-cup-467-HSwwccrla5fz.jpg",
-    "updated_at": "2026-03-04T20:43:02.208885Z"
+    "updated_at": "2026-03-04T21:42:55.528869Z"
   },
   {
     "id": "558941",
@@ -112,9 +112,9 @@
     "description": "This market will resolve according to the national team that wins the 2026 FIFA World Cup.\n\nIf at any point it becomes impossible for this team to win the FIFA World Cup based on the rules of FIFA (e.",
     "end_date": "2026-07-20T00:00:00Z",
     "end_date_iso": "2026-07-20",
-    "volume_total": 5277393.670666,
+    "volume_total": 5278215.115439,
     "volume_24h": 212045.11069300005,
-    "liquidity": 474530.28905,
+    "liquidity": 472546.73969,
     "yes_price": 0.0325,
     "no_price": 0.9675,
     "yes_odds": "3.2%",
@@ -123,7 +123,7 @@
     "active": true,
     "closed": false,
     "image": "https://polymarket-upload.s3.us-east-2.amazonaws.com/will-netherlands-win-the-2026-fifa-world-cup-739-vMGKphh9oaFR.jpg",
-    "updated_at": "2026-03-04T20:43:03.029704Z"
+    "updated_at": "2026-03-04T21:42:40.956447Z"
   },
   {
     "id": "553881",
@@ -133,9 +133,9 @@
     "description": "This market will resolve to \u201cYes\u201d if the Atlanta Hawks win the 2026 NBA Finals. Otherwise, this market will resolve to \u201cNo\u201d.\n\nThis market will resolve to \u201cNo\u201d if it becomes impossible for this team to",
     "end_date": "2026-07-01T00:00:00Z",
     "end_date_iso": "2026-07-01",
-    "volume_total": 8920952.473402,
+    "volume_total": 8923399.297067,
     "volume_24h": 211805.828617,
-    "liquidity": 430602.81721,
+    "liquidity": 427722.72997,
     "yes_price": 0.0035,
     "no_price": 0.9965,
     "yes_odds": "0.4%",
@@ -144,7 +144,7 @@
     "active": true,
     "closed": false,
     "image": "https://polymarket-upload.s3.us-east-2.amazonaws.com/nba-finals-points-leader-7g2ZEZvMXxLb.jpg",
-    "updated_at": "2026-03-04T20:43:04.933632Z"
+    "updated_at": "2026-03-04T21:42:58.553666Z"
   },
   {
     "id": "558949",
@@ -154,9 +154,9 @@
     "description": "This market will resolve according to the national team that wins the 2026 FIFA World Cup.\n\nIf at any point it becomes impossible for this team to win the FIFA World Cup based on the rules of FIFA (e.",
     "end_date": "2026-07-20T00:00:00Z",
     "end_date_iso": "2026-07-20",
-    "volume_total": 5516186.854544,
+    "volume_total": 5516202.098356,
     "volume_24h": 195173.61024500005,
-    "liquidity": 348945.99337,
+    "liquidity": 349136.79151,
     "yes_price": 0.0165,
     "no_price": 0.9835,
     "yes_odds": "1.7%",
@@ -165,7 +165,7 @@
     "active": true,
     "closed": false,
     "image": "https://polymarket-upload.s3.us-east-2.amazonaws.com/will-japan-win-the-2026-fifa-world-cup-112-8AQwfmoAsz2d.jpg",
-    "updated_at": "2026-03-04T20:43:12.185198Z"
+    "updated_at": "2026-03-04T21:39:42.175907Z"
   },
   {
     "id": "558937",
@@ -175,9 +175,9 @@
     "description": "This market will resolve according to the national team that wins the 2026 FIFA World Cup.\n\nIf at any point it becomes impossible for this team to win the FIFA World Cup based on the rules of FIFA (e.",
     "end_date": "2026-07-20T00:00:00Z",
     "end_date_iso": "2026-07-20",
-    "volume_total": 2770945.228632,
+    "volume_total": 2772075.808632,
     "volume_24h": 175923.6740390002,
-    "liquidity": 1422286.35431,
+    "liquidity": 1428079.57236,
     "yes_price": 0.0855,
     "no_price": 0.9145,
     "yes_odds": "8.6%",
@@ -186,7 +186,7 @@
     "active": true,
     "closed": false,
     "image": "https://polymarket-upload.s3.us-east-2.amazonaws.com/will-brazil-win-the-2026-fifa-world-cup-183-mWG-xaHVZtUa.png",
-    "updated_at": "2026-03-04T20:43:03.594955Z"
+    "updated_at": "2026-03-04T21:42:56.307393Z"
   },
   {
     "id": "550706",
@@ -196,9 +196,9 @@
     "description": "This is a market on which teams will qualify for the 2026 FIFA World Cup.\n\nIf at any point it becomes impossible for this team to qualify for the FIFA World Cup based on the rules of FIFA (e.g. they c",
     "end_date": "2026-04-12T00:00:00Z",
     "end_date_iso": "2026-04-12",
-    "volume_total": 430197.266302,
+    "volume_total": 430610.476302,
     "volume_24h": 165777.78689400002,
-    "liquidity": 3340.0955,
+    "liquidity": 4156.7562,
     "yes_price": 0.335,
     "no_price": 0.665,
     "yes_odds": "33.5%",
@@ -207,7 +207,7 @@
     "active": true,
     "closed": false,
     "image": "https://polymarket-upload.s3.us-east-2.amazonaws.com/2026-fifa-world-cup-which-countries-qualify-_JWD7xspmdXY.png",
-    "updated_at": "2026-03-04T20:42:51.609341Z"
+    "updated_at": "2026-03-04T21:40:04.296322Z"
   },
   {
     "id": "553868",
@@ -217,9 +217,9 @@
     "description": "This market will resolve to \u201cYes\u201d if the Los Angeles Clippers win the 2026 NBA Finals. Otherwise, this market will resolve to \u201cNo\u201d.\n\nThis market will resolve to \u201cNo\u201d if it becomes impossible for this ",
     "end_date": "2026-07-01T00:00:00Z",
     "end_date_iso": "2026-07-01",
-    "volume_total": 8712515.703721,
+    "volume_total": 8713754.449497,
     "volume_24h": 124767.04455700002,
-    "liquidity": 215270.85736,
+    "liquidity": 215867.14026,
     "yes_price": 0.0095,
     "no_price": 0.9905,
     "yes_odds": "0.9%",
@@ -228,7 +228,7 @@
     "active": true,
     "closed": false,
     "image": "https://polymarket-upload.s3.us-east-2.amazonaws.com/nba-finals-points-leader-7g2ZEZvMXxLb.jpg",
-    "updated_at": "2026-03-04T20:43:06.073114Z"
+    "updated_at": "2026-03-04T21:39:50.302582Z"
   },
   {
     "id": "553876",
@@ -238,9 +238,9 @@
     "description": "This market will resolve to \u201cYes\u201d if the Toronto Raptors win the 2026 NBA Finals. Otherwise, this market will resolve to \u201cNo\u201d.\n\nThis market will resolve to \u201cNo\u201d if it becomes impossible for this team ",
     "end_date": "2026-07-01T00:00:00Z",
     "end_date_iso": "2026-07-01",
-    "volume_total": 7402119.540855,
+    "volume_total": 7403651.68948,
     "volume_24h": 121301.19840200004,
-    "liquidity": 533565.83581,
+    "liquidity": 529558.75328,
     "yes_price": 0.0085,
     "no_price": 0.9915,
     "yes_odds": "0.9%",
@@ -249,7 +249,7 @@
     "active": true,
     "closed": false,
     "image": "https://polymarket-upload.s3.us-east-2.amazonaws.com/nba-finals-points-leader-7g2ZEZvMXxLb.jpg",
-    "updated_at": "2026-03-04T20:42:39.237001Z"
+    "updated_at": "2026-03-04T21:39:54.38399Z"
   },
   {
     "id": "553879",
@@ -259,9 +259,9 @@
     "description": "This market will resolve to \u201cYes\u201d if the Portland Trail Blazers win the 2026 NBA Finals. Otherwise, this market will resolve to \u201cNo\u201d.\n\nThis market will resolve to \u201cNo\u201d if it becomes impossible for thi",
     "end_date": "2026-07-01T00:00:00Z",
     "end_date_iso": "2026-07-01",
-    "volume_total": 8470962.223866,
+    "volume_total": 8472184.766198,
     "volume_24h": 109782.44231899994,
-    "liquidity": 670513.48719,
+    "liquidity": 679245.08359,
     "yes_price": 0.0035,
     "no_price": 0.9965,
     "yes_odds": "0.4%",
@@ -270,7 +270,7 @@
     "active": true,
     "closed": false,
     "image": "https://polymarket-upload.s3.us-east-2.amazonaws.com/nba-finals-points-leader-7g2ZEZvMXxLb.jpg",
-    "updated_at": "2026-03-04T20:43:11.385749Z"
+    "updated_at": "2026-03-04T21:39:41.230434Z"
   },
   {
     "id": "553871",
@@ -280,9 +280,9 @@
     "description": "This market will resolve to \u201cYes\u201d if the Detroit Pistons win the 2026 NBA Finals. Otherwise, this market will resolve to \u201cNo\u201d.\n\nThis market will resolve to \u201cNo\u201d if it becomes impossible for this team ",
     "end_date": "2026-07-01T00:00:00Z",
     "end_date_iso": "2026-07-01",
-    "volume_total": 4452573.050448,
+    "volume_total": 4454765.173494,
     "volume_24h": 109157.74648300007,
-    "liquidity": 169889.5072,
+    "liquidity": 181708.60541,
     "yes_price": 0.066,
     "no_price": 0.934,
     "yes_odds": "6.6%",
@@ -291,7 +291,7 @@
     "active": true,
     "closed": false,
     "image": "https://polymarket-upload.s3.us-east-2.amazonaws.com/nba-finals-points-leader-7g2ZEZvMXxLb.jpg",
-    "updated_at": "2026-03-04T20:42:48.077372Z"
+    "updated_at": "2026-03-04T21:40:00.026574Z"
   },
   {
     "id": "553874",
@@ -301,9 +301,9 @@
     "description": "This market will resolve to \u201cYes\u201d if the Memphis Grizzlies win the 2026 NBA Finals. Otherwise, this market will resolve to \u201cNo\u201d.\n\nThis market will resolve to \u201cNo\u201d if it becomes impossible for this tea",
     "end_date": "2026-07-01T00:00:00Z",
     "end_date_iso": "2026-07-01",
-    "volume_total": 32833363.189182,
+    "volume_total": 32834887.998182,
     "volume_24h": 109084.09200000008,
-    "liquidity": 1199828.17936,
+    "liquidity": 1195765.80088,
     "yes_price": 0.0015,
     "no_price": 0.9985,
     "yes_odds": "0.1%",
@@ -312,7 +312,7 @@
     "active": true,
     "closed": false,
     "image": "https://polymarket-upload.s3.us-east-2.amazonaws.com/nba-finals-points-leader-7g2ZEZvMXxLb.jpg",
-    "updated_at": "2026-03-04T20:42:42.059175Z"
+    "updated_at": "2026-03-04T21:39:55.871101Z"
   },
   {
     "id": "553883",
@@ -322,9 +322,9 @@
     "description": "This market will resolve to \u201cYes\u201d if the Utah Jazz win the 2026 NBA Finals. Otherwise, this market will resolve to \u201cNo\u201d.\n\nThis market will resolve to \u201cNo\u201d if it becomes impossible for this team to win",
     "end_date": "2026-07-01T00:00:00Z",
     "end_date_iso": "2026-07-01",
-    "volume_total": 17524857.771791,
+    "volume_total": 17526635.816791,
     "volume_24h": 107816.73799999995,
-    "liquidity": 1199770.53634,
+    "liquidity": 1197653.91648,
     "yes_price": 0.0015,
     "no_price": 0.9985,
     "yes_odds": "0.1%",
@@ -333,7 +333,7 @@
     "active": true,
     "closed": false,
     "image": "https://polymarket-upload.s3.us-east-2.amazonaws.com/nba-finals-points-leader-7g2ZEZvMXxLb.jpg",
-    "updated_at": "2026-03-04T20:42:48.111715Z"
+    "updated_at": "2026-03-04T21:39:59.892205Z"
   },
   {
     "id": "553873",
@@ -343,9 +343,9 @@
     "description": "This market will resolve to \u201cYes\u201d if the Miami Heat win the 2026 NBA Finals. Otherwise, this market will resolve to \u201cNo\u201d.\n\nThis market will resolve to \u201cNo\u201d if it becomes impossible for this team to wi",
     "end_date": "2026-07-01T00:00:00Z",
     "end_date_iso": "2026-07-01",
-    "volume_total": 6990404.401991,
+    "volume_total": 6991616.919879,
     "volume_24h": 105994.75525,
-    "liquidity": 300461.34174,
+    "liquidity": 302960.92904,
     "yes_price": 0.0095,
     "no_price": 0.9905,
     "yes_odds": "0.9%",
@@ -354,7 +354,7 @@
     "active": true,
     "closed": false,
     "image": "https://polymarket-upload.s3.us-east-2.amazonaws.com/nba-finals-points-leader-7g2ZEZvMXxLb.jpg",
-    "updated_at": "2026-03-04T20:43:06.273439Z"
+    "updated_at": "2026-03-04T21:42:59.784723Z"
   },
   {
     "id": "553885",
@@ -364,9 +364,9 @@
     "description": "This market will resolve to \u201cYes\u201d if the Washington Wizards win the 2026 NBA Finals. Otherwise, this market will resolve to \u201cNo\u201d.\n\nThis market will resolve to \u201cNo\u201d if it becomes impossible for this te",
     "end_date": "2026-07-01T00:00:00Z",
     "end_date_iso": "2026-07-01",
-    "volume_total": 18075107.903222,
+    "volume_total": 18076539.248222,
     "volume_24h": 105917.55299999994,
-    "liquidity": 1329382.18478,
+    "liquidity": 1324694.17092,
     "yes_price": 0.0015,
     "no_price": 0.9985,
     "yes_odds": "0.1%",
@@ -375,7 +375,7 @@
     "active": true,
     "closed": false,
     "image": "https://polymarket-upload.s3.us-east-2.amazonaws.com/nba-finals-points-leader-7g2ZEZvMXxLb.jpg",
-    "updated_at": "2026-03-04T20:42:48.472831Z"
+    "updated_at": "2026-03-04T21:40:00.424197Z"
   },
   {
     "id": "553880",
@@ -385,9 +385,9 @@
     "description": "This market will resolve to \u201cYes\u201d if the Brooklyn Nets win the 2026 NBA Finals. Otherwise, this market will resolve to \u201cNo\u201d.\n\nThis market will resolve to \u201cNo\u201d if it becomes impossible for this team to",
     "end_date": "2026-07-01T00:00:00Z",
     "end_date_iso": "2026-07-01",
-    "volume_total": 17734851.34265,
+    "volume_total": 17736463.94465,
     "volume_24h": 100637.93,
-    "liquidity": 1322897.26266,
+    "liquidity": 1320623.95702,
     "yes_price": 0.0015,
     "no_price": 0.9985,
     "yes_odds": "0.1%",
@@ -396,7 +396,7 @@
     "active": true,
     "closed": false,
     "image": "https://polymarket-upload.s3.us-east-2.amazonaws.com/nba-finals-points-leader-7g2ZEZvMXxLb.jpg",
-    "updated_at": "2026-03-04T20:42:35.056448Z"
+    "updated_at": "2026-03-04T21:39:52.411444Z"
   },
   {
     "id": "558939",
@@ -406,9 +406,9 @@
     "description": "This market will resolve according to the national team that wins the 2026 FIFA World Cup.\n\nIf at any point it becomes impossible for this team to win the FIFA World Cup based on the rules of FIFA (e.",
     "end_date": "2026-07-20T00:00:00Z",
     "end_date_iso": "2026-07-20",
-    "volume_total": 4692756.0636,
+    "volume_total": 4692829.1636,
     "volume_24h": 98074.47867299999,
-    "liquidity": 424493.14989,
+    "liquidity": 436226.67355,
     "yes_price": 0.0545,
     "no_price": 0.9455,
     "yes_odds": "5.5%",
@@ -417,6 +417,6 @@
     "active": true,
     "closed": false,
     "image": "https://polymarket-upload.s3.us-east-2.amazonaws.com/will-germany-win-the-2026-fifa-world-cup-467-bMMLcP0kbRWp.png",
-    "updated_at": "2026-03-04T20:43:16.241062Z"
+    "updated_at": "2026-03-04T21:39:46.803114Z"
   }
 ]

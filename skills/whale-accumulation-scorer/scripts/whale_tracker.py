@@ -907,6 +907,16 @@ class WhaleTracker:
         # 5% of liquidity accumulated = moderate, 20%+ = very strong
         size_score = min(size_ratio / 0.25, 1.0)
 
+        # ── Base Composite Score ──
+        # Weighted combination of core signals
+        base_score = (
+            ratio_score * 0.25 +      # Net buying pressure
+            count_score * 0.20 +      # Number of whales
+            velocity_score * 0.20 +   # Acceleration
+            quality_score * 0.15 +    # Smart money quality
+            size_score * 0.20         # Size vs liquidity
+        )
+
         # ── WIF/POPCAT Historically-Proven Bonus Signals ──
         bonus_signals = {}
         
@@ -951,12 +961,12 @@ class WhaleTracker:
         
         # Apply bonus signals (capped at 0-1 range after base score)
         total_bonus = sum(bonus_signals.values())
-        adjusted_score = score + total_bonus
+        adjusted_score = base_score + total_bonus
         
         # Log bonus signals
         if bonus_signals:
             logger.info(f"  Bonus signals for {symbol}: {bonus_signals}")
-            logger.info(f"  Base score: {score:.3f} | Adjusted: {adjusted_score:.3f}")
+            logger.info(f"  Base score: {base_score:.3f} | Adjusted: {adjusted_score:.3f}")
         
         # ── Determine Phase ──
         # Critical checks first - if sells dominate, it's distribution regardless of other factors
