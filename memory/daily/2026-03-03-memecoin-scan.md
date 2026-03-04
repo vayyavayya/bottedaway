@@ -1,29 +1,24 @@
-# Memecoin Scan - 2026-03-03
+# Memecoin Scan — 2026-03-03 19:32
 
-**Scan Time:** 07:33 CET (12h cron)
-**Status:** ✅ Complete — No new activity
+## Run Summary
+- **Scan Type:** Whale Tracker (forced)
+- **Wallets Monitored:** 5
+- **Tokens Detected:** 0
+- **Status:** No new activity
 
-## Summary
+## Whale Activity
+| Wallet | Transactions | New Buys |
+|--------|--------------|----------|
+| 4sAUSQFd... | 100 | 0 |
+| 4pcfEWH1... | 100 | 0 |
+| 6rq8QHA8... | 100 | 0 |
+| 2gjDmkFT... | 100 | 0 |
+| 6u9jyRaT... | 100 | 0 |
 
-| Metric | Value |
-|--------|-------|
-| Wallets Monitored | 5 |
-| Unique Tokens Found | 0 |
-| PASS (High Conviction) | 0 |
-| WATCH (Monitor) | 0 |
-| REJECT (Low Quality) | 0 |
-
-## Wallets Scanned
-
-1. `4sAUSQFd...` — 0 buys (100 txs analyzed)
-2. `4pcfEWH1...` — 0 buys (100 txs analyzed)
-3. `6rq8QHA8...` — 0 buys (100 txs analyzed)
-4. `2gjDmkFT...` — 0 buys (100 txs analyzed)
-5. `6u9jyRaT...` — 0 buys (100 txs analyzed)
-
-## Report
-- **HTML:** `/Users/pterion2910/.openclaw/workspace/skills/whale-tracker/data/reports/2026-03-03.html`
-- **Telegram:** Skipped (WHALE_TELEGRAM_BOT_TOKEN not set)
+## Scored Tokens
+None detected — all monitored whales inactive for new buys.
 
 ## Notes
-No new token purchases detected across all tracked whale wallets. Quiet morning — whales are waiting.
+- Helius API functioning normally
+- Telegram posting skipped (WHALE_TELEGRAM_BOT_TOKEN not configured)
+- Report generated: `skills/whale-tracker/data/reports/2026-03-03.html`
