@@ -849,17 +849,28 @@ class WhaleTracker:
         # 1 whale = 0.2, 3 whales = 0.6, 5+ = 0.9
         count_score = min(distinct_buyers * 0.18, 0.95)
 
-        # 3. Velocity score (is accumulation accelerating?)
-        # Compare 4h rate vs 24h average rate
+        # 3. Velocity score (buying acceleration, penalized if selling dominates)
+        # Compare 4h buy rate vs 24h average rate, but zero/negative if 4h sells exceed buys
         rate_24h = total_buy_usd / 24.0 if total_buy_usd > 0 else 0
         rate_4h = buy_usd_4h / 4.0 if buy_usd_4h > 0 else 0
+        sell_rate_4h = sell_usd_4h / 4.0 if sell_usd_4h > 0 else 0
+        
         if rate_24h > 0:
-            velocity = rate_4h / rate_24h
+            base_velocity = rate_4h / rate_24h
         else:
-            velocity = 0.0
+            base_velocity = 0.0
+        
+        # If 4h sells exceed 4h buys, velocity is negative (distribution, not accumulation)
+        if sell_rate_4h > rate_4h:
+            velocity = -base_velocity if base_velocity > 0 else -1.0
+        else:
+            velocity = base_velocity
 
-        # velocity > 1 means accelerating, < 1 means decelerating
-        velocity_score = min(velocity / (velocity + 1.5), 1.0)
+        # velocity > 1 means accelerating, < 1 means decelerating, < 0 means distribution
+        if velocity < 0:
+            velocity_score = 0.0  # No accumulation score for distribution
+        else:
+            velocity_score = min(velocity / (velocity + 1.5), 1.0)
 
         # 4. Wallet quality score (average quality of buying whales)
         buyer_wallets = [self.wallet_profiles.get(tx.wallet) for tx, _ in buys_24h if tx.wallet in self.wallet_profiles]
@@ -892,24 +903,37 @@ class WhaleTracker:
         score = max(0.0, min(1.0, score))
 
         # ── Determine Phase ──
-        if score < 0.2:
+        # Critical checks first - if sells dominate, it's distribution regardless of other factors
+        if buy_sell_ratio < 0.8:
+            # Net selling pressure - more than 20% more sells than buys
+            phase = AccumulationPhase.DISTRIBUTION
+            score *= 0.3  # Heavy penalty - this is not accumulation
+        elif distinct_sellers > distinct_buyers * 1.5:
+            # More distinct sellers than buyers
+            phase = AccumulationPhase.DISTRIBUTION
+            score *= 0.5
+        elif score < 0.2:
             phase = AccumulationPhase.NONE
         elif score < 0.4:
             phase = AccumulationPhase.EARLY_ACCUMULATION
         elif score < 0.7:
             phase = AccumulationPhase.ACTIVE_ACCUMULATION
-        elif distinct_sellers > distinct_buyers * 1.5:
-            phase = AccumulationPhase.DISTRIBUTION
-            score *= 0.5              # Penalize heavily
         else:
             phase = AccumulationPhase.HEAVY_ACCUMULATION
 
         # ── Build detail string ──
+        if velocity < 0:
+            velocity_desc = "distributing"
+        elif velocity > 1:
+            velocity_desc = "accelerating"
+        else:
+            velocity_desc = "flat/decelerating"
+            
         details = (
             f"{symbol}: {distinct_buyers} whales buying (${total_buy_usd:,.0f}) vs "
             f"{distinct_sellers} selling (${total_sell_usd:,.0f}) in 24h. "
-            f"Velocity {'accelerating' if velocity > 1 else 'flat/decelerating'} "
-            f"({velocity:.1f}x). Size={size_ratio*100:.1f}% of liquidity."
+            f"Velocity {velocity_desc} "
+            f"({abs(velocity):.1f}x). Size={size_ratio*100:.1f}% of liquidity."
         )
 
         return WhaleSignal(
