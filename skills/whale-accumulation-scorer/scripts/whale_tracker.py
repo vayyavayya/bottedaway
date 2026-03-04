@@ -410,15 +410,25 @@ class WhaleTracker:
     ) -> List[WhaleTransaction]:
         """
         Get recent buy/sell transactions for a wallet on a specific token.
-        Uses Helius if available (better data), falls back to Birdeye.
+        Uses Helius if available (better data), falls back to Birdeye if empty/fails.
         """
         txs = []
         cutoff = time.time() - (lookback_hours * 3600)
 
+        # Try Helius first (if Solana and key available)
         if HELIUS_API_KEY and chain == "solana":
             txs = self._helius_wallet_txs(wallet, token_address, cutoff)
-        else:
+            if txs:
+                logger.debug(f"Helius returned {len(txs)} txs for {wallet[:16]}")
+            else:
+                logger.debug(f"Helius returned empty for {wallet[:16]}, will try Birdeye fallback")
+        
+        # Fallback to Birdeye if Helius returned empty or not available
+        if not txs:
+            logger.debug(f"Trying Birdeye fallback for {wallet[:16]}")
             txs = self._birdeye_wallet_txs(wallet, token_address, chain, cutoff)
+            if txs:
+                logger.debug(f"Birdeye returned {len(txs)} txs for {wallet[:16]}")
 
         # Cache for velocity calculations
         self.tx_history[token_address].extend(txs)
@@ -549,43 +559,85 @@ class WhaleTracker:
                 logger.warning(f"Helius REST error {resp.status_code} for {wallet[:16]}")
                 return txs
             
-            for tx in resp.json():
+            data = resp.json()
+            logger.debug(f"Helius REST returned {len(data) if isinstance(data, list) else 'non-list'} items for {wallet[:16]}")
+            
+            # Handle both list and dict responses
+            if isinstance(data, dict):
+                transactions = data.get("transactions", [])
+            else:
+                transactions = data
+            
+            for tx in transactions:
                 ts = tx.get("timestamp", 0)
                 if ts < cutoff:
                     continue
 
-                for event in tx.get("events", {}).get("swap", {}).get("innerSwaps", []):
-                    token_in = event.get("tokenInputs", [{}])
-                    token_out = event.get("tokenOutputs", [{}])
-
-                    for t_in in token_in:
-                        if t_in.get("mint") == token_address:
-                            txs.append(WhaleTransaction(
-                                wallet=wallet,
-                                token_address=token_address,
-                                token_symbol="",
-                                side="sell",
-                                amount_tokens=float(t_in.get("rawTokenAmount", {}).get("tokenAmount", 0)),
-                                amount_usd=float(t_in.get("userAmount", 0)) if "userAmount" in t_in else 0,
-                                timestamp=ts,
-                                tx_hash=tx.get("signature", ""),
-                            ))
-
-                    for t_out in token_out:
-                        if t_out.get("mint") == token_address:
-                            txs.append(WhaleTransaction(
-                                wallet=wallet,
-                                token_address=token_address,
-                                token_symbol="",
-                                side="buy",
-                                amount_tokens=float(t_out.get("rawTokenAmount", {}).get("tokenAmount", 0)),
-                                amount_usd=float(t_out.get("userAmount", 0)) if "userAmount" in t_out else 0,
-                                timestamp=ts,
-                                tx_hash=tx.get("signature", ""),
-                            ))
+                tx_type = tx.get("type", "").upper()
+                token_transfers = tx.get("tokenTransfers", [])
                 
+                # Try Enhanced Transactions API format (events.swap.innerSwaps)
+                events = tx.get("events", {})
+                swap_events = events.get("swap", {}) if isinstance(events, dict) else {}
+                inner_swaps = swap_events.get("innerSwaps", []) if isinstance(swap_events, dict) else []
+                
+                if inner_swaps:
+                    for event in inner_swaps:
+                        token_in = event.get("tokenInputs", [{}])
+                        token_out = event.get("tokenOutputs", [{}])
+
+                        for t_in in token_in:
+                            if t_in.get("mint") == token_address:
+                                txs.append(WhaleTransaction(
+                                    wallet=wallet,
+                                    token_address=token_address,
+                                    token_symbol="",
+                                    side="sell",
+                                    amount_tokens=float(t_in.get("rawTokenAmount", {}).get("tokenAmount", 0)),
+                                    amount_usd=float(t_in.get("userAmount", 0)) if "userAmount" in t_in else 0,
+                                    timestamp=ts,
+                                    tx_hash=tx.get("signature", ""),
+                                ))
+
+                        for t_out in token_out:
+                            if t_out.get("mint") == token_address:
+                                txs.append(WhaleTransaction(
+                                    wallet=wallet,
+                                    token_address=token_address,
+                                    token_symbol="",
+                                    side="buy",
+                                    amount_tokens=float(t_out.get("rawTokenAmount", {}).get("tokenAmount", 0)),
+                                    amount_usd=float(t_out.get("userAmount", 0)) if "userAmount" in t_out else 0,
+                                    timestamp=ts,
+                                    tx_hash=tx.get("signature", ""),
+                                ))
+                
+                # Parse from tokenTransfers (Helius native format)
+                elif token_transfers and tx_type == "SWAP":
+                    for move in token_transfers:
+                        if move.get("mint") == token_address:
+                            from_wallet = move.get("fromUserAccount", "")
+                            to_wallet = move.get("toUserAccount", "")
+                            amount = float(move.get("tokenAmount", 0))
+                            
+                            if from_wallet == wallet:
+                                txs.append(WhaleTransaction(
+                                    wallet=wallet, token_address=token_address, token_symbol="",
+                                    side="sell", amount_tokens=amount, amount_usd=0,
+                                    timestamp=ts, tx_hash=tx.get("signature", ""),
+                                ))
+                            elif to_wallet == wallet:
+                                txs.append(WhaleTransaction(
+                                    wallet=wallet, token_address=token_address, token_symbol="",
+                                    side="buy", amount_tokens=amount, amount_usd=0,
+                                    timestamp=ts, tx_hash=tx.get("signature", ""),
+                                ))
+                
+                else:
+                    logger.debug(f"No swap data in tx for {wallet[:16]} (type: {tx_type})")
+                    
         except Exception as e:
-            logger.error(f"Helius tx fetch failed for {wallet[:16]}: {e}")
+            logger.error(f"Helius REST failed for {wallet[:16]}: {e}")
             
         return txs
 
