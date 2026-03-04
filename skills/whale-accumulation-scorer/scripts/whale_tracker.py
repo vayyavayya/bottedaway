@@ -309,7 +309,8 @@ class WhaleTracker:
             time.sleep(0.15)              # Rate limit
 
         # Step 5: Score the accumulation pattern
-        signal = self._score_accumulation(token_address, symbol, whales, whale_txs, liquidity)
+        token_price = float(token_meta.get("price", 0))
+        signal = self._score_accumulation(token_address, symbol, whales, whale_txs, liquidity, token_price)
         logger.info(f"{symbol}: Whale score={signal.score:.2f} phase={signal.phase.value} "
                    f"buys=${signal.total_whale_buys_usd_24h:,.0f} "
                    f"sells=${signal.total_whale_sells_usd_24h:,.0f}")
@@ -767,6 +768,7 @@ class WhaleTracker:
         whale_addrs: List[str],
         transactions: List[WhaleTransaction], 
         liquidity: float,
+        token_price: float = 0.0,
     ) -> WhaleSignal:
         """
         Core scoring engine. Produces a 0-1 confidence score based on:
@@ -781,19 +783,53 @@ class WhaleTracker:
         h4_cutoff = now - 14400
 
         # ── Aggregate buy/sell volumes ──
-        buys_24h = [tx for tx in transactions if tx.side == "buy" and tx.timestamp > h24_cutoff]
-        sells_24h = [tx for tx in transactions if tx.side == "sell" and tx.timestamp > h24_cutoff]
-        buys_4h = [tx for tx in transactions if tx.side == "buy" and tx.timestamp > h4_cutoff]
-        sells_4h = [tx for tx in transactions if tx.side == "sell" and tx.timestamp > h4_cutoff]
+        # NOTE: Helius/Birdeye may not provide USD values, so we calculate from token amounts
+        buys_24h = []
+        sells_24h = []
+        
+        for tx in transactions:
+            if tx.timestamp <= h24_cutoff:
+                continue
+                
+            # Calculate USD value if not provided by API
+            tx_usd = tx.amount_usd
+            if tx_usd == 0 and token_price > 0:
+                tx_usd = tx.amount_tokens * token_price
+                
+            if tx.side == "buy":
+                buys_24h.append((tx, tx_usd))
+            else:
+                sells_24h.append((tx, tx_usd))
 
-        total_buy_usd = sum(tx.amount_usd for tx in buys_24h)
-        total_sell_usd = sum(tx.amount_usd for tx in sells_24h)
-        buy_usd_4h = sum(tx.amount_usd for tx in buys_4h)
-        sell_usd_4h = sum(tx.amount_usd for tx in sells_4h)
+        total_buy_usd = sum(usd for _, usd in buys_24h)
+        total_sell_usd = sum(usd for _, usd in sells_24h)
+        
+        # 4h window
+        buys_4h = [(tx, usd) for tx, usd in buys_24h if tx.timestamp > h4_cutoff]
+        sells_4h = [(tx, usd) for tx, usd in sells_24h if tx.timestamp > h4_cutoff]
+        buy_usd_4h = sum(usd for _, usd in buys_4h)
+        sell_usd_4h = sum(usd for _, usd in sells_4h)
 
-        # Distinct buyers
-        distinct_buyers = len(set(tx.wallet for tx in buys_24h))
-        distinct_sellers = len(set(tx.wallet for tx in sells_24h))
+        # DEBUG: Log the calculated values
+        logger.info(f"DEBUG _score_accumulation: {symbol}")
+        logger.info(f"  Token price: ${token_price:.6f}")
+        logger.info(f"  Transactions: {len(transactions)} total, {len(buys_24h)} buys, {len(sells_24h)} sells (24h)")
+        logger.info(f"  total_buy_usd: ${total_buy_usd:,.2f}")
+        logger.info(f"  total_sell_usd: ${total_sell_usd:,.2f}")
+        logger.info(f"  buy_usd_4h: ${buy_usd_4h:,.2f}")
+        logger.info(f"  sell_usd_4h: ${sell_usd_4h:,.2f}")
+        
+        # Show sample transaction values
+        if buys_24h:
+            sample_tx, sample_usd = buys_24h[0]
+            logger.info(f"  Sample buy tx: amount_usd=${sample_usd:,.2f}, amount_tokens={sample_tx.amount_tokens:,.2f}")
+        if sells_24h:
+            sample_tx, sample_usd = sells_24h[0]
+            logger.info(f"  Sample sell tx: amount_usd=${sample_usd:,.2f}, amount_tokens={sample_tx.amount_tokens:,.2f}")
+
+        # Distinct buyers (extract tx objects from tuples)
+        distinct_buyers = len(set(tx.wallet for tx, _ in buys_24h))
+        distinct_sellers = len(set(tx.wallet for tx, _ in sells_24h))
 
         # ── Component Scores (each 0-1) ──
         # 1. Buy/sell ratio score
@@ -826,7 +862,7 @@ class WhaleTracker:
         velocity_score = min(velocity / (velocity + 1.5), 1.0)
 
         # 4. Wallet quality score (average quality of buying whales)
-        buyer_wallets = [self.wallet_profiles.get(tx.wallet) for tx in buys_24h if tx.wallet in self.wallet_profiles]
+        buyer_wallets = [self.wallet_profiles.get(tx.wallet) for tx, _ in buys_24h if tx.wallet in self.wallet_profiles]
         if buyer_wallets:
             quality_score = sum(w.quality_score for w in buyer_wallets) / len(buyer_wallets)
         else:
