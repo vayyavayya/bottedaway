@@ -181,30 +181,35 @@ class WhaleTracker:
             "last_run_iso": datetime.now().isoformat()
         }))
     
+    def _load_helius_key(self) -> str:
+        """Load Helius API key from env or credentials file"""
+        # Try environment variable first
+        env_key = os.getenv("HELIUS_API_KEY", "")
+        if env_key:
+            return env_key
+        
+        # Try credentials file
+        creds_paths = [
+            os.path.expanduser("~/.config/helius/credentials.json"),
+            "/Users/pterion2910/.config/helius/credentials.json",
+        ]
+        for creds_file in creds_paths:
+            if os.path.exists(creds_file):
+                try:
+                    with open(creds_file, 'r') as f:
+                        creds = json.load(f)
+                        key = creds.get("api_key", "")
+                        if key:
+                            logger.info(f"Loaded Helius key from {creds_file}")
+                            return key
+                except Exception as e:
+                    logger.debug(f"Failed to read {creds_file}: {e}")
+                    continue
+        return ""
+
     async def fetch_wallet_transactions(self, wallet: Wallet) -> List[Dict]:
         """Fetch recent transactions for a wallet - Helius default, no fallback needed"""
-        # Load Helius key from env or credentials file
-        helius_key = os.getenv("HELIUS_API_KEY", "")
-        
-        if not helius_key:
-            # Try credentials file with absolute path (handles isolated sessions)
-            creds_paths = [
-                "/Users/pterion2910/.config/helius/credentials.json",
-                os.path.expanduser("~/.config/helius/credentials.json"),
-                os.path.join(Path.home(), ".config/helius/credentials.json"),
-            ]
-            for creds_file in creds_paths:
-                if os.path.exists(creds_file):
-                    try:
-                        with open(creds_file, 'r') as f:
-                            creds = json.load(f)
-                            helius_key = creds.get("api_key", "")
-                            if helius_key:
-                                logger.info(f"Loaded Helius key from {creds_file}")
-                                break
-                    except Exception as e:
-                        logger.debug(f"Failed to read {creds_file}: {e}")
-                        continue
+        helius_key = self._load_helius_key()
         
         if not helius_key:
             logger.error(f"❌ HELIUS_API_KEY not set - cannot fetch transactions")
