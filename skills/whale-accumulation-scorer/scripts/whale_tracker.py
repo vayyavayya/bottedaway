@@ -47,7 +47,6 @@ from dataclasses import dataclass, field
 from enum import Enum
 from collections import defaultdict
 import requests
-import requests
 try:
     from dotenv import load_dotenv
     load_dotenv("keys.env")
@@ -83,9 +82,38 @@ def _load_helius_key() -> str:
                 continue
     return ""
 
+
+def _load_birdeye_key() -> str:
+    """Load Birdeye API key from env or credentials file."""
+    key = os.getenv("BIRDEYE_API_KEY", "")
+    if key:
+        return key
+    
+    # Try credentials file
+    creds_paths = [
+        os.path.expanduser("~/.config/birdeye/credentials.json"),
+        "/Users/pterion2910/.config/birdeye/credentials.json",
+    ]
+    for creds_file in creds_paths:
+        if os.path.exists(creds_file):
+            try:
+                with open(creds_file, 'r') as f:
+                    creds = json.load(f)
+                    key = creds.get("api_key", "")
+                    if key:
+                        logger.info(f"Loaded Birdeye key from {creds_file}")
+                        return key
+            except Exception as e:
+                logger.debug(f"Failed to read {creds_file}: {e}")
+                continue
+    return ""
+
+
 HELIUS_API_KEY = _load_helius_key()
-BIRDEYE_API_KEY = os.getenv("BIRDEYE_API_KEY", "")
+BIRDEYE_API_KEY = _load_birdeye_key()
 HELIUS_RPC = f"https://mainnet.helius-rpc.com/?api-key={HELIUS_API_KEY}"
+HELIUS_API = f"https://api.helius.xyz/v0"
+BIRDEYE_API = "https://public-api.birdeye.so"
 HELIUS_API = f"https://api.helius.xyz/v0"
 BIRDEYE_API = "https://public-api.birdeye.so"
 
