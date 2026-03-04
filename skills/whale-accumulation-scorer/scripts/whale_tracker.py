@@ -131,15 +131,18 @@ class AccumulationPhase(Enum):
 class WalletProfile:
     """Tracked whale wallet with scoring metadata."""
     address: str
-    label: str = ""                      # "known_whale", "smart_money", "fresh"
+    label: str = ""                      # "known_whale", "smart_money", "fresh", "exchange_withdrawal"
     cluster_id: Optional[str] = None     # Groups related wallets
     first_seen: float = 0.0              # Timestamp
+    last_activity_timestamp: float = 0.0 # For dormant whale detection
     dormancy_days: float = 0.0           # Days inactive before current activity
     historical_win_rate: float = 0.5     # % of past accumulations that preceded pumps
     total_tokens_tracked: int = 0
     avg_hold_duration_hours: float = 0.0
     score_modifier: float = 1.0          # Multiplier for this wallet's signals
-
+    is_exchange_withdrawal: bool = False # True if wallet received from CEX before buying
+    early_holder: bool = False           # True if wallet was in first 30 days
+    
     @property
     def quality_score(self) -> float:
         """0-1 score of how 'smart' this wallet is."""
@@ -147,6 +150,13 @@ class WalletProfile:
         win_bonus = self.historical_win_rate * 0.4                    # Max 0.4
         hold_bonus = min(self.avg_hold_duration_hours / 168, 1.0) * 0.3  # Max 0.3 for 1wk+ holds
         return min(dormancy_bonus + win_bonus + hold_bonus, 1.0)
+    
+    def is_dormant_reactivation(self, current_time: float, threshold_days: int = 60) -> bool:
+        """Check if wallet was dormant for threshold_days+ and just reactivated."""
+        if self.last_activity_timestamp == 0:
+            return False
+        days_inactive = (current_time - self.last_activity_timestamp) / 86400
+        return days_inactive >= threshold_days
 
 
 @dataclass
@@ -248,8 +258,15 @@ MIN_LIQUIDITY_USD = 50_000        # Skip illiquid tokens
 MAX_SUPPLY_PCT_FOR_WHALE = 10.0   # Exclude wallets holding >10% (likely team/contract)
 MAX_WHALES_TO_ANALYZE = 20        # Cap analysis at top 20 after filtering
 
+# WIF/POPCAT historically-proven signal bonuses
+BONUS_DORMANT_REACTIVATION = 0.15   # Weight: +0.15 for 60+ day dormant whales buying
+BONUS_EXCHANGE_WITHDRAWAL = 0.20    # Weight: +0.20 for CEX withdrawal -> accumulation
+BONUS_CONCENTRATION_ACCELERATION = 0.15  # Weight: +0.15 for top-10 holders +5% in 7d
+BONUS_PRICE_DIVERGENCE = 0.20       # Weight: +0.20 for flat price + rising whale buys
+BONUS_DOMINANT_ACCUMULATOR = 0.10   # Weight: +0.10 for single wallet >30% of volume
+PENALTY_EARLY_WHALE_SELLING = -0.30 # Weight: -0.30 for original insiders distributing
 
-# ─── Core Tracker ──────────────────────────────────────────────────────────────
+# Tracking for historical patterns
 class WhaleTracker:
     """
     Monitors whale wallets for accumulation patterns.
@@ -264,6 +281,7 @@ class WhaleTracker:
         self.wallet_profiles: Dict[str, WalletProfile] = {}
         self.tx_history: Dict[str, List[WhaleTransaction]] = defaultdict(list)   # token -> txs
         self.snapshots: Dict[str, List[Dict]] = defaultdict(list)                # token -> holder snapshots
+        self.holder_history: Dict[str, List[Dict]] = defaultdict(list)           # token -> historical holder %
         self._session = requests.Session()
         
         if not HELIUS_API_KEY:
@@ -889,37 +907,78 @@ class WhaleTracker:
         # 5% of liquidity accumulated = moderate, 20%+ = very strong
         size_score = min(size_ratio / 0.25, 1.0)
 
-        # ── Composite Score ──
-        # Weighted combination
-        score = (
-            ratio_score * 0.25 +      # Net buying pressure
-            count_score * 0.20 +      # Number of whales
-            velocity_score * 0.20 +   # Acceleration
-            quality_score * 0.15 +    # Smart money quality
-            size_score * 0.20         # Size vs liquidity
+        # ── WIF/POPCAT Historically-Proven Bonus Signals ──
+        bonus_signals = {}
+        
+        # 1. DORMANT WHALE ACTIVATION (+0.15)
+        # Wallets inactive 60+ days that start buying
+        dormant_reactivation_count = 0
+        for tx, usd in buys_24h:
+            profile = self.wallet_profiles.get(tx.wallet)
+            if profile and profile.is_dormant_reactivation(now, 60):
+                dormant_reactivation_count += 1
+        if dormant_reactivation_count > 0:
+            bonus_signals["dormant_reactivation"] = BONUS_DORMANT_REACTIVATION * min(dormant_reactivation_count, 3) / 3
+        
+        # 2. EXCHANGE WITHDRAWAL ACCUMULATION (+0.20)
+        # Wallets that received from CEX before buying
+        exchange_withdrawal_buyers = sum(
+            1 for tx, usd in buys_24h 
+            if self.wallet_profiles.get(tx.wallet, WalletProfile(address="")).is_exchange_withdrawal
         )
-
-        # Clamp to 0-1
-        score = max(0.0, min(1.0, score))
-
+        if exchange_withdrawal_buyers > 0:
+            bonus_signals["exchange_withdrawal"] = BONUS_EXCHANGE_WITHDRAWAL * min(exchange_withdrawal_buyers, 2) / 2
+        
+        # 3. SINGLE DOMINANT ACCUMULATOR (+0.10)
+        # One wallet >30% of total whale buy volume
+        if total_buy_usd > 0:
+            wallet_buy_volumes = {}
+            for tx, usd in buys_24h:
+                wallet_buy_volumes[tx.wallet] = wallet_buy_volumes.get(tx.wallet, 0) + usd
+            max_wallet_share = max(wallet_buy_volumes.values()) / total_buy_usd if wallet_buy_volumes else 0
+            if max_wallet_share > 0.30:
+                bonus_signals["dominant_accumulator"] = BONUS_DOMINANT_ACCUMULATOR
+        
+        # 4. EARLY WHALE SELLING PENALTY (-0.30)
+        # Original insiders (first 30 days) starting to sell after dormancy
+        early_whale_selling = 0
+        for tx, usd in sells_24h:
+            profile = self.wallet_profiles.get(tx.wallet)
+            if profile and profile.early_holder:
+                early_whale_selling += usd
+        if early_whale_selling > total_sell_usd * 0.5:  # Early whales >50% of selling
+            bonus_signals["early_whale_selling"] = PENALTY_EARLY_WHALE_SELLING
+        
+        # Apply bonus signals (capped at 0-1 range after base score)
+        total_bonus = sum(bonus_signals.values())
+        adjusted_score = score + total_bonus
+        
+        # Log bonus signals
+        if bonus_signals:
+            logger.info(f"  Bonus signals for {symbol}: {bonus_signals}")
+            logger.info(f"  Base score: {score:.3f} | Adjusted: {adjusted_score:.3f}")
+        
         # ── Determine Phase ──
         # Critical checks first - if sells dominate, it's distribution regardless of other factors
         if buy_sell_ratio < 0.8:
             # Net selling pressure - more than 20% more sells than buys
             phase = AccumulationPhase.DISTRIBUTION
-            score *= 0.3  # Heavy penalty - this is not accumulation
+            adjusted_score *= 0.3  # Heavy penalty - this is not accumulation
         elif distinct_sellers > distinct_buyers * 1.5:
             # More distinct sellers than buyers
             phase = AccumulationPhase.DISTRIBUTION
-            score *= 0.5
-        elif score < 0.2:
+            adjusted_score *= 0.5
+        elif adjusted_score < 0.2:
             phase = AccumulationPhase.NONE
-        elif score < 0.4:
+        elif adjusted_score < 0.4:
             phase = AccumulationPhase.EARLY_ACCUMULATION
-        elif score < 0.7:
+        elif adjusted_score < 0.7:
             phase = AccumulationPhase.ACTIVE_ACCUMULATION
         else:
             phase = AccumulationPhase.HEAVY_ACCUMULATION
+
+        # Clamp final score
+        final_score = max(0.0, min(1.0, adjusted_score))
 
         # ── Build detail string ──
         if velocity < 0:
@@ -939,7 +998,7 @@ class WhaleTracker:
         return WhaleSignal(
             token_address=token_address,
             token_symbol=symbol,
-            score=score,
+            score=final_score,
             phase=phase,
             num_whales_accumulating=distinct_buyers,
             total_whale_buys_usd_24h=total_buy_usd,
