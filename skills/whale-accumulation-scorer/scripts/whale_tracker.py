@@ -357,8 +357,110 @@ class WhaleTracker:
         token_address: str, 
         cutoff: float
     ) -> List[WhaleTransaction]:
-        """Fetch parsed transactions from Helius."""
+        """
+        Fetch parsed transactions from Helius.
+        Tries RPC getTransactionsForAddress first (paid plans), falls back to REST API (free tier).
+        """
         txs = []
+        if not HELIUS_API_KEY:
+            return txs
+        
+        # Try RPC method first (more efficient, 100 credits/request)
+        try:
+            rpc_url = f"https://mainnet.helius-rpc.com/?api-key={HELIUS_API_KEY}"
+            
+            payload = {
+                "jsonrpc": "2.0",
+                "id": 1,
+                "method": "getTransactionsForAddress",
+                "params": {
+                    "address": wallet,
+                    "transactionDetails": "full",
+                    "encoding": "jsonParsed",
+                    "filters": {
+                        "tokenAccounts": "balanceChanged",
+                        "status": "succeeded",
+                        "blockTime": {
+                            "gte": int(cutoff)
+                        }
+                    }
+                }
+            }
+            
+            resp = self._session.post(rpc_url, json=payload, timeout=30)
+            
+            if resp.status_code == 200:
+                data = resp.json()
+                if "error" not in data:
+                    transactions = data.get("result", {}).get("transactions", [])
+                    
+                    for tx in transactions:
+                        block_time = tx.get("blockTime", 0)
+                        if block_time < cutoff:
+                            continue
+                        
+                        tx_hash = tx.get("signature", "")
+                        meta = tx.get("meta", {})
+                        
+                        # Parse token balance changes
+                        pre_balances = {}
+                        post_balances = {}
+                        
+                        for pre in meta.get("preTokenBalances", []):
+                            if pre.get("owner") == wallet:
+                                mint = pre.get("mint", "")
+                                amount = float(pre.get("uiTokenAmount", {}).get("uiAmount", 0))
+                                pre_balances[mint] = amount
+                        
+                        for post in meta.get("postTokenBalances", []):
+                            if post.get("owner") == wallet:
+                                mint = post.get("mint", "")
+                                amount = float(post.get("uiTokenAmount", {}).get("uiAmount", 0))
+                                post_balances[mint] = amount
+                        
+                        if token_address not in pre_balances and token_address not in post_balances:
+                            continue
+                        
+                        pre_amount = pre_balances.get(token_address, 0)
+                        post_amount = post_balances.get(token_address, 0)
+                        delta = post_amount - pre_amount
+                        
+                        if abs(delta) < 0.000001:
+                            continue
+                        
+                        side = "buy" if delta > 0 else "sell"
+                        amount_tokens = abs(delta)
+                        
+                        # Estimate USD from SOL change
+                        amount_usd = 0
+                        pre_sol = meta.get("preBalances", [0])[0] if meta.get("preBalances") else 0
+                        post_sol = meta.get("postBalances", [0])[0] if meta.get("postBalances") else 0
+                        sol_delta = abs(post_sol - pre_sol) / 1e9
+                        if sol_delta > 0.001:
+                            amount_usd = sol_delta * 150  # Approximate SOL price
+                        
+                        txs.append(WhaleTransaction(
+                            wallet=wallet,
+                            token_address=token_address,
+                            token_symbol="",
+                            side=side,
+                            amount_tokens=amount_tokens,
+                            amount_usd=amount_usd,
+                            timestamp=block_time,
+                            tx_hash=tx_hash,
+                        ))
+                    
+                    if txs:
+                        return txs  # RPC worked, return results
+                        
+            # RPC failed or returned no results, fall through to REST
+            if resp.status_code == 403:
+                logger.debug(f"Helius RPC 403 for {wallet[:16]} — falling back to REST (free tier)")
+            
+        except Exception as e:
+            logger.debug(f"Helius RPC failed for {wallet[:16]}: {e}")
+        
+        # Fall back to REST API (free tier compatible)
         try:
             resp = self._session.get(
                 f"{HELIUS_API}/addresses/{wallet}/transactions",
@@ -369,22 +471,22 @@ class WhaleTracker:
                 },
                 timeout=15,
             )
+            
             if resp.status_code != 200:
-                return []
+                logger.warning(f"Helius REST error {resp.status_code} for {wallet[:16]}")
+                return txs
             
             for tx in resp.json():
                 ts = tx.get("timestamp", 0)
                 if ts < cutoff:
                     continue
 
-                # Parse swap events for our target token
                 for event in tx.get("events", {}).get("swap", {}).get("innerSwaps", []):
                     token_in = event.get("tokenInputs", [{}])
                     token_out = event.get("tokenOutputs", [{}])
 
                     for t_in in token_in:
                         if t_in.get("mint") == token_address:
-                            # Wallet sold this token
                             txs.append(WhaleTransaction(
                                 wallet=wallet,
                                 token_address=token_address,
@@ -398,7 +500,6 @@ class WhaleTracker:
 
                     for t_out in token_out:
                         if t_out.get("mint") == token_address:
-                            # Wallet bought this token
                             txs.append(WhaleTransaction(
                                 wallet=wallet,
                                 token_address=token_address,
@@ -409,8 +510,10 @@ class WhaleTracker:
                                 timestamp=ts,
                                 tx_hash=tx.get("signature", ""),
                             ))
+                
         except Exception as e:
             logger.error(f"Helius tx fetch failed for {wallet[:16]}: {e}")
+            
         return txs
 
     def _birdeye_wallet_txs(
@@ -649,25 +752,19 @@ class WhaleTracker:
     def cluster_wallets(self, wallets: List[str]) -> Dict[str, List[str]]:
         """
         Group wallets that likely belong to the same entity.
-        Heuristics:
-        - Common funding source (same wallet sent initial SOL)
-        - Sequential transaction timing (buys within seconds)
-        - Similar portfolio composition
-
+        Uses Helius Enhanced Transactions API to find funding sources.
+        Note: getTransactionsForAddress RPC requires paid plan.
+        
         Returns: {cluster_id: [wallet1, wallet2, ...]}
-
-        Note: This is a simplified version. For production, you'd want to use 
-        Helius's DAS API or Arkham's entity resolution.
         """
         clusters: Dict[str, List[str]] = {}
         wallet_funding: Dict[str, str] = {}
 
         if not HELIUS_API_KEY:
             logger.warning("Wallet clustering requires HELIUS_API_KEY")
-            # Fallback: each wallet is its own cluster
             return {w[:8]: [w] for w in wallets}
 
-        # Check funding sources
+        # Check funding sources using REST API
         for wallet in wallets:
             try:
                 resp = self._session.get(
@@ -675,10 +772,15 @@ class WhaleTracker:
                     params={
                         "api-key": HELIUS_API_KEY,
                         "type": "TRANSFER",
-                        "limit": 5,
+                        "limit": 10,
                     },
                     timeout=10,
                 )
+                
+                if resp.status_code == 403:
+                    logger.warning(f"Helius 403 for clustering {wallet[:16]} — free tier limitation")
+                    continue
+                    
                 if resp.status_code == 200:
                     txs = resp.json()
                     # Find the first SOL transfer in (likely the funder)
@@ -690,7 +792,7 @@ class WhaleTracker:
                                 if funder and funder not in EXCHANGE_WALLETS:
                                     wallet_funding[wallet] = funder
                                     break
-                time.sleep(0.2)
+                time.sleep(0.15)  # Rate limiting
             except Exception as e:
                 logger.error(f"Funding check failed for {wallet[:16]}: {e}")
 
