@@ -1,16 +1,17 @@
 {
   "lastChecks": {
-    "scanner_review": 1773278551,
-    "memory_review": 1740555600,
-    "git_sync": 1773358860,
-    "skill_audit": 1740128400,
-    "cost_check": 1740555600
+    "scanner_review": 1773642000,
+    "memory_review": 1773648600,
+    "git_sync": 1773553200,
+    "skill_audit": 1773634800,
+    "cost_check": 1773642060
   },
-  "nextCheck": "scanner_review",
+  "nextCheck": "git_sync",
   "lastScannerRun": {
     "timestamp": 1740642000,
     "date": "2026-02-27T07:20:00Z",
     "matches": 1,
     "token": "White boy motion ($motion)"
-  }
+  },
+  "notes": "Mar 12 10:50am: Memory review done. Gap in daily notes (last: Mar 4). All 4 cron jobs show OK. Base-price last run: 03:51 (7h ago - may need investigation)."
 }
