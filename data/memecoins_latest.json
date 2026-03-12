@@ -1,0 +1,81 @@
+{
+  "scan_timestamp": "2026-03-11T20:27:08Z",
+  "scan_date": "2026-03-11",
+  "criteria": {
+    "target_min_mc": 100000,
+    "target_max_mc": 500000,
+    "min_coin_age_days": 4,
+    "max_coin_age_days": 10,
+    "min_liquidity": 10000,
+    "min_24h_change": -5,
+    "max_24h_change": 200
+  },
+  "summary": {
+    "total_unique_tokens_found": 65,
+    "tokens_too_fresh_filtered": 40,
+    "tokens_too_old_filtered": 16,
+    "tokens_in_sweet_spot": 9,
+    "sweet_spot_matches": 2,
+    "other_trending": 7
+  },
+  "sweet_spot_matches": [
+    {
+      "rank": 1,
+      "name": "Lola the Otter",
+      "symbol": "LOLA",
+      "price": "$0.00022560",
+      "change_24h": 53.0,
+      "volume_24h": 142463,
+      "volume_str": "$142,463",
+      "market_cap": 225610,
+      "market_cap_str": "$225,610",
+      "liquidity": 0,
+      "platform": "solana",
+      "contract": "7BeoEbgJepbf4mAyw4PZ48TcgrDK25kR7zexV42Apump",
+      "source": "dexscreener",
+      "age_status": "sweet_spot",
+      "risk_flags": ["high_volatility"],
+      "urls": {
+        "dexscreener": "https://dexscreener.com/solana/di86dbvyd5w26oktp6vo3nmupw5cv2fqu3r8gcuz3jjf",
+        "solscan": "https://solscan.io/token/7BeoEbgJepbf4mAyw4PZ48TcgrDK25kR7zexV42Apump",
+        "bubblemaps": "https://app.bubblemaps.io/solana/token/7BeoEbgJepbf4mAyw4PZ48TcgrDK25kR7zexV42Apump"
+      }
+    },
+    {
+      "rank": 2,
+      "name": "Zero-Fee Trading on Solana",
+      "symbol": "UNTAXED",
+      "price": "$0.00028840",
+      "change_24h": 6.6,
+      "volume_24h": 93707,
+      "volume_str": "$93,707",
+      "market_cap": 288496,
+      "market_cap_str": "$288,496",
+      "liquidity": 0,
+      "platform": "solana",
+      "contract": "BoRiiSZ4hqtbCnQc7cWaEYTEtxmzRXyy5xaKCt7Ppump",
+      "source": "dexscreener",
+      "age_status": "sweet_spot",
+      "risk_flags": [],
+      "urls": {
+        "dexscreener": "https://dexscreener.com/solana/fjogaep9xwc2mhnx8dyjgtbjk6pnj61iamsbnt8td5c",
+        "solscan": "https://solscan.io/token/BoRiiSZ4hqtbCnQc7cWaEYTEtxmzRXyy5xaKCt7Ppump",
+        "bubblemaps": "https://app.bubblemaps.io/solana/token/BoRiiSZ4hqtbCnQc7cWaEYTEtxmzRXyy5xaKCt7Ppump"
+      }
+    }
+  ],
+  "other_trending": [
+    {"name": "Internet Computer", "symbol": "ICP", "market_cap_str": "$1,463,891,282", "source": "coingecko", "status": "large"},
+    {"name": "Across Protocol", "symbol": "ACX", "market_cap_str": "$40,798,725", "source": "coingecko", "status": "large"},
+    {"name": "Pudgy Penguins", "symbol": "PENGU", "market_cap_str": "$447,673,260", "source": "coingecko", "status": "large"},
+    {"name": "Origin Token", "symbol": "OGN", "market_cap_str": "$18,670,591", "source": "coingecko", "status": "large"},
+    {"name": "Avantis", "symbol": "AVNT", "market_cap_str": "$51,862,763", "source": "coingecko", "status": "large"}
+  ],
+  "sources_used": [
+    "CoinGecko",
+    "Birdeye (Solana - top 100)",
+    "DexScreener Boosted",
+    "DexScreener Latest Pairs",
+    "DexScreener Top Volume"
+  ]
+}

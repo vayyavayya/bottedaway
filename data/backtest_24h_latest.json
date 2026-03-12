@@ -1,0 +1,38 @@
+{
+  "simulation_date": "2026-03-11",
+  "lookback_period": "24h",
+  "timestamp": "2026-03-11T21:28:08.120374",
+  "summary": {
+    "total_trades": 2,
+    "wins": 1,
+    "losses": 1,
+    "win_rate": 50.0,
+    "avg_return": -3.9624241238680957,
+    "max_gain": 0.6774099917120178,
+    "max_loss": -8.60225823944821
+  },
+  "trades": [
+    {
+      "name": "Lola the Otter",
+      "symbol": "LOLA",
+      "entry_mc": 225610,
+      "entry_price": 0.0002256,
+      "entry_change_24h": 53.0,
+      "strategy": "Wait for dip (high volatility)",
+      "simulated_return": -0.0860225823944821,
+      "exit_mc": 206202.44518598088,
+      "pnl_percent": -8.60225823944821
+    },
+    {
+      "name": "Zero-Fee Trading",
+      "symbol": "UNTAXED",
+      "entry_mc": 288496,
+      "entry_price": 0.0002884,
+      "entry_change_24h": 6.6,
+      "strategy": "Consider entry (moderate momentum)",
+      "simulated_return": 0.006774099917120177,
+      "exit_mc": 290450.3007296895,
+      "pnl_percent": 0.6774099917120178
+    }
+  ]
+}

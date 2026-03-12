@@ -7,6 +7,42 @@ description: Token-centric whale accumulation scorer. Analyzes any token for wha
 
 Token-centric whale discovery system that analyzes any token for smart money accumulation patterns. Produces normalized 0-1 confidence scores designed to layer onto Engine A (EMA reclaim) signals for combined signal strength and Kelly criterion position sizing.
 
+## New Signal Patterns (March 2026 Update)
+
+### Pattern 7: Dead Coin Revival / CTO Accumulation (+0.25 bonus)
+**Historical precedent:** TROLL sat dormant at sub-$25K market cap for 8 months while wallets quietly accumulated (top 100 reached 43% of supply).
+
+**Detection criteria:**
+- Token age > 90 days
+- Market cap < $500K OR price within 10% of all-time low
+- Top 100 holder concentration increasing over last 30 days while price flat
+
+**Why it works:** Catches coins before anyone is paying attention. Requires holder concentration tracking over time.
+
+### Pattern 8: Market Maker / Institutional Entry (+0.20 bonus)
+**Historical precedent:** NEIRO saw Wintermute accumulate 53M tokens and GSR Markets buy 4% of circulating supply before the pump.
+
+**Detection:** Known market maker wallets (Wintermute, GSR, DWF Labs, Cumberland, Jump, Amber) accumulating >$50K
+
+**Config:** See `config/market_makers.json` for wallet addresses. Wallets tagged as `label: "market_maker"` in WalletProfile.
+
+### Pattern 9: Fresh Wallet Accumulation Spike (+0.15 bonus, 2x if 3+ wallets)
+**Historical precedent:** NEIRO and WIF saw fresh wallets (<7 days old) withdrawing from CEXes and immediately buying.
+
+**Detection:**
+- Wallet age < 7 days
+- Large purchase > $50K
+- Funds sourced from exchange hot wallet
+- 3+ fresh wallets in 48h = 2x multiplier
+
+### Pattern 10: Supply Concentration Acceleration (±0.15-0.20 context-dependent)
+**Historical precedent:** NEIRO had 4 wallets withdraw 24.2% of supply from exchanges.
+
+**Detection:**
+- Top 10 holders collectively increase share by >5% in 7 days
+- **Bullish (+0.15):** Price flat/down during concentration (stealth loading)
+- **Bearish (-0.20):** Price pumping during concentration (manipulation/rug risk)
+
 ## Purpose
 
 Unlike `whale-tracker` (which monitors 5 curated wallets for daily digests), this module:
@@ -85,6 +121,8 @@ if combined > 0.6:
 | `EARLY_ACCUMULATION` | 0.2-0.4 | Scattered buys, wallet activation | Watch |
 | `ACTIVE_ACCUMULATION` | 0.4-0.7 | Clear pattern, multiple whales | **Consider entry** |
 | `HEAVY_ACCUMULATION` | 0.7+ | Aggressive buying | **Strong signal** |
+| `DEAD_COIN_REVIVAL` | Any | Dormant token + concentration | **Highest alpha** |
+| `INSTITUTIONAL_ENTRY` | Any | Market maker accumulation | **Strong signal** |
 | `DISTRIBUTION` | Any | Sellers > buyers | **Avoid/Exit** |
 
 ## Scoring Components
@@ -94,8 +132,20 @@ if combined > 0.6:
 | Buy/Sell Ratio | 25% | Net flow direction (sigmoid mapped) |
 | Whale Count | 20% | Distinct independent buyers |
 | Velocity | 20% | Acceleration vs deceleration (4h vs 24h rate) |
-| Wallet Quality | 15% | Smart money score (dormancy + win rate + hold time) |
+| Wallet Quality | 15% | Smart money score (dormancy + win rate + hold time + MM bonus) |
 | Size vs Liquidity | 20% | Big fish in small pond bonus |
+
+### Bonus Signals (Stackable)
+
+| Bonus | Weight | Trigger |
+|-------|--------|---------|
+| Dead Coin Revival | +0.25 | Token age >90d, MC <$500K, near ATL, concentration increasing |
+| Market Maker Entry | +0.20 | Known MM wallet (Wintermute/GSR/DWF) buying >$50K |
+| Fresh Wallet | +0.15 | Wallet age <7d, CEX source, >$50K (2x if 3+ in 48h) |
+| Supply Concentration (Bullish) | +0.15 | Top-10 +5% in 7d + price flat/down |
+| Supply Concentration (Risk) | -0.20 | Top-10 +5% in 7d + price pumping |
+| Dormant Reactivation | +0.15 | 60+ day dormant wallet starts buying |
+| Exchange Withdrawal | +0.20 | Wallet received from CEX before buying |
 
 ## Credentials
 
@@ -165,6 +215,7 @@ actionable = [s for s in signals if s.is_actionable]
 
 - `scripts/whale_tracker.py` — Core tracker with scoring engine
 - `scripts/signal_engine.py` — Example Engine A integration (create this)
+- `config/market_makers.json` — Known market maker wallet addresses
 - `data/` — Runtime cache for wallet profiles
 
 ## Difference from whale-tracker

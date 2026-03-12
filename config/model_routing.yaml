@@ -1,0 +1,79 @@
+# ClawBot Multi-Model Routing Configuration
+# Updated March 5, 2026 - Perplexity Pro integration
+
+task_routing:
+  mechanical:
+    model: qwen_local
+    description: "Cron jobs, data fetching, math, formatting"
+    cost: "$0"
+    use_for:
+      - API calls
+      - Data parsing
+      - Calculations
+      - File operations
+      - Scheduled tasks
+  
+  real_time_research:
+    model: perplexity_pro
+    description: "Real-time intelligence gathering - search model"
+    cost: "$0.01/query"
+    use_for:
+      - Token research ("What is this token? Red flags? Catalysts?")
+      - Narrative scanning ("What's trending on CT?")
+      - News monitoring ("Exchange listings? Partnerships? Whale alerts?")
+      - Rug check ("Scam reports? Insider selling?")
+      - Market context ("Memecoin rotation? Solana sentiment?")
+    triggers:
+      - Before ANY token analysis
+      - Every 30min discovery scan
+      - Every watchlist re-check
+      - On contract address paste
+    priority: 1  # Runs FIRST
+  
+  automated_pipeline:
+    model: minimax_m2.5
+    description: "Automated pipeline execution"
+    cost: "$0.005-0.01/query"
+    use_for:
+      - Whale scoring
+      - Engine checks (A/B/C)
+      - Multi-tool chaining
+      - Pattern detection
+  
+  deep_research:
+    model: kimi_k2.5
+    description: "Deep research for ambiguous but promising tokens"
+    cost: "$0.02-0.05/query"
+    use_for:
+      - Complex token analysis
+      - Multi-source synthesis
+      - Technical deep dives
+    trigger: "token looks promising but data is ambiguous"
+  
+  final_verdict:
+    model: claude_opus
+    description: "Final BUY/STALK/PASS decision synthesis"
+    cost: "$0.10-0.30/query"
+    use_for:
+      - Final verdict only
+    context_input:
+      - On-chain data from Qwen
+      - Real-time narrative from Perplexity
+      - Automated scores from MiniMax
+      - Deep research from Kimi (if run)
+    instruction: "Synthesize pre-digested data into decision. Do NOT search."
+
+# Execution flow for token analysis:
+# 1. Qwen → Fetch on-chain data (Helius, Birdeye, DexScreener)
+# 2. Perplexity → Research token (Twitter, news, red flags, narrative)
+# 3. MiniMax → Run automated pipeline (whale scoring, engine checks)
+# 4. Kimi → Deep research (if token is promising but ambiguous)
+# 5. Claude → Final verdict with ALL context
+
+# API Keys Required:
+# - OPENAI_API_KEY (for Claude Opus)
+# - PERPLEXITY_API_KEY (for Perplexity Pro)
+# - MINIMAX_API_KEY (for MiniMax M2.5)
+# - MOONSHOT_API_KEY (for Kimi K2.5)
+# - HELIUS_API_KEY (local Solana data)
+# - BIRDEYE_API_KEY (local market data)

@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Whale Tracker - Fixed _score_accumulation Method</title>
+    <style>
+        body { font-family: monospace; background: #1a1a1a; color: #00ff00; padding: 20px; }
+        pre { background: #0d0d0d; padding: 20px; border-radius: 8px; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word; }
+        .comment { color: #666; }
+        .keyword { color: #ff6b6b; }
+        .string { color: #4ecdc4; }
+        .number { color: #ffe66d; }
+        h1 { color: #fff; border-bottom: 2px solid #00ff00; padding-bottom: 10px; }
+        .highlight { background: #333; padding: 2px 4px; border-radius: 3px; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Fixed _score_accumulation() Method</h1>
+    <p>Copy this entire method and paste it into <code>whale_tracker.py</code>, replacing the old method.</p>
+    <p><strong>Key fixes:</strong> (1) bsr &lt; 0.8 forces phase to NONE/DISTRIBUTION with score=0, (2) velocity=0 when 4h sells &gt; 4h buys</p>
+    
+<pre><code>    def _score_accumulation(self, token_address: str, symbol: str, whale_addrs: List[str], transactions: List[WhaleTransaction],
+                           liquidity: float, token_price: float = 0.0, token_meta: Dict = None, dead_coin_data: Dict = None) -&gt; WhaleSignal:
+        now = time.time()
+        h24 = now - 86400
+        h4 = now - 14400
+
+        buys_24h = [(tx, tx.amount_usd or (tx.amount_tokens * token_price if token_price &gt; 0 else 0)) 
+                     for tx in transactions if tx.timestamp &gt; h24 and tx.side == "buy"]
+        sells_24h = [(tx, tx.amount_usd or (tx.amount_tokens * token_price if token_price &gt; 0 else 0)) 
+                      for tx in transactions if tx.timestamp &gt; h24 and tx.side == "sell"]
+
+        total_buy = sum(usd for _, usd in buys_24h)
+        total_sell = sum(usd for _, usd in sells_24h)
+        
+        buys_4h = [(tx, usd) for tx, usd in buys_24h if tx.timestamp &gt; h4]
+        sells_4h = [(tx, usd) for tx, usd in sells_24h if tx.timestamp &gt; h4]
+        buy_4h = sum(usd for _, usd in buys_4h)
+        sell_4h = sum(usd for _, usd in sells_4h)
+
+        distinct_buyers = len(set(tx.wallet for tx, _ in buys_24h))
+        distinct_sellers = len(set(tx.wallet for tx, _ in sells_24h))
+
+        # Buy/sell ratio — CRITICAL for phase detection
+        bsr = total_buy / total_sell if total_sell &gt; 0 else (10.0 if total_buy &gt; 0 else 1.0)
+
+        # Component scores
+        ratio_score = min(bsr / (bsr + 2.0), 1.0)
+        if distinct_sellers &gt; distinct_buyers and distinct_sellers &gt; 2:
+            ratio_score *= 0.3
+
+        count_score = min(distinct_buyers * 0.18, 0.95)
+
+        # Velocity: ONLY measures buying acceleration
+        # If 4h sells &gt; 4h buys, velocity = 0 (no buying momentum)
+        rate_24h = total_buy / 24.0 if total_buy &gt; 0 else 0
+        rate_4h = buy_4h / 4.0 if buy_4h &gt; 0 else 0
+        
+        if sell_4h &gt; buy_4h:
+            # Selling pressure dominates — no accumulation velocity
+            velocity = 0.0
+        elif rate_24h &gt; 0:
+            velocity = rate_4h / rate_24h
+        else:
+            velocity = 0.0
+        
+        velocity_score = min(velocity / (velocity + 1.5), 1.0) if velocity &gt; 0 else 0.0
+
+        buyer_wallets = [self.wallet_profiles.get(tx.wallet) for tx, _ in buys_24h if tx.wallet in self.wallet_profiles]
+        quality_score = sum(w.quality_score for w in buyer_wallets) / len(buyer_wallets) if buyer_wallets else 0.3
+
+        size_ratio = total_buy / liquidity if liquidity &gt; 0 else 0
+        size_score = min(size_ratio / 0.25, 1.0)
+
+        # Base score
+        base_score = ratio_score * 0.25 + count_score * 0.20 + velocity_score * 0.20 + quality_score * 0.15 + size_score * 0.20
+
+        # Bonuses (only apply if bsr &gt;= 0.8)
+        bonus_signals = {}
+        signal_tags = []
+        
+        # Original bonuses
+        if bsr &gt;= 0.8:
+            dormant_count = sum(1 for tx, _ in buys_24h if self.wallet_profiles.get(tx.wallet) and self.wallet_profiles[tx.wallet].is_dormant_reactivation(now, 60))
+            if dormant_count &gt; 0:
+                bonus_signals["dormant_reactivation"] = BONUS_DORMANT_REACTIVATION * min(dormant_count, 3) / 3
+            
+            ex_buyers = sum(1 for tx, _ in buys_24h if self.wallet_profiles.get(tx.wallet, WalletProfile(address="")).is_exchange_withdrawal)
+            if ex_buyers &gt; 0:
+                bonus_signals["exchange_withdrawal"] = BONUS_EXCHANGE_WITHDRAWAL * min(ex_buyers, 2) / 2
+            
+            if total_buy &gt; 0:
+                wallet_vols = {}
+                for tx, usd in buys_24h:
+                    wallet_vols[tx.wallet] = wallet_vols.get(tx.wallet, 0) + usd
+                max_share = max(wallet_vols.values()) / total_buy if wallet_vols else 0
+                if max_share &gt; 0.30:
+                    bonus_signals["dominant_accumulator"] = BONUS_DOMINANT_ACCUMULATOR
+
+            # NEW Pattern 7: Dead Coin Revival
+            if dead_coin_data and dead_coin_data.get("is_dead_coin"):
+                bonus_signals["dead_coin_revival"] = dead_coin_data["score"]
+                signal_tags.append("dead_revival")
+
+            # NEW Pattern 8: Market Maker Entry
+            mm_detected, mm_name, mm_bonus = self._detect_market_maker_entry(whale_addrs, transactions)
+            if mm_detected:
+                bonus_signals["market_maker_entry"] = mm_bonus
+                signal_tags.append(f"mm_entry:{mm_name}")
+
+            # NEW Pattern 9: Fresh Wallet
+            fresh_bonus, num_fresh, _ = self._detect_fresh_wallet_accumulation(token_address, transactions)
+            if fresh_bonus &gt; 0:
+                bonus_signals["fresh_wallet"] = fresh_bonus
+                signal_tags.append(f"fresh:{num_fresh}")
+
+            # NEW Pattern 10: Supply Concentration
+            price_change_24h = (token_meta.get("priceChange24h", 0) / 100) if token_meta else 0
+            conc_bonus, conc_change = self._detect_supply_concentration_change(token_address, token_price, price_change_24h)
+            if conc_bonus != 0:
+                bonus_signals["supply_concentration"] = conc_bonus
+                signal_tags.append(f"supply:{'up' if conc_bonus &gt; 0 else 'risk'}")
+
+        total_bonus = sum(bonus_signals.values())
+        adjusted = base_score + total_bonus
+
+        if bonus_signals:
+            logger.info(f"  Bonuses: {bonus_signals} | Base: {base_score:.3f} -&gt; Adjusted: {adjusted:.3f}")
+
+        # Phase determination — BUY/SELL RATIO IS KING
+        # bsr &lt; 0.8 means sellers dominate = NO ACCUMULATION POSSIBLE
+        if bsr &lt; 0.8:
+            phase = AccumulationPhase.DISTRIBUTION if total_sell &gt; total_buy else AccumulationPhase.NONE
+            adjusted = 0.0  # Force score to 0 — this is NOT accumulation
+            signal_tags.append("sell_pressure")
+        elif dead_coin_data and dead_coin_data.get("is_dead_coin"):
+            phase = AccumulationPhase.DEAD_COIN_REVIVAL
+        elif mm_detected:
+            phase = AccumulationPhase.INSTITUTIONAL_ENTRY
+        elif adjusted &lt; 0.2:
+            phase = AccumulationPhase.NONE
+        elif adjusted &lt; 0.4:
+            phase = AccumulationPhase.EARLY_ACCUMULATION
+        elif adjusted &lt; 0.7:
+            phase = AccumulationPhase.ACTIVE_ACCUMULATION
+        else:
+            phase = AccumulationPhase.HEAVY_ACCUMULATION
+
+        final_score = max(0.0, min(1.0, adjusted))
+
+        # Build detail string
+        vel_desc = "flat" if velocity == 0 else ("accelerating" if velocity &gt; 1 else "steady")
+        details = (
+            f"{symbol}: {distinct_buyers} whales buying (${total_buy:,.0f}) vs "
+            f"{distinct_sellers} selling (${total_sell:,.0f}) in 24h. "
+            f"B/S ratio: {bsr:.2f}. Velocity: {vel_desc}. "
+            f"Size={size_ratio*100:.1f}% of liquidity."
+        )
+        if signal_tags:
+            details += f" Signals: {', '.join(signal_tags)}."
+
+        return WhaleSignal(
+            token_address=token_address,
+            token_symbol=symbol,
+            score=final_score,
+            phase=phase,
+            num_whales_accumulating=distinct_buyers,
+            total_whale_buys_usd_24h=total_buy,
+            total_whale_sells_usd_24h=total_sell,
+            buy_sell_ratio=bsr,
+            accumulation_velocity=velocity,
+            top_wallet_quality=max((w.quality_score for w in buyer_wallets), default=0),
+            details=details,
+            signal_tags=signal_tags,
+            bonus_breakdown=bonus_signals,
+        )</code></pre>
+
+    <h2>📋 Summary of Changes</h2>
+    <ul>
+        <li><strong>Line 58-65:</strong> Velocity now checks if sell_4h &gt; buy_4h — if true, velocity = 0</li>
+        <li><strong>Line 76:</strong> Bonuses only apply if bsr &gt;= 0.8 (no rewards during distribution)</li>
+        <li><strong>Line 116-119:</strong> bsr &lt; 0.8 forces phase to NONE/DISTRIBUTION and score = 0</li>
+    </ul>
+
+</body>
+</html>
