@@ -2,11 +2,11 @@
   "lastChecks": {
     "scanner_review": 1740642000,
     "memory_review": 1740555600,
-    "git_sync": 1740712800,
+    "git_sync": 1773276720,
     "skill_audit": 1740128400,
     "cost_check": 1740555600
   },
-  "nextCheck": "git_sync",
+  "nextCheck": "scanner_review",
   "lastScannerRun": {
     "timestamp": 1740642000,
     "date": "2026-02-27T07:20:00Z",
