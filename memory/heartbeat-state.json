@@ -1,17 +1,17 @@
 {
   "lastChecks": {
-    "scanner_review": 1773804600,
+    "scanner_review": 1773866400,
     "memory_review": 1773804600,
-    "git_sync": 1773780100,
+    "git_sync": 1773862200,
     "skill_audit": 1773804600,
     "cost_check": 1773804600
   },
-  "nextCheck": "scanner_review",
+  "nextCheck": "memory_review",
   "lastScannerRun": {
     "timestamp": 1773551400,
     "date": "2026-03-12T09:26:00Z",
     "matches": 0,
-    "note": "Memecoin scanner - 0 matches"
+    "note": "Memecoin scanner - 0 matches, cron healthy (last ran 8h ago, next in 4h)"
   },
   "lastMemoryReview": {
     "timestamp": 1773804600,
@@ -19,9 +19,9 @@
     "findings": "4 cron jobs healthy: base-price (2h), polyclaw (6h), whale (9am), scanner (12h). All status OK."
   },
   "lastGitSync": {
-    "timestamp": 1773780100,
-    "date": "2026-03-12T22:21:00Z",
-    "result": "Pushed heartbeat-state.json + polymarket-bot"
+    "timestamp": 1773862200,
+    "date": "2026-03-13T03:50:00Z",
+    "result": "Pushed heartbeat-state.json"
   },
   "lastSkillAudit": {
     "timestamp": 1773804600,
