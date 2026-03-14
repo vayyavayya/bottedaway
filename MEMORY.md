@@ -186,7 +186,15 @@ python memory_tracker.py update-prompts     # Refresh analyst context
 
 ---
 
-*Last updated: February 24, 2026 (7:19 PM)*
+*Last updated: March 14, 2026 (4:20 AM)*
+
+### ClawBot Sentinel Build (Mar 5, 2026)
+- **Framework:** 5-layer model routing (Qwen local → Perplexity → MiniMax → Kimi → Claude)
+- **Telegram handler:** @crypto2910bot for instant contract analysis
+- **API Keys:** 8 configured in keys.env (Helius, Birdeye, DexScreener, Telegram, Anthropic, Perplexity, MiniMax, Moonshot)
+- **Rate limiting:** TTL caching (5min), staggered calls (200ms), exponential backoff (3x)
+- **Whale patterns:** Added 10 signal patterns including MM detection (Wintermute, GSR, DWF)
+- **Helius fallback:** For Birdeye 404s, uses DexScreener + Helius getTokenLargestAccounts
 
 ### Recent Activity
 - **Git sync** — 6:19 PM: Pulled 5 files, archived old daily notes
