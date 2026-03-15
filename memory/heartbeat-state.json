@@ -1,35 +1,35 @@
 {
   "lastChecks": {
-    "scanner_review": 1773862200,
-    "memory_review": 1773922800,
-    "git_sync": 1773796800,
-    "skill_audit": 1773806400,
-    "cost_check": 1773807600
+    "scanner_review": 1773685200,
+    "memory_review": 1773640200,
+    "git_sync": 1773593479,
+    "skill_audit": 1773614400,
+    "cost_check": 1773624600
   },
-  "nextCheck": "git_sync",
+  "nextCheck": "memory_review",
   "lastScannerRun": {
-    "timestamp": 1773862200,
-    "date": "2026-03-15T16:50:00Z",
-    "findings": "All systems nominal. All cron jobs running on schedule. Whale tracker active. Daily folder still stale (last Mar 4)."
+    "timestamp": 1773685200,
+    "date": "2026-03-15T20:20:00Z",
+    "findings": "Whale tracker: 5 wallets, 0 new tokens. No signals."
   },
   "lastMemoryReview": {
-    "timestamp": 1773922800,
-    "date": "2026-03-15T17:20:00Z",
-    "findings": "Daily folder still stale - last entry Mar 4 (11 days). No new PolyClaw resolutions. All systems nominal."
+    "timestamp": 1773640200,
+    "date": "2026-03-15T18:50:00Z",
+    "findings": "Daily notes stale - last entry Mar 4 (11 days). No critical issues."
   },
   "lastGitSync": {
-    "timestamp": 1773796800,
-    "date": "2026-03-15T14:40:00Z",
+    "timestamp": 1773593479,
+    "date": "2026-03-15T16:50:00Z",
     "result": "Committed and pushed heartbeat-state.json."
   },
   "lastSkillAudit": {
-    "timestamp": 1773806400,
-    "date": "2026-03-15T14:40:00Z",
-    "findings": "OpenClaw healthy. Update available (2026.3.13). 2 minor warnings: reverse proxy headers, credentials dir mode."
+    "timestamp": 1773614400,
+    "date": "2026-03-15T18:20:00Z",
+    "findings": "OpenClaw healthy. Fixed credentials perms (755→700). Update available (2026.3.13)."
   },
   "lastCostCheck": {
-    "timestamp": 1773807600,
-    "date": "2026-03-15T15:20:00Z",
-    "result": "All nominal - $0 daily spend, 28k tokens session, 30 sessions active."
+    "timestamp": 1773624600,
+    "date": "2026-03-15T18:50:00Z",
+    "result": "Session usage nominal (24k in, 640 out). Daily cost $0."
   }
 }
