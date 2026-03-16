@@ -2,11 +2,11 @@
   "lastChecks": {
     "scanner_review": 1773976200,
     "memory_review": 1773906000,
-    "git_sync": 1773814800,
+    "git_sync": 1774065600,
     "skill_audit": 1773817800,
     "cost_check": 1773819600
   },
-  "nextCheck": "memory_review",
+  "nextCheck": "scanner_review",
   "lastScannerRun": {
     "timestamp": 1773976200,
     "date": "2026-03-16T03:50:00Z",
@@ -18,8 +18,8 @@
     "findings": "Daily folder stale - no entries since Mar 4 (12 days). System crons OK (4 jobs running)."
   },
   "lastGitSync": {
-    "timestamp": 1773814800,
-    "date": "2026-03-16T00:20:00Z",
+    "timestamp": 1774065600,
+    "date": "2026-03-16T03:20:00Z",
     "result": "Committed and pushed heartbeat-state.json."
   },
   "lastSkillAudit": {
