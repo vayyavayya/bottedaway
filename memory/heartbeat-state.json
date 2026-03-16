@@ -1,24 +1,24 @@
 {
   "lastChecks": {
     "scanner_review": 1774114800,
-    "memory_review": 1774065600,
-    "git_sync": 1774085400,
+    "memory_review": 1774203600,
+    "git_sync": 1774156200,
     "skill_audit": 1774065600,
     "cost_check": 1774065600
   },
-  "nextCheck": "memory_review",
+  "nextCheck": "scanner_review",
   "lastScannerRun": {
     "timestamp": 1774114800,
     "date": "2026-03-16T18:20:00Z",
     "findings": "4 cron jobs OK: base-price (2h), polyclaw (5h), scanner (10h), whale-tracker (10h)"
   },
   "lastMemoryReview": {
-    "timestamp": 1774065600,
-    "date": "2026-03-16T12:00:00Z",
-    "findings": "All 4 cron jobs running OK"
+    "timestamp": 1774203600,
+    "date": "2026-03-16T19:20:00Z",
+    "findings": "All 4 cron jobs OK. Daily notes stale (latest Mar 4 = 12 days ago)."
   },
   "lastGitSync": {
-    "timestamp": 1774085400,
+    "timestamp": 1774156200,
     "date": "2026-03-16T18:50:00Z",
     "result": "Committed and pushed heartbeat-state.json"
   },
