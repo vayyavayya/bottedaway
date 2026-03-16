@@ -1,16 +1,16 @@
 {
   "lastChecks": {
-    "scanner_review": 1773976200,
+    "scanner_review": 1774102800,
     "memory_review": 1773906000,
-    "git_sync": 1774065600,
-    "skill_audit": 1773636600,
+    "git_sync": 1774075260,
+    "skill_audit": 1774108800,
     "cost_check": 1773819600
   },
   "nextCheck": "scanner_review",
   "lastScannerRun": {
-    "timestamp": 1773976200,
-    "date": "2026-03-16T03:50:00Z",
-    "findings": "4 cron jobs OK: base-price (25m), polyclaw (2h), whale-tracker (19h - expected for daily), scanner (6h)"
+    "timestamp": 1774102800,
+    "date": "2026-03-16T06:40:00Z",
+    "findings": "4 cron jobs OK: base-price (1h), polyclaw (5h), whale-tracker (22h), scanner (9h)"
   },
   "lastMemoryReview": {
     "timestamp": 1773906000,
@@ -18,14 +18,14 @@
     "findings": "Daily folder stale - no entries since Mar 4 (12 days). System crons OK (4 jobs running)."
   },
   "lastGitSync": {
-    "timestamp": 1774065600,
-    "date": "2026-03-16T04:20:00Z",
+    "timestamp": 1774075260,
+    "date": "2026-03-16T05:21:00Z",
     "result": "Committed and pushed heartbeat-state.json."
   },
   "lastSkillAudit": {
-    "timestamp": 1773636600,
-    "date": "2026-03-16T04:50:00Z",
-    "findings": "OpenClaw healthy. 4 cron jobs OK (base-price 25m, polyclaw 4h, whale-tracker 21h, scanner 8h). Telegram groupPolicy warning - OK."
+    "timestamp": 1774108800,
+    "date": "2026-03-16T07:20:00Z",
+    "findings": "OpenClaw healthy (2026.3.2). 4 cron jobs OK. Update available (2026.3.13). 1 security warning (reverse proxy headers)."
   },
   "lastCostCheck": {
     "timestamp": 1773819600,
