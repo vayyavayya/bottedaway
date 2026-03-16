@@ -2,34 +2,34 @@
   "lastChecks": {
     "scanner_review": 1774207200,
     "memory_review": 1774274400,
-    "git_sync": 1774254600,
-    "skill_audit": 1774108800,
-    "cost_check": 1774109400
+    "git_sync": 1774355460,
+    "skill_audit": 1774418400,
+    "cost_check": 1774375200
   },
-  "nextCheck": "scanner_review",
+  "nextCheck": "git_sync",
   "lastScannerRun": {
     "timestamp": 1774207200,
     "date": "2026-03-16T10:20:00Z",
-    "findings": "4 cron jobs OK: base-price (55m), polyclaw (2h), scanner (54m), whale-tracker (1h)"
+    "findings": "4 cron jobs OK: base-price, polyclaw, scanner, whale-tracker"
   },
   "lastMemoryReview": {
     "timestamp": 1774274400,
     "date": "2026-03-16T11:20:00Z",
-    "findings": "Daily folder stale - no entries since Mar 4 (12 days). 4 cron jobs OK."
+    "findings": "4 cron jobs OK."
   },
   "lastGitSync": {
-    "timestamp": 1774254600,
-    "date": "2026-03-16T11:50:00Z",
-    "result": "Committed and pushed heartbeat-state.json."
+    "timestamp": 1774355460,
+    "date": "2026-03-16T12:51:00Z",
+    "result": "Committed and pushed."
   },
   "lastSkillAudit": {
-    "timestamp": 1774108800,
-    "date": "2026-03-16T07:20:00Z",
-    "findings": "OpenClaw healthy (2026.3.2). 4 cron jobs OK. Update available (2026.3.13). 1 security warning (reverse proxy headers)."
+    "timestamp": 1774418400,
+    "date": "2026-03-16T13:00:00Z",
+    "findings": "OpenClaw healthy. 4 cron jobs OK."
   },
   "lastCostCheck": {
-    "timestamp": 1774109400,
-    "date": "2026-03-16T07:50:00Z",
-    "result": "Session usage nominal (20k in, 964 out). Daily cost ~$0."
+    "timestamp": 1774375200,
+    "date": "2026-03-16T14:20:00Z",
+    "result": "Session usage nominal."
   }
 }
