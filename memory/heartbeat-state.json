@@ -1,19 +1,19 @@
 {
   "lastChecks": {
-    "scanner_review": 1774065600,
+    "scanner_review": 1774105200,
     "memory_review": 1774065600,
     "git_sync": 1774068600,
     "skill_audit": 1774065600,
     "cost_check": 1774065600
   },
-  "nextCheck": "scanner_review",
+  "nextCheck": "memory_review",
   "lastScannerRun": {
-    "timestamp": 1774036800,
-    "date": "2026-03-16T12:00:00Z",
-    "findings": "4 cron jobs OK: base-price (55m), polyclaw (2h), scanner (7h), whale-tracker (7h)"
+    "timestamp": 1774105200,
+    "date": "2026-03-16T18:20:00Z",
+    "findings": "4 cron jobs OK: base-price (55m), polyclaw (4h), scanner (9h), whale-tracker (9h)"
   },
   "lastMemoryReview": {
-    "timestamp": 1774036800,
+    "timestamp": 1774065600,
     "date": "2026-03-16T12:00:00Z",
     "findings": "All 4 cron jobs running OK"
   },
@@ -23,12 +23,12 @@
     "result": "Committed and pushed heartbeat-state.json"
   },
   "lastSkillAudit": {
-    "timestamp": 1774036800,
+    "timestamp": 1774065600,
     "date": "2026-03-16T12:00:00Z",
     "findings": "OpenClaw healthy, 4 cron jobs OK"
   },
   "lastCostCheck": {
-    "timestamp": 1774036800,
+    "timestamp": 1774065600,
     "date": "2026-03-16T12:00:00Z",
     "result": "All systems nominal"
   }
