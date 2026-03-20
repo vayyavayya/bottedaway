@@ -5,7 +5,7 @@
     "address": "DUr5rZAfYduvihaiyMnfqgnhqYWbPWJXvK954qyTpump",
     "chain": "solana",
     "added_date": "2026-03-18",
-    "notes": "2 days | -36.4% | MC $198K | Updated 07:00"
+    "notes": "2 days | -37.2% | MC $196K | Updated 10:25"
   },
   {
     "symbol": "WIZARD",
@@ -13,6 +13,14 @@
     "address": "7XdCaKpqLmKE2K7yr9xaeWB1H2CVZ1oGwxB6hmd9pump",
     "chain": "solana",
     "added_date": "2026-03-19",
-    "notes": "1 days | +36.9% | MC $367K | Updated 07:00"
+    "notes": "1 days | +34.9% | MC $340K | Updated 10:25"
+  },
+  {
+    "symbol": "GAS",
+    "name": "Gasoline Asset Supply",
+    "address": "2f3GhkAF7wCqz1bZLyGdzkBcT1LcPTEJxxDnoCghpump",
+    "chain": "solana",
+    "added_date": "2026-03-20",
+    "notes": "0 days | +7.5% | MC $313K | Updated 10:25"
   }
 ]
