@@ -1,19 +1,11 @@
 [
   {
-    "symbol": "SOLINU",
-    "name": "Solana INU",
-    "address": "DUr5rZAfYduvihaiyMnfqgnhqYWbPWJXvK954qyTpump",
-    "chain": "solana",
-    "added_date": "2026-03-18",
-    "notes": "10 days | -29.6% | MC $213K | Updated 07:00"
-  },
-  {
     "symbol": "WIZARD",
     "name": "Smoking Wizard",
     "address": "7XdCaKpqLmKE2K7yr9xaeWB1H2CVZ1oGwxB6hmd9pump",
     "chain": "solana",
     "added_date": "2026-03-19",
-    "notes": "9 days | +14.1% | MC $216K | Updated 07:00"
+    "notes": "10 days | -29.8% | MC $175K | Updated 07:00"
   },
   {
     "symbol": "GAS",
@@ -21,6 +13,6 @@
     "address": "2f3GhkAF7wCqz1bZLyGdzkBcT1LcPTEJxxDnoCghpump",
     "chain": "solana",
     "added_date": "2026-03-20",
-    "notes": "8 days | -12.8% | MC $190K | Updated 07:00"
+    "notes": "9 days | -6.8% | MC $177K | Updated 07:00"
   }
 ]
