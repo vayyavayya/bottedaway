@@ -1,18 +1,10 @@
 [
   {
-    "symbol": "WIZARD",
-    "name": "Smoking Wizard",
-    "address": "7XdCaKpqLmKE2K7yr9xaeWB1H2CVZ1oGwxB6hmd9pump",
-    "chain": "solana",
-    "added_date": "2026-03-19",
-    "notes": "10 days | -29.8% | MC $175K | Updated 07:00"
-  },
-  {
     "symbol": "GAS",
     "name": "Gasoline Asset Supply",
     "address": "2f3GhkAF7wCqz1bZLyGdzkBcT1LcPTEJxxDnoCghpump",
     "chain": "solana",
     "added_date": "2026-03-20",
-    "notes": "9 days | -6.8% | MC $177K | Updated 07:00"
+    "notes": "10 days | -14.8% | MC $149K | Updated 07:00"
   }
 ]
