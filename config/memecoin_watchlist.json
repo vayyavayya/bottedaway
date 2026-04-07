@@ -5,7 +5,7 @@
     "address": "8BrKogqwr7Uad9Pwkxw91w31v2x5qf8yDL4x52Qhpump",
     "chain": "solana",
     "added_date": "2026-04-05",
-    "notes": "2 days | -30.6% | MC $307K | Updated 07:45"
+    "notes": "2 days | -48.8% | MC $215K | Updated 19:45"
   },
   {
     "symbol": "BLAW",
@@ -13,7 +13,7 @@
     "address": "2AMYvN5zvXMC9ueA6vznaiaEqWrjpxHCisa2Nuc5pump",
     "chain": "solana",
     "added_date": "2026-04-07",
-    "notes": "0 days | +1.2% | MC $163K | Updated 07:45"
+    "notes": "0 days | -20.4% | MC $135K | Updated 19:45"
   },
   {
     "symbol": "ROAR",
@@ -21,6 +21,14 @@
     "address": "3rARbVrWrihoK94wE6LN38PQtZeUaDPngE9cm4Qkpump",
     "chain": "solana",
     "added_date": "2026-04-07",
-    "notes": "0 days | +13.4% | MC $327K | Updated 07:45"
+    "notes": "0 days | +87.9% | MC $453K | Updated 19:45"
+  },
+  {
+    "symbol": "PUMPPERPS",
+    "name": "PumpPerps",
+    "address": "4sgCNP7ykejUaSvaGDhkq7JYqrLKB6M1Gq2X1rxSpump",
+    "chain": "solana",
+    "added_date": "2026-04-07",
+    "notes": "0 days | +47.6% | MC $116K | Updated 19:45"
   }
 ]
