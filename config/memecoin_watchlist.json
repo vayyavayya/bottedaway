@@ -5,6 +5,22 @@
     "address": "8BrKogqwr7Uad9Pwkxw91w31v2x5qf8yDL4x52Qhpump",
     "chain": "solana",
     "added_date": "2026-04-05",
-    "notes": "2 days | -29.0% | MC $305K | Updated 07:00"
+    "notes": "2 days | -30.6% | MC $307K | Updated 07:45"
+  },
+  {
+    "symbol": "BLAW",
+    "name": "Blaw",
+    "address": "2AMYvN5zvXMC9ueA6vznaiaEqWrjpxHCisa2Nuc5pump",
+    "chain": "solana",
+    "added_date": "2026-04-07",
+    "notes": "0 days | +1.2% | MC $163K | Updated 07:45"
+  },
+  {
+    "symbol": "ROAR",
+    "name": "Russian Oil Asset Reserve",
+    "address": "3rARbVrWrihoK94wE6LN38PQtZeUaDPngE9cm4Qkpump",
+    "chain": "solana",
+    "added_date": "2026-04-07",
+    "notes": "0 days | +13.4% | MC $327K | Updated 07:45"
   }
 ]
