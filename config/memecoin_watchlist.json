@@ -5,7 +5,7 @@
     "address": "8BrKogqwr7Uad9Pwkxw91w31v2x5qf8yDL4x52Qhpump",
     "chain": "solana",
     "added_date": "2026-04-05",
-    "notes": "4 days | -31.2% | MC $127K | Updated 07:45"
+    "notes": "4 days | -33.5% | MC $129K | Updated 19:45"
   },
   {
     "symbol": "BLAW",
@@ -13,7 +13,7 @@
     "address": "2AMYvN5zvXMC9ueA6vznaiaEqWrjpxHCisa2Nuc5pump",
     "chain": "solana",
     "added_date": "2026-04-07",
-    "notes": "2 days | -30.5% | MC $119K | Updated 07:45"
+    "notes": "2 days | -9.2% | MC $104K | Updated 19:45"
   },
   {
     "symbol": "WTFCOIN",
@@ -21,6 +21,22 @@
     "address": "Auxw5v8tveNCorq4hU2AZbcAjP9zKiTrR4XES6BTpump",
     "chain": "solana",
     "added_date": "2026-04-09",
-    "notes": "0 days | -1.4% | MC $198K | Updated 07:45"
+    "notes": "0 days | -2.1% | MC $185K | Updated 19:45"
+  },
+  {
+    "symbol": "MOOYOR",
+    "name": "\u0e2b\u0e21\u0e39\u0e22\u0e2d",
+    "address": "C4uKznf7esEEaDcNQiXBBqA1j9w4P7sNYNH1DozApump",
+    "chain": "solana",
+    "added_date": "2026-04-09",
+    "notes": "0 days | +132.0% | MC $165K | Updated 19:45"
+  },
+  {
+    "symbol": "WHALLY",
+    "name": "WHALLY",
+    "address": "4rcN9Zpx6sAba39S722CwrVoA9BDmVZ5KdQDdVsSpump",
+    "chain": "solana",
+    "added_date": "2026-04-09",
+    "notes": "0 days | +9.1% | MC $169K | Updated 19:45"
   }
 ]
