@@ -5,7 +5,7 @@
     "address": "8BrKogqwr7Uad9Pwkxw91w31v2x5qf8yDL4x52Qhpump",
     "chain": "solana",
     "added_date": "2026-04-05",
-    "notes": "7 days | -18.7% | MC $146K | Updated 22:46"
+    "notes": "8 days | -16.2% | MC $134K | Updated 07:00"
   },
   {
     "symbol": "WTFCOIN",
@@ -13,7 +13,7 @@
     "address": "Auxw5v8tveNCorq4hU2AZbcAjP9zKiTrR4XES6BTpump",
     "chain": "solana",
     "added_date": "2026-04-09",
-    "notes": "3 days | +12.8% | MC $189K | Updated 22:46"
+    "notes": "4 days | +23.9% | MC $190K | Updated 07:00"
   },
   {
     "symbol": "WHALLY",
@@ -21,14 +21,6 @@
     "address": "4rcN9Zpx6sAba39S722CwrVoA9BDmVZ5KdQDdVsSpump",
     "chain": "solana",
     "added_date": "2026-04-09",
-    "notes": "3 days | -10.8% | MC $179K | Updated 22:46"
-  },
-  {
-    "symbol": "CLAWD",
-    "name": "solanaclawd",
-    "address": "8cHzQHUS2s2h8TzCmfqPKYiM4dSt4roa3n7MyRLApump",
-    "chain": "solana",
-    "added_date": "2026-04-12",
-    "notes": "0 days | +9.0% | MC $114K | Updated 22:46"
+    "notes": "4 days | -7.8% | MC $185K | Updated 07:00"
   }
 ]
