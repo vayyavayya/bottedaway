@@ -1,19 +1,11 @@
 [
   {
-    "symbol": "NUERO",
-    "name": "Nuero",
-    "address": "8BrKogqwr7Uad9Pwkxw91w31v2x5qf8yDL4x52Qhpump",
-    "chain": "solana",
-    "added_date": "2026-04-05",
-    "notes": "10 days | -0.8% | MC $134K | Updated 22:46"
-  },
-  {
     "symbol": "WTFCOIN",
     "name": "WTF Coin",
     "address": "Auxw5v8tveNCorq4hU2AZbcAjP9zKiTrR4XES6BTpump",
     "chain": "solana",
     "added_date": "2026-04-09",
-    "notes": "6 days | +1.0% | MC $179K | Updated 22:46"
+    "notes": "7 days | -2.1% | MC $175K | Updated 07:00"
   },
   {
     "symbol": "WHALLY",
@@ -21,6 +13,6 @@
     "address": "4rcN9Zpx6sAba39S722CwrVoA9BDmVZ5KdQDdVsSpump",
     "chain": "solana",
     "added_date": "2026-04-09",
-    "notes": "6 days | -1.5% | MC $187K | Updated 22:46"
+    "notes": "7 days | -7.0% | MC $178K | Updated 07:00"
   }
 ]
