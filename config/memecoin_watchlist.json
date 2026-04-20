@@ -1,18 +1,1 @@
-[
-  {
-    "symbol": "WTFCOIN",
-    "name": "WTF Coin",
-    "address": "Auxw5v8tveNCorq4hU2AZbcAjP9zKiTrR4XES6BTpump",
-    "chain": "solana",
-    "added_date": "2026-04-09",
-    "notes": "10 days | -5.3% | MC $157K | Updated 07:00"
-  },
-  {
-    "symbol": "WHALLY",
-    "name": "WHALLY",
-    "address": "4rcN9Zpx6sAba39S722CwrVoA9BDmVZ5KdQDdVsSpump",
-    "chain": "solana",
-    "added_date": "2026-04-09",
-    "notes": "10 days | +3.4% | MC $168K | Updated 07:00"
-  }
-]
+[]
