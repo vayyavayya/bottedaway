@@ -5,7 +5,7 @@
     "address": "3zKhzZhbfU2wgpaTwNTL6tietudCQFZFC9c3MuNRpump",
     "chain": "solana",
     "added_date": "2026-05-08",
-    "notes": "4 days | +38.6% | MC $300K | Updated 10:53"
+    "notes": "4 days | +52.4% | MC $348K | Updated 22:53"
   },
   {
     "symbol": "JETDOG",
@@ -13,6 +13,14 @@
     "address": "8Bdum5DBYXqqi5BeGej45vKVifELQM7pASUfysLTpump",
     "chain": "solana",
     "added_date": "2026-05-10",
-    "notes": "2 days | +25.5% | MC $203K | Updated 10:53"
+    "notes": "2 days | -23.0% | MC $145K | Updated 22:53"
+  },
+  {
+    "symbol": "DISCLOSURE",
+    "name": "DISCLOSURE",
+    "address": "FpBhnZLzHjgPrc69vkimPtHCwN4xoeX3RUhDa3Bpump",
+    "chain": "solana",
+    "added_date": "2026-05-12",
+    "notes": "0 days | +113.0% | MC $327K | Updated 22:53"
   }
 ]
