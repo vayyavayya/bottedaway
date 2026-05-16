@@ -5,7 +5,7 @@
     "address": "3zKhzZhbfU2wgpaTwNTL6tietudCQFZFC9c3MuNRpump",
     "chain": "solana",
     "added_date": "2026-05-08",
-    "notes": "8 days | -2.3% | MC $247K | Updated 07:00"
+    "notes": "8 days | -10.6% | MC $237K | Updated 10:54"
   },
   {
     "symbol": "JETDOG",
@@ -13,7 +13,7 @@
     "address": "8Bdum5DBYXqqi5BeGej45vKVifELQM7pASUfysLTpump",
     "chain": "solana",
     "added_date": "2026-05-10",
-    "notes": "6 days | +4.8% | MC $141K | Updated 07:00"
+    "notes": "6 days | +12.7% | MC $136K | Updated 10:54"
   },
   {
     "symbol": "DISCLOSURE",
@@ -21,7 +21,7 @@
     "address": "FpBhnZLzHjgPrc69vkimPtHCwN4xoeX3RUhDa3Bpump",
     "chain": "solana",
     "added_date": "2026-05-12",
-    "notes": "4 days | -31.2% | MC $154K | Updated 07:00"
+    "notes": "4 days | -27.7% | MC $149K | Updated 10:54"
   },
   {
     "symbol": "GAYTES",
@@ -29,6 +29,14 @@
     "address": "HSznAnNhSFgyRWiZh4m7pBmtjHsSLi4Dbmjp18zppump",
     "chain": "solana",
     "added_date": "2026-05-13",
-    "notes": "3 days | -23.2% | MC $117K | Updated 07:00"
+    "notes": "3 days | -18.7% | MC $114K | Updated 10:54"
+  },
+  {
+    "symbol": "PAIN",
+    "name": "Max Pain",
+    "address": "2N9BXbRtyZM4YHzj9wvteW1Nuq6B5DzDwh57dDmZpump",
+    "chain": "solana",
+    "added_date": "2026-05-16",
+    "notes": "0 days | +0.9% | MC $413K | Updated 10:54"
   }
 ]
