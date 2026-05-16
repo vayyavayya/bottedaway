@@ -5,7 +5,7 @@
     "address": "3zKhzZhbfU2wgpaTwNTL6tietudCQFZFC9c3MuNRpump",
     "chain": "solana",
     "added_date": "2026-05-08",
-    "notes": "8 days | -10.6% | MC $237K | Updated 10:54"
+    "notes": "8 days | -5.3% | MC $242K | Updated 22:54"
   },
   {
     "symbol": "JETDOG",
@@ -13,7 +13,7 @@
     "address": "8Bdum5DBYXqqi5BeGej45vKVifELQM7pASUfysLTpump",
     "chain": "solana",
     "added_date": "2026-05-10",
-    "notes": "6 days | +12.7% | MC $136K | Updated 10:54"
+    "notes": "6 days | -8.9% | MC $133K | Updated 22:54"
   },
   {
     "symbol": "DISCLOSURE",
@@ -21,15 +21,7 @@
     "address": "FpBhnZLzHjgPrc69vkimPtHCwN4xoeX3RUhDa3Bpump",
     "chain": "solana",
     "added_date": "2026-05-12",
-    "notes": "4 days | -27.7% | MC $149K | Updated 10:54"
-  },
-  {
-    "symbol": "GAYTES",
-    "name": "Pill Gaytes",
-    "address": "HSznAnNhSFgyRWiZh4m7pBmtjHsSLi4Dbmjp18zppump",
-    "chain": "solana",
-    "added_date": "2026-05-13",
-    "notes": "3 days | -18.7% | MC $114K | Updated 10:54"
+    "notes": "4 days | -12.7% | MC $145K | Updated 22:54"
   },
   {
     "symbol": "PAIN",
@@ -37,6 +29,22 @@
     "address": "2N9BXbRtyZM4YHzj9wvteW1Nuq6B5DzDwh57dDmZpump",
     "chain": "solana",
     "added_date": "2026-05-16",
-    "notes": "0 days | +0.9% | MC $413K | Updated 10:54"
+    "notes": "0 days | -31.9% | MC $270K | Updated 22:54"
+  },
+  {
+    "symbol": "BTC",
+    "name": "Bitcoin",
+    "address": "7LXhqS7Q36Vku43BP5D6cnnbmru9GzQLdVXXGcdVpump",
+    "chain": "solana",
+    "added_date": "2026-05-16",
+    "notes": "0 days | +7.0% | MC $171K | Updated 22:54"
+  },
+  {
+    "symbol": "PWATT",
+    "name": "Spensur Pwatt",
+    "address": "3aTdSkXQJ9BzFyCkKLu9c3PgeDqM7vemjcGtDtLSpump",
+    "chain": "solana",
+    "added_date": "2026-05-16",
+    "notes": "0 days | +73.7% | MC $147K | Updated 22:54"
   }
 ]
