@@ -5,7 +5,7 @@
     "address": "8Bdum5DBYXqqi5BeGej45vKVifELQM7pASUfysLTpump",
     "chain": "solana",
     "added_date": "2026-05-10",
-    "notes": "9 days | -1.5% | MC $118K | Updated 07:00"
+    "notes": "9 days | -1.7% | MC $121K | Updated 10:55"
   },
   {
     "symbol": "DISCLOSURE",
@@ -13,7 +13,7 @@
     "address": "FpBhnZLzHjgPrc69vkimPtHCwN4xoeX3RUhDa3Bpump",
     "chain": "solana",
     "added_date": "2026-05-12",
-    "notes": "7 days | -14.6% | MC $137K | Updated 07:00"
+    "notes": "7 days | -8.4% | MC $147K | Updated 10:55"
   },
   {
     "symbol": "BTC",
@@ -21,7 +21,7 @@
     "address": "7LXhqS7Q36Vku43BP5D6cnnbmru9GzQLdVXXGcdVpump",
     "chain": "solana",
     "added_date": "2026-05-16",
-    "notes": "3 days | -10.9% | MC $148K | Updated 07:00"
+    "notes": "3 days | +10.6% | MC $178K | Updated 10:55"
   },
   {
     "symbol": "PWATT",
@@ -29,6 +29,14 @@
     "address": "3aTdSkXQJ9BzFyCkKLu9c3PgeDqM7vemjcGtDtLSpump",
     "chain": "solana",
     "added_date": "2026-05-16",
-    "notes": "3 days | -36.5% | MC $107K | Updated 07:00"
+    "notes": "3 days | -20.6% | MC $115K | Updated 10:55"
+  },
+  {
+    "symbol": "CRUMBS",
+    "name": "Crumbs",
+    "address": "BpzvZe2MREqJyN22UJetX5mfU1yMJ1hRb2NiCYYipump",
+    "chain": "solana",
+    "added_date": "2026-05-19",
+    "notes": "0 days | +35.0% | MC $141K | Updated 10:55"
   }
 ]
