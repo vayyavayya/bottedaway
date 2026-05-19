@@ -1,19 +1,11 @@
 [
   {
-    "symbol": "LUNC",
-    "name": "LUNA CLASSIC",
-    "address": "3zKhzZhbfU2wgpaTwNTL6tietudCQFZFC9c3MuNRpump",
-    "chain": "solana",
-    "added_date": "2026-05-08",
-    "notes": "10 days | -34.2% | MC $179K | Updated 07:00"
-  },
-  {
     "symbol": "JETDOG",
     "name": "JETSKI DOG",
     "address": "8Bdum5DBYXqqi5BeGej45vKVifELQM7pASUfysLTpump",
     "chain": "solana",
     "added_date": "2026-05-10",
-    "notes": "8 days | -4.8% | MC $121K | Updated 07:00"
+    "notes": "9 days | -1.5% | MC $118K | Updated 07:00"
   },
   {
     "symbol": "DISCLOSURE",
@@ -21,15 +13,7 @@
     "address": "FpBhnZLzHjgPrc69vkimPtHCwN4xoeX3RUhDa3Bpump",
     "chain": "solana",
     "added_date": "2026-05-12",
-    "notes": "6 days | -6.3% | MC $160K | Updated 07:00"
-  },
-  {
-    "symbol": "PAIN",
-    "name": "Max Pain",
-    "address": "2N9BXbRtyZM4YHzj9wvteW1Nuq6B5DzDwh57dDmZpump",
-    "chain": "solana",
-    "added_date": "2026-05-16",
-    "notes": "2 days | -5.8% | MC $281K | Updated 07:00"
+    "notes": "7 days | -14.6% | MC $137K | Updated 07:00"
   },
   {
     "symbol": "BTC",
@@ -37,7 +21,7 @@
     "address": "7LXhqS7Q36Vku43BP5D6cnnbmru9GzQLdVXXGcdVpump",
     "chain": "solana",
     "added_date": "2026-05-16",
-    "notes": "2 days | +5.7% | MC $164K | Updated 07:00"
+    "notes": "3 days | -10.9% | MC $148K | Updated 07:00"
   },
   {
     "symbol": "PWATT",
@@ -45,6 +29,6 @@
     "address": "3aTdSkXQJ9BzFyCkKLu9c3PgeDqM7vemjcGtDtLSpump",
     "chain": "solana",
     "added_date": "2026-05-16",
-    "notes": "2 days | +24.1% | MC $169K | Updated 07:00"
+    "notes": "3 days | -36.5% | MC $107K | Updated 07:00"
   }
 ]
