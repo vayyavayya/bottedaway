@@ -1,34 +1,10 @@
 [
   {
-    "symbol": "JETDOG",
-    "name": "JETSKI DOG",
-    "address": "8Bdum5DBYXqqi5BeGej45vKVifELQM7pASUfysLTpump",
-    "chain": "solana",
-    "added_date": "2026-05-10",
-    "notes": "10 days | -1.4% | MC $122K | Updated 10:55"
-  },
-  {
     "symbol": "DISCLOSURE",
     "name": "DISCLOSURE",
     "address": "FpBhnZLzHjgPrc69vkimPtHCwN4xoeX3RUhDa3Bpump",
     "chain": "solana",
     "added_date": "2026-05-12",
-    "notes": "8 days | +23.9% | MC $182K | Updated 10:55"
-  },
-  {
-    "symbol": "BTC",
-    "name": "Bitcoin",
-    "address": "7LXhqS7Q36Vku43BP5D6cnnbmru9GzQLdVXXGcdVpump",
-    "chain": "solana",
-    "added_date": "2026-05-16",
-    "notes": "4 days | -42.9% | MC $102K | Updated 10:55"
-  },
-  {
-    "symbol": "CRUMBS",
-    "name": "Crumbs",
-    "address": "BpzvZe2MREqJyN22UJetX5mfU1yMJ1hRb2NiCYYipump",
-    "chain": "solana",
-    "added_date": "2026-05-19",
-    "notes": "1 days | -2.8% | MC $137K | Updated 10:55"
+    "notes": "9 days | +29.5% | MC $209K | Updated 07:00"
   }
 ]
