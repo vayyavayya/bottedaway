@@ -5,7 +5,7 @@
     "address": "26YRpwvWhTSBSAkQbhNP6AXBNrJe8uRxibAn7ZXXpump",
     "chain": "solana",
     "added_date": "2026-05-23",
-    "notes": "3 days | +32.4% | MC $417K | Updated 11:05"
+    "notes": "3 days | -13.5% | MC $316K | Updated 23:05"
   },
   {
     "symbol": "PTROLL",
@@ -13,6 +13,14 @@
     "address": "HbugFhaL4ijduGiHcY4uT6CNgX58Qac9djsAFo7Dpump",
     "chain": "solana",
     "added_date": "2026-05-25",
-    "notes": "1 days | +26.7% | MC $142K | Updated 11:05"
+    "notes": "1 days | -12.5% | MC $140K | Updated 23:05"
+  },
+  {
+    "symbol": "WERLDKUP",
+    "name": "WERLD KUP",
+    "address": "4yBfVtYnWnrJRQhzjS3ZWzMPntCu77dDv6GY3iW4pump",
+    "chain": "solana",
+    "added_date": "2026-05-26",
+    "notes": "0 days | +11.0% | MC $143K | Updated 23:05"
   }
 ]
