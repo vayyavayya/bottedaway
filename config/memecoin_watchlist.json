@@ -5,7 +5,7 @@
     "address": "26YRpwvWhTSBSAkQbhNP6AXBNrJe8uRxibAn7ZXXpump",
     "chain": "solana",
     "added_date": "2026-05-23",
-    "notes": "4 days | -11.3% | MC $305K | Updated 07:00"
+    "notes": "4 days | -21.3% | MC $320K | Updated 11:06"
   },
   {
     "symbol": "PTROLL",
@@ -13,7 +13,7 @@
     "address": "HbugFhaL4ijduGiHcY4uT6CNgX58Qac9djsAFo7Dpump",
     "chain": "solana",
     "added_date": "2026-05-25",
-    "notes": "2 days | -22.8% | MC $135K | Updated 07:00"
+    "notes": "2 days | -0.3% | MC $141K | Updated 11:06"
   },
   {
     "symbol": "WERLDKUP",
@@ -21,6 +21,14 @@
     "address": "4yBfVtYnWnrJRQhzjS3ZWzMPntCu77dDv6GY3iW4pump",
     "chain": "solana",
     "added_date": "2026-05-26",
-    "notes": "1 days | -33.6% | MC $117K | Updated 07:00"
+    "notes": "1 days | -37.2% | MC $119K | Updated 11:06"
+  },
+  {
+    "symbol": "CAP",
+    "name": "CAPCAT",
+    "address": "8Zrbh9DJFgY5H6jqZb3CWeMF6wLGMHiDKvkK4qSTpump",
+    "chain": "solana",
+    "added_date": "2026-05-27",
+    "notes": "0 days | +9.8% | MC $136K | Updated 11:06"
   }
 ]
