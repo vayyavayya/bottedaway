@@ -5,15 +5,7 @@
     "address": "26YRpwvWhTSBSAkQbhNP6AXBNrJe8uRxibAn7ZXXpump",
     "chain": "solana",
     "added_date": "2026-05-23",
-    "notes": "5 days | -10.3% | MC $278K | Updated 07:00"
-  },
-  {
-    "symbol": "PTROLL",
-    "name": "Purple Troll",
-    "address": "HbugFhaL4ijduGiHcY4uT6CNgX58Qac9djsAFo7Dpump",
-    "chain": "solana",
-    "added_date": "2026-05-25",
-    "notes": "3 days | +37.1% | MC $183K | Updated 07:00"
+    "notes": "5 days | -11.9% | MC $258K | Updated 15:27"
   },
   {
     "symbol": "CAP",
@@ -21,6 +13,14 @@
     "address": "8Zrbh9DJFgY5H6jqZb3CWeMF6wLGMHiDKvkK4qSTpump",
     "chain": "solana",
     "added_date": "2026-05-27",
-    "notes": "1 days | +57.9% | MC $213K | Updated 07:00"
+    "notes": "1 days | +44.0% | MC $182K | Updated 15:27"
+  },
+  {
+    "symbol": "SQUIDWARD",
+    "name": "Crazy Squidward",
+    "address": "EGuzeLqKoQAbdwMpG31neYNtFQ8KH8midraQrJQZpump",
+    "chain": "solana",
+    "added_date": "2026-05-28",
+    "notes": "0 days | +48.4% | MC $137K | Updated 15:27"
   }
 ]
