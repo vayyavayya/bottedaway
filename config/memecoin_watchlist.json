@@ -5,7 +5,7 @@
     "address": "26YRpwvWhTSBSAkQbhNP6AXBNrJe8uRxibAn7ZXXpump",
     "chain": "solana",
     "added_date": "2026-05-23",
-    "notes": "5 days | -11.9% | MC $258K | Updated 15:27"
+    "notes": "6 days | -11.7% | MC $264K | Updated 03:28"
   },
   {
     "symbol": "CAP",
@@ -13,7 +13,7 @@
     "address": "8Zrbh9DJFgY5H6jqZb3CWeMF6wLGMHiDKvkK4qSTpump",
     "chain": "solana",
     "added_date": "2026-05-27",
-    "notes": "1 days | +44.0% | MC $182K | Updated 15:27"
+    "notes": "2 days | +13.0% | MC $160K | Updated 03:28"
   },
   {
     "symbol": "SQUIDWARD",
@@ -21,6 +21,14 @@
     "address": "EGuzeLqKoQAbdwMpG31neYNtFQ8KH8midraQrJQZpump",
     "chain": "solana",
     "added_date": "2026-05-28",
-    "notes": "0 days | +48.4% | MC $137K | Updated 15:27"
+    "notes": "1 days | +39.9% | MC $139K | Updated 03:28"
+  },
+  {
+    "symbol": "UFU",
+    "name": "Unstable Farting Unicorn",
+    "address": "Ehvs6t8SAFh13TGFo646KGxjZN6KsXMtGvJUv5yqpump",
+    "chain": "solana",
+    "added_date": "2026-05-29",
+    "notes": "0 days | +35.1% | MC $105K | Updated 03:28"
   }
 ]
