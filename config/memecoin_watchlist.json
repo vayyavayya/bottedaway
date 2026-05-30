@@ -5,15 +5,7 @@
     "address": "26YRpwvWhTSBSAkQbhNP6AXBNrJe8uRxibAn7ZXXpump",
     "chain": "solana",
     "added_date": "2026-05-23",
-    "notes": "6 days | +1.6% | MC $279K | Updated 07:00"
-  },
-  {
-    "symbol": "CAP",
-    "name": "CAPCAT",
-    "address": "8Zrbh9DJFgY5H6jqZb3CWeMF6wLGMHiDKvkK4qSTpump",
-    "chain": "solana",
-    "added_date": "2026-05-27",
-    "notes": "2 days | -36.0% | MC $138K | Updated 07:00"
+    "notes": "7 days | +30.7% | MC $340K | Updated 03:28"
   },
   {
     "symbol": "SQUIDWARD",
@@ -21,14 +13,14 @@
     "address": "EGuzeLqKoQAbdwMpG31neYNtFQ8KH8midraQrJQZpump",
     "chain": "solana",
     "added_date": "2026-05-28",
-    "notes": "1 days | +21.2% | MC $136K | Updated 07:00"
+    "notes": "2 days | -8.6% | MC $126K | Updated 03:28"
   },
   {
-    "symbol": "UFU",
-    "name": "Unstable Farting Unicorn",
-    "address": "Ehvs6t8SAFh13TGFo646KGxjZN6KsXMtGvJUv5yqpump",
+    "symbol": "PTROLL",
+    "name": "Purple Troll",
+    "address": "HbugFhaL4ijduGiHcY4uT6CNgX58Qac9djsAFo7Dpump",
     "chain": "solana",
-    "added_date": "2026-05-29",
-    "notes": "0 days | +83.8% | MC $105K | Updated 07:00"
+    "added_date": "2026-05-30",
+    "notes": "0 days | +11.2% | MC $103K | Updated 03:28"
   }
 ]
