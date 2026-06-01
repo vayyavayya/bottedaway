@@ -1,19 +1,11 @@
 [
   {
-    "symbol": "SPCX",
-    "name": "SpaceExplorationTechnologiesCorp",
-    "address": "26YRpwvWhTSBSAkQbhNP6AXBNrJe8uRxibAn7ZXXpump",
-    "chain": "solana",
-    "added_date": "2026-05-23",
-    "notes": "8 days | +24.2% | MC $449K | Updated 15:28"
-  },
-  {
     "symbol": "SQUIDWARD",
     "name": "Crazy Squidward",
     "address": "EGuzeLqKoQAbdwMpG31neYNtFQ8KH8midraQrJQZpump",
     "chain": "solana",
     "added_date": "2026-05-28",
-    "notes": "3 days | -16.7% | MC $117K | Updated 15:28"
+    "notes": "4 days | +1.9% | MC $145K | Updated 07:00"
   },
   {
     "symbol": "CUP",
@@ -21,7 +13,7 @@
     "address": "BGAED7f6EcBbWPamiWxcpgXqpkGm7zpYoxmx29Jh9cUp",
     "chain": "solana",
     "added_date": "2026-05-30",
-    "notes": "1 days | -12.4% | MC $187K | Updated 15:28"
+    "notes": "2 days | -11.2% | MC $159K | Updated 07:00"
   },
   {
     "symbol": "BTCBANK",
@@ -29,6 +21,6 @@
     "address": "9s96G11xGsHczudfJqKQzQxzvubQgJXSySJ1wRgxpump",
     "chain": "solana",
     "added_date": "2026-05-31",
-    "notes": "0 days | +106.0% | MC $282K | Updated 15:28"
+    "notes": "1 days | -1.5% | MC $208K | Updated 07:00"
   }
 ]
