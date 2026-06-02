@@ -5,7 +5,7 @@
     "address": "BGAED7f6EcBbWPamiWxcpgXqpkGm7zpYoxmx29Jh9cUp",
     "chain": "solana",
     "added_date": "2026-05-30",
-    "notes": "3 days | +14.2% | MC $182K | Updated 07:00"
+    "notes": "3 days | +23.6% | MC $188K | Updated 15:29"
   },
   {
     "symbol": "BTCBANK",
@@ -13,6 +13,14 @@
     "address": "9s96G11xGsHczudfJqKQzQxzvubQgJXSySJ1wRgxpump",
     "chain": "solana",
     "added_date": "2026-05-31",
-    "notes": "2 days | -2.7% | MC $200K | Updated 07:00"
+    "notes": "2 days | +9.2% | MC $244K | Updated 15:29"
+  },
+  {
+    "symbol": "DOGEUS",
+    "name": "Dogeus Maximus",
+    "address": "FeMrhDeddUvuzo25RZriZD6Te8xy3tdyKLLXBhEEpump",
+    "chain": "solana",
+    "added_date": "2026-06-02",
+    "notes": "0 days | +93.1% | MC $306K | Updated 15:29"
   }
 ]
