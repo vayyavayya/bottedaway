@@ -5,7 +5,7 @@
     "address": "BGAED7f6EcBbWPamiWxcpgXqpkGm7zpYoxmx29Jh9cUp",
     "chain": "solana",
     "added_date": "2026-05-30",
-    "notes": "3 days | +23.6% | MC $188K | Updated 15:29"
+    "notes": "4 days | +9.4% | MC $214K | Updated 03:29"
   },
   {
     "symbol": "BTCBANK",
@@ -13,7 +13,7 @@
     "address": "9s96G11xGsHczudfJqKQzQxzvubQgJXSySJ1wRgxpump",
     "chain": "solana",
     "added_date": "2026-05-31",
-    "notes": "2 days | +9.2% | MC $244K | Updated 15:29"
+    "notes": "3 days | +37.1% | MC $311K | Updated 03:29"
   },
   {
     "symbol": "DOGEUS",
@@ -21,6 +21,14 @@
     "address": "FeMrhDeddUvuzo25RZriZD6Te8xy3tdyKLLXBhEEpump",
     "chain": "solana",
     "added_date": "2026-06-02",
-    "notes": "0 days | +93.1% | MC $306K | Updated 15:29"
+    "notes": "1 days | +43.2% | MC $294K | Updated 03:29"
+  },
+  {
+    "symbol": "SPEC",
+    "name": "Speculate",
+    "address": "R4c4BSNGvqsxtmCXBE59rpiEbQag8LMek3K2Ejtpump",
+    "chain": "solana",
+    "added_date": "2026-06-03",
+    "notes": "0 days | +28.8% | MC $147K | Updated 03:29"
   }
 ]
