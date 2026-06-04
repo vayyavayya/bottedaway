@@ -5,7 +5,7 @@
     "address": "BGAED7f6EcBbWPamiWxcpgXqpkGm7zpYoxmx29Jh9cUp",
     "chain": "solana",
     "added_date": "2026-05-30",
-    "notes": "5 days | +57.2% | MC $381K | Updated 07:00"
+    "notes": "5 days | +7.8% | MC $394K | Updated 15:29"
   },
   {
     "symbol": "DOGEUS",
@@ -13,6 +13,14 @@
     "address": "FeMrhDeddUvuzo25RZriZD6Te8xy3tdyKLLXBhEEpump",
     "chain": "solana",
     "added_date": "2026-06-02",
-    "notes": "2 days | -4.1% | MC $380K | Updated 07:00"
+    "notes": "2 days | -20.6% | MC $374K | Updated 15:29"
+  },
+  {
+    "symbol": "SPCX",
+    "name": "SpaceExplorationTechnologiesCorp",
+    "address": "BhTPX3YwwVff8F16ujjwvD9pqjCM8pa648Bchognpump",
+    "chain": "solana",
+    "added_date": "2026-06-04",
+    "notes": "0 days | +95.1% | MC $488K | Updated 15:29"
   }
 ]
