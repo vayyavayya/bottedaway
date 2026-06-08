@@ -5,7 +5,7 @@
     "address": "BGAED7f6EcBbWPamiWxcpgXqpkGm7zpYoxmx29Jh9cUp",
     "chain": "solana",
     "added_date": "2026-05-30",
-    "notes": "8 days | +23.2% | MC $341K | Updated 07:00"
+    "notes": "9 days | +12.3% | MC $388K | Updated 03:30"
   },
   {
     "symbol": "SPCX",
@@ -13,6 +13,14 @@
     "address": "BhTPX3YwwVff8F16ujjwvD9pqjCM8pa648Bchognpump",
     "chain": "solana",
     "added_date": "2026-06-04",
-    "notes": "3 days | -19.3% | MC $344K | Updated 07:00"
+    "notes": "4 days | -20.9% | MC $354K | Updated 03:30"
+  },
+  {
+    "symbol": "SOLY",
+    "name": "The Solana Mascot",
+    "address": "DqBjJEh6nppACX8fvuXvyWx8AQddPd5na7k2LCFWpump",
+    "chain": "solana",
+    "added_date": "2026-06-08",
+    "notes": "0 days | +132.0% | MC $149K | Updated 03:30"
   }
 ]
