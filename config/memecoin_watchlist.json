@@ -1,18 +1,18 @@
 [
   {
-    "symbol": "SOLY",
-    "name": "The Solana Mascot",
-    "address": "DqBjJEh6nppACX8fvuXvyWx8AQddPd5na7k2LCFWpump",
-    "chain": "solana",
-    "added_date": "2026-06-10",
-    "notes": "1 days | +16.2% | MC $125K | Updated 07:00"
-  },
-  {
     "symbol": "FANTASY",
     "name": "Fantasy Manager",
     "address": "HbzU4ZmDECvfSxQHcFa8a54ewaNsVvMW2bgvdeawpump",
     "chain": "solana",
     "added_date": "2026-06-11",
-    "notes": "0 days | +155.0% | MC $186K | Updated 07:00"
+    "notes": "0 days | +207.0% | MC $205K | Updated 15:31"
+  },
+  {
+    "symbol": "GOLDENGOAL",
+    "name": "Golden Goal",
+    "address": "GU527smM71ht8aCA8ouShfXhahVq6crz51FMbfZ8pump",
+    "chain": "solana",
+    "added_date": "2026-06-11",
+    "notes": "0 days | +11.3% | MC $148K | Updated 15:31"
   }
 ]
