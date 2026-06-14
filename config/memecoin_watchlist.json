@@ -1,18 +1,10 @@
 [
   {
-    "symbol": "GOLDENGOAL",
-    "name": "Golden Goal",
-    "address": "GU527smM71ht8aCA8ouShfXhahVq6crz51FMbfZ8pump",
-    "chain": "solana",
-    "added_date": "2026-06-11",
-    "notes": "2 days | -10.3% | MC $107K | Updated 07:00"
-  },
-  {
     "symbol": "SOLY",
     "name": "The Solana Mascot",
     "address": "DqBjJEh6nppACX8fvuXvyWx8AQddPd5na7k2LCFWpump",
     "chain": "solana",
     "added_date": "2026-06-12",
-    "notes": "1 days | +19.9% | MC $118K | Updated 07:00"
+    "notes": "2 days | +5.0% | MC $122K | Updated 07:00"
   }
 ]
