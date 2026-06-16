@@ -5,7 +5,7 @@
     "address": "DqBjJEh6nppACX8fvuXvyWx8AQddPd5na7k2LCFWpump",
     "chain": "solana",
     "added_date": "2026-06-12",
-    "notes": "3 days | +5.4% | MC $127K | Updated 07:00"
+    "notes": "4 days | +12.4% | MC $124K | Updated 03:32"
   },
   {
     "symbol": "GOLDENGOAL",
@@ -13,6 +13,14 @@
     "address": "GU527smM71ht8aCA8ouShfXhahVq6crz51FMbfZ8pump",
     "chain": "solana",
     "added_date": "2026-06-14",
-    "notes": "1 days | +41.5% | MC $123K | Updated 07:00"
+    "notes": "2 days | -10.5% | MC $112K | Updated 03:32"
+  },
+  {
+    "symbol": "SPCX",
+    "name": "spucex",
+    "address": "9qpDk7hGSHqyfMGDT7p4zFQ35aGff248Qes48CgLpump",
+    "chain": "solana",
+    "added_date": "2026-06-16",
+    "notes": "0 days | +16.7% | MC $167K | Updated 03:32"
   }
 ]
