@@ -5,7 +5,7 @@
     "address": "DqBjJEh6nppACX8fvuXvyWx8AQddPd5na7k2LCFWpump",
     "chain": "solana",
     "added_date": "2026-06-12",
-    "notes": "5 days | +15.6% | MC $141K | Updated 07:00"
+    "notes": "6 days | -11.9% | MC $109K | Updated 03:33"
   },
   {
     "symbol": "SPCX",
@@ -13,7 +13,7 @@
     "address": "9qpDk7hGSHqyfMGDT7p4zFQ35aGff248Qes48CgLpump",
     "chain": "solana",
     "added_date": "2026-06-16",
-    "notes": "1 days | -21.8% | MC $123K | Updated 07:00"
+    "notes": "2 days | -6.0% | MC $111K | Updated 03:33"
   },
   {
     "symbol": "REALM",
@@ -21,6 +21,14 @@
     "address": "E8RR8MAJDqiux39JM69QbUqvo2uhpUHXAJsnZP4jpump",
     "chain": "solana",
     "added_date": "2026-06-17",
-    "notes": "0 days | -0.9% | MC $160K | Updated 07:00"
+    "notes": "1 days | -28.6% | MC $159K | Updated 03:33"
+  },
+  {
+    "symbol": "GUARDIAN",
+    "name": "The Fearless Guardian",
+    "address": "7YMkZZwdcwUbXKjYpr5gFAVoB6aF4f9iLWK6pUcppump",
+    "chain": "solana",
+    "added_date": "2026-06-18",
+    "notes": "0 days | +11.8% | MC $164K | Updated 03:33"
   }
 ]
