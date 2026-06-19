@@ -5,7 +5,7 @@
     "address": "DqBjJEh6nppACX8fvuXvyWx8AQddPd5na7k2LCFWpump",
     "chain": "solana",
     "added_date": "2026-06-12",
-    "notes": "7 days | +4.4% | MC $113K | Updated 07:00"
+    "notes": "7 days | +3.5% | MC $113K | Updated 15:33"
   },
   {
     "symbol": "REALM",
@@ -13,7 +13,7 @@
     "address": "E8RR8MAJDqiux39JM69QbUqvo2uhpUHXAJsnZP4jpump",
     "chain": "solana",
     "added_date": "2026-06-17",
-    "notes": "2 days | +16.4% | MC $150K | Updated 07:00"
+    "notes": "2 days | -9.8% | MC $127K | Updated 15:33"
   },
   {
     "symbol": "GUARDIAN",
@@ -21,6 +21,14 @@
     "address": "7YMkZZwdcwUbXKjYpr5gFAVoB6aF4f9iLWK6pUcppump",
     "chain": "solana",
     "added_date": "2026-06-18",
-    "notes": "1 days | +10.5% | MC $206K | Updated 07:00"
+    "notes": "1 days | -31.1% | MC $172K | Updated 15:33"
+  },
+  {
+    "symbol": "SOCCER",
+    "name": "It's called Soccer",
+    "address": "FFosggieyf6ceEdapfQjeWetyFr9CjUzm9BLoxbopump",
+    "chain": "solana",
+    "added_date": "2026-06-19",
+    "notes": "0 days | +4.0% | MC $145K | Updated 15:33"
   }
 ]
