@@ -5,7 +5,7 @@
     "address": "DqBjJEh6nppACX8fvuXvyWx8AQddPd5na7k2LCFWpump",
     "chain": "solana",
     "added_date": "2026-06-12",
-    "notes": "7 days | +3.5% | MC $113K | Updated 15:33"
+    "notes": "8 days | -3.8% | MC $107K | Updated 07:00"
   },
   {
     "symbol": "REALM",
@@ -13,15 +13,7 @@
     "address": "E8RR8MAJDqiux39JM69QbUqvo2uhpUHXAJsnZP4jpump",
     "chain": "solana",
     "added_date": "2026-06-17",
-    "notes": "2 days | -9.8% | MC $127K | Updated 15:33"
-  },
-  {
-    "symbol": "GUARDIAN",
-    "name": "The Fearless Guardian",
-    "address": "7YMkZZwdcwUbXKjYpr5gFAVoB6aF4f9iLWK6pUcppump",
-    "chain": "solana",
-    "added_date": "2026-06-18",
-    "notes": "1 days | -31.1% | MC $172K | Updated 15:33"
+    "notes": "3 days | -7.3% | MC $138K | Updated 07:00"
   },
   {
     "symbol": "SOCCER",
@@ -29,6 +21,6 @@
     "address": "FFosggieyf6ceEdapfQjeWetyFr9CjUzm9BLoxbopump",
     "chain": "solana",
     "added_date": "2026-06-19",
-    "notes": "0 days | +4.0% | MC $145K | Updated 15:33"
+    "notes": "1 days | +9.6% | MC $139K | Updated 07:00"
   }
 ]
