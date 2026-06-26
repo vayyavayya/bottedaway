@@ -5,7 +5,7 @@
     "address": "7qSrCNchoiFxtxikTJm8x892tGdrtNgsaghfcnDBpump",
     "chain": "solana",
     "added_date": "2026-06-25",
-    "notes": "1 days | -0.0% | MC $220K | Updated 07:00"
+    "notes": "1 days | +9.4% | MC $220K | Updated 08:24"
   },
   {
     "symbol": "ANSEM",
@@ -13,6 +13,14 @@
     "address": "9cRCn9rGT8V2imeM2BaKs13yhMEais3ruM3rPvTGpump",
     "chain": "solana",
     "added_date": "2026-06-25",
-    "notes": "1 days | -14.3% | MC $201K | Updated 07:00"
+    "notes": "1 days | -5.2% | MC $218K | Updated 08:24"
+  },
+  {
+    "symbol": "CS",
+    "name": "chicken shrimp",
+    "address": "9qwxahBxcgKyn5X7kZvkN7qxKZg6pkVD8Lo4URtopump",
+    "chain": "solana",
+    "added_date": "2026-06-26",
+    "notes": "0 days | +52.6% | MC $459K | Updated 08:24"
   }
 ]
