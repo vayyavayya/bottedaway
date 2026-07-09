@@ -6,5 +6,29 @@
     "chain": "solana",
     "added_date": "2026-07-07",
     "notes": "2 days | +0.0% | MC $189K | Updated 08:27"
+  },
+  {
+    "symbol": "CURB",
+    "name": "The Solana Bull",
+    "address": "6UGNg119LV6YjSCQ5K6Z6jsLLLetpMJ1vPdhiU8qpump",
+    "chain": "solana",
+    "added_date": "2026-07-09",
+    "notes": "0 days | +95.6% | MC $400K | Updated 20:28"
+  },
+  {
+    "symbol": "TOLY",
+    "name": "The Solana Bull",
+    "address": "CvqxZzFZqDKSpD1bNSkwQ6j9stSCBVgQ9GT4tLdKpump",
+    "chain": "solana",
+    "added_date": "2026-07-09",
+    "notes": "0 days | +19.8% | MC $186K | Updated 20:28"
+  },
+  {
+    "symbol": "BULLWIF",
+    "name": "bullwifhat",
+    "address": "5npesGsnVhcQbh6oVcsLtn5UKqdgYeipgDKsGaappump",
+    "chain": "solana",
+    "added_date": "2026-07-09",
+    "notes": "0 days | +31.6% | MC $106K | Updated 20:28"
   }
 ]
