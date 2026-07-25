@@ -1,0 +1,7 @@
+# Local runtime config (contains your Supabase URL + public anon key).
+web/config.js
+
+# Supabase CLI
+.branches
+.temp
+supabase/.temp
