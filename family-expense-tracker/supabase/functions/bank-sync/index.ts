@@ -108,14 +108,19 @@ Deno.serve(async (req) => {
 
         if (fresh.length) {
           // Self-transfers: counterparty is a household member → excluded from totals.
-          const { data: selfNames } = await admin.from('transfer_names')
-            .select('name').eq('household_id', conn.household_id);
+          const { data: allNames } = await admin.from('transfer_names')
+            .select('name, is_exception').eq('household_id', conn.household_id);
+          const selfNames = (allNames ?? []).filter((s) => !s.is_exception);
+          const exceptions = (allNames ?? []).filter((s) => s.is_exception);
           // Match the counterparty NAME when the bank provides one; fall back to the
           // free-text only when it doesn't. (Salary references often contain the
           // recipient's own name — that must not count as a self-transfer.)
+          // Exceptions (e.g. exchange payouts) check both fields and always win.
           const isSelf = (c: any) => {
+            const full = `${c.merchant ?? ''} ${c.description ?? ''}`.toLowerCase();
+            if (exceptions.some((s) => full.includes(s.name.toLowerCase()))) return false;
             const hay = ((c.merchant ?? '').trim() || (c.description ?? '')).toLowerCase();
-            return (selfNames ?? []).some((s) => hay.includes(s.name.toLowerCase()));
+            return selfNames.some((s) => hay.includes(s.name.toLowerCase()));
           };
           fresh.forEach((c) => { c.excluded = isSelf(c); });
           r.selfTransfers = fresh.filter((c) => c.excluded).length;
