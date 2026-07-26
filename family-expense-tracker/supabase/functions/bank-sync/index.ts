@@ -115,12 +115,18 @@ Deno.serve(async (req) => {
           // Match the counterparty NAME when the bank provides one; fall back to the
           // free-text only when it doesn't. (Salary references often contain the
           // recipient's own name — that must not count as a self-transfer.)
+          // Patterns prefixed "desc:" match the description even when a merchant
+          // exists (structural markers like PayPal instant transfers).
           // Exceptions (e.g. exchange payouts) check both fields and always win.
           const isSelf = (c: any) => {
             const full = `${c.merchant ?? ''} ${c.description ?? ''}`.toLowerCase();
             if (exceptions.some((s) => full.includes(s.name.toLowerCase()))) return false;
             const hay = ((c.merchant ?? '').trim() || (c.description ?? '')).toLowerCase();
-            return selfNames.some((s) => hay.includes(s.name.toLowerCase()));
+            const desc = (c.description ?? '').toLowerCase();
+            return selfNames.some((s) => {
+              const n = s.name.toLowerCase();
+              return n.startsWith('desc:') ? desc.includes(n.slice(5)) : hay.includes(n);
+            });
           };
           fresh.forEach((c) => { c.excluded = isSelf(c); });
           r.selfTransfers = fresh.filter((c) => c.excluded).length;
