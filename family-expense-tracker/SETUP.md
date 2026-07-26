@@ -10,6 +10,30 @@ You need:
 
 ---
 
+## ⚡ Fast path (one script does steps 2–5)
+
+If you'd rather not do steps 2–5 by hand, run the installer — it applies the database,
+deploys the AI function, stores your key, and writes `config.js` for you. Your secrets
+never leave your machine.
+
+1. Create a Supabase project (dashboard → **New project**) and note its **ref** (the
+   `xxxx` in `xxxx.supabase.co`).
+2. Create a Supabase **access token**: dashboard → **Account → Access Tokens**.
+3. Install the Supabase CLI: `brew install supabase/tap/supabase` (or `npm i -g supabase`).
+4. Run it:
+   ```bash
+   cd family-expense-tracker
+   ./scripts/setup.sh
+   ```
+   It'll ask for the token, project ref, your Anthropic key, and a model choice — then do
+   the rest. When it finishes, jump to **step 6 (Host the app)** below.
+
+Prefer to understand each piece? Do it manually below instead.
+
+---
+
+---
+
 ## 1. Create a Supabase project
 
 1. Go to [supabase.com](https://supabase.com) → **New project**. Pick a name and a strong
