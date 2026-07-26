@@ -14,6 +14,7 @@ const state = {
   month: startOfMonth(new Date()),
   captureType: 'receipt',
   captureFile: null,
+  chat: [],
 };
 
 // ------------------------------------------------------------------ boot
@@ -192,6 +193,7 @@ function renderShell() {
     <div class="tabbar">
       ${tabBtn('home', '🏠', 'Home')}
       ${tabBtn('capture', '📷', 'Add')}
+      ${tabBtn('ask', '💬', 'Ask')}
       ${tabBtn('documents', '🗂️', 'Docs')}
       ${tabBtn('settings', '⚙️', 'Settings')}
     </div>`);
@@ -210,7 +212,7 @@ function tabBtn(view, emoji, label) {
 function renderView() {
   appEl.querySelectorAll('.tabbar button').forEach((b) =>
     b.classList.toggle('active', b.dataset.view === state.view));
-  const map = { home: viewHome, capture: viewCapture, documents: viewDocuments, settings: viewSettings };
+  const map = { home: viewHome, capture: viewCapture, ask: viewAsk, documents: viewDocuments, settings: viewSettings };
   (map[state.view] || viewHome)();
 }
 
@@ -431,6 +433,61 @@ function renderCaptureResult(result) {
 document.addEventListener('click', (e) => {
   if (e.target && e.target.id === 'cap-done') { state.view = 'home'; renderView(); }
 });
+
+// ------------------------------------------------------------------ ASK
+function viewAsk() {
+  const v = document.getElementById('view');
+  const log = state.chat.map(chatBubble).join('');
+  v.innerHTML = `
+    <div class="chat-wrap">
+      <div class="chat-log" id="chat-log">
+        ${log || `<div class="chat-hello">
+          <div class="big">💬</div>
+          <h3>Ask about your money</h3>
+          <p class="muted">Try: “How much did we spend on groceries this month?” ·
+          “What was that €240 in July?” · “Compare June and July.”</p></div>`}
+      </div>
+      <form class="chat-inrow" id="chat-form">
+        <input id="chat-in" placeholder="Ask anything…" autocomplete="off" />
+        <button class="btn small" type="submit">➤</button>
+      </form>
+    </div>`;
+  const logEl = v.querySelector('#chat-log');
+  logEl.scrollTop = logEl.scrollHeight;
+
+  v.querySelector('#chat-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const input = v.querySelector('#chat-in');
+    const q = input.value.trim();
+    if (!q) return;
+    input.value = '';
+    state.chat.push({ role: 'user', text: q });
+    state.chat.push({ role: 'assistant', text: null }); // spinner slot
+    renderChatLog();
+    try {
+      const history = state.chat.filter((m) => m.text).slice(0, -1);
+      const answer = await store.askAssistant(q, history);
+      state.chat[state.chat.length - 1] = { role: 'assistant', text: answer };
+    } catch (err) {
+      state.chat[state.chat.length - 1] = { role: 'assistant', text: `⚠️ ${err.message || 'Something went wrong.'}` };
+    }
+    renderChatLog();
+  });
+}
+
+function renderChatLog() {
+  const logEl = document.getElementById('chat-log');
+  if (!logEl) return;
+  logEl.innerHTML = state.chat.map(chatBubble).join('');
+  logEl.scrollTop = logEl.scrollHeight;
+}
+
+function chatBubble(m) {
+  if (m.text === null) {
+    return `<div class="chat-msg assistant"><span class="spinner dark"></span></div>`;
+  }
+  return `<div class="chat-msg ${m.role}">${esc(m.text).replace(/\n/g, '<br>')}</div>`;
+}
 
 // ------------------------------------------------------------------ DOCUMENTS
 async function viewDocuments() {

@@ -192,3 +192,20 @@ export async function updateTransactionCategory(txnId, categoryId) {
     .update({ category_id: categoryId }).eq('id', txnId);
   if (error) throw error;
 }
+
+// ---------- Assistant ----------
+export async function askAssistant(question, history) {
+  const { data, error } = await supabase.functions.invoke('ask', {
+    body: { question, history },
+  });
+  if (error) {
+    let msg = error.message || 'Assistant unavailable';
+    try {
+      const body = await error.context?.json?.();
+      if (body?.error) msg = body.error;
+    } catch { /* ignore */ }
+    throw new Error(msg);
+  }
+  if (data?.error) throw new Error(data.error);
+  return data.answer;
+}
