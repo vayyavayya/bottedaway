@@ -107,6 +107,19 @@ Deno.serve(async (req) => {
         }
 
         if (fresh.length) {
+          // Self-transfers: counterparty is a household member → excluded from totals.
+          const { data: selfNames } = await admin.from('transfer_names')
+            .select('name').eq('household_id', conn.household_id);
+          // Match the counterparty NAME when the bank provides one; fall back to the
+          // free-text only when it doesn't. (Salary references often contain the
+          // recipient's own name — that must not count as a self-transfer.)
+          const isSelf = (c: any) => {
+            const hay = ((c.merchant ?? '').trim() || (c.description ?? '')).toLowerCase();
+            return (selfNames ?? []).some((s) => hay.includes(s.name.toLowerCase()));
+          };
+          fresh.forEach((c) => { c.excluded = isSelf(c); });
+          r.selfTransfers = fresh.filter((c) => c.excluded).length;
+
           // Household rules first (user corrections that stick), AI for the rest.
           const { data: rules } = await admin.from('category_rules')
             .select('pattern, category_id').eq('household_id', conn.household_id);
@@ -116,11 +129,11 @@ Deno.serve(async (req) => {
             const hit = (rules ?? []).find((ru) => hay.includes(ru.pattern.toLowerCase()));
             if (hit) ruled.set(i, hit.category_id);
           });
-          const unruled = fresh.filter((_, i) => !ruled.has(i));
+          const unruled = fresh.filter((c, i) => !ruled.has(i) && !c.excluded);
           const catNames = (cats ?? []).map((c) => c.name);
           const assignedUnruled = await categorize(unruled, catNames);
           let u = 0;
-          const assigned = fresh.map((_, i) => ruled.has(i) ? null : assignedUnruled[u++]);
+          const assigned = fresh.map((c, i) => (ruled.has(i) || c.excluded) ? null : assignedUnruled[u++]);
           const rows = fresh.map((c, i) => ({
             household_id: conn.household_id,
             txn_date: c.txn_date, merchant: c.merchant,
@@ -128,6 +141,7 @@ Deno.serve(async (req) => {
             direction: c.direction, currency: c.currency,
             category_id: ruled.get(i) ?? catIdByName.get((assigned[i] ?? 'other').toLowerCase()) ?? otherId,
             source: 'bank_feed', external_ref: c.external_ref,
+            excluded: c.excluded ?? false,
           }));
           const { error } = await admin.from('transactions')
             .upsert(rows, { onConflict: 'household_id,external_ref', ignoreDuplicates: true });
@@ -171,8 +185,13 @@ async function categorize(txns: any[], categories: string[]): Promise<string[]> 
           },
           messages: [{
             role: 'user',
-            content: `Assign the best-fitting category to each bank transaction of a family household. ` +
-              `Available categories: ${categories.join(', ')}. Salary/refunds/incoming → Other unless clearly fitting. ` +
+            content: `Assign the best-fitting category to each bank transaction of a family household in Germany. ` +
+              `Available categories: ${categories.join(', ')}. ` +
+              `German hints: Drogerien (dm, Rossmann, Mueller) → Shopping; Tankstellen (Aral, Shell, Esso, Jet) and Deutsche Bahn/MVV/VVS/tickets and car costs (TUEV, ADAC, Autohaus) → Transport; ` +
+              `Apotheken/Aerzte/Krankenversicherung → Health; Telekom/Vodafone/O2/1und1/Stadtwerke/Strom/Gas/GEZ/Rundfunk → Utilities; ` +
+              `Supermaerkte (Edeka, Lidl, Netto, Penny, Kaufland, Alnatura) → Groceries; Amazon/Zalando/Otto/MediaMarkt/IKEA → Shopping; ` +
+              `Versicherungen (Allianz, HUK, AXA, ERGO) → Insurance if available; Kredit/Darlehen/Tilgung → Loans if available; Finanzamt/Steuer → Taxes if available. ` +
+              `Salary/refunds/incoming → Other unless clearly fitting. ` +
               `Return exactly ${chunk.length} entries, in order.\n\n${list}`,
           }],
         }),

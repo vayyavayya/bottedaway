@@ -179,6 +179,7 @@ export async function getTransactions(householdId, fromDate, toDate) {
     .from('transactions')
     .select('id, txn_date, merchant, description, amount, direction, currency, category_id, source, categories(name, icon, color)')
     .eq('household_id', householdId)
+    .eq('excluded', false)          // self-transfers between own accounts stay hidden
     .gte('txn_date', fromDate)
     .lte('txn_date', toDate)
     .order('txn_date', { ascending: false });
