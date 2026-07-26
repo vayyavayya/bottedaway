@@ -135,41 +135,47 @@ Deno.serve(async (req) => {
 async function categorize(txns: any[], categories: string[]): Promise<string[]> {
   const key = Deno.env.get('ANTHROPIC_API_KEY');
   if (!key || !txns.length || !categories.length) return txns.map(() => 'Other');
-  const list = txns.map((t, i) =>
-    `${i}. ${t.direction} €${t.amount} — ${t.merchant ?? ''} ${t.description ?? ''}`.trim()).join('\n');
-  try {
-    const resp = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'x-api-key': key, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
-      body: JSON.stringify({
-        model: CATEGORIZE_MODEL, max_tokens: 4000,
-        output_config: {
-          effort: 'low',
-          format: {
-            type: 'json_schema',
-            schema: {
-              type: 'object', additionalProperties: false,
-              properties: { categories: { type: 'array', items: { type: 'string', enum: categories } } },
-              required: ['categories'],
+  const CHUNK = 40;
+  const out: string[] = [];
+  for (let start = 0; start < txns.length; start += CHUNK) {
+    const chunk = txns.slice(start, start + CHUNK);
+    const list = chunk.map((t, i) =>
+      `${i}. ${t.direction} €${t.amount} — ${t.merchant ?? ''} ${t.description ?? ''}`.trim()).join('\n');
+    try {
+      const resp = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'x-api-key': key, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
+        body: JSON.stringify({
+          model: CATEGORIZE_MODEL, max_tokens: 3000,
+          output_config: {
+            format: {
+              type: 'json_schema',
+              schema: {
+                type: 'object', additionalProperties: false,
+                properties: { categories: { type: 'array', items: { type: 'string', enum: categories } } },
+                required: ['categories'],
+              },
             },
           },
-        },
-        messages: [{
-          role: 'user',
-          content: `Assign the best-fitting category to each bank transaction of a family household. ` +
-            `Available categories: ${categories.join(', ')}. Salary/refunds/incoming → Other unless clearly fitting. ` +
-            `Return exactly ${txns.length} entries, in order.\n\n${list}`,
-        }],
-      }),
-    });
-    if (!resp.ok) throw new Error(`AI ${resp.status}`);
-    const body = await resp.json();
-    const text = (body.content ?? []).find((b: any) => b.type === 'text')?.text ?? '{}';
-    const out = JSON.parse(text).categories ?? [];
-    return txns.map((_, i) => out[i] ?? 'Other');
-  } catch (_e) {
-    return txns.map(() => 'Other');
+          messages: [{
+            role: 'user',
+            content: `Assign the best-fitting category to each bank transaction of a family household. ` +
+              `Available categories: ${categories.join(', ')}. Salary/refunds/incoming → Other unless clearly fitting. ` +
+              `Return exactly ${chunk.length} entries, in order.\n\n${list}`,
+          }],
+        }),
+      });
+      if (!resp.ok) throw new Error(`AI ${resp.status}: ${(await resp.text()).slice(0, 200)}`);
+      const body = await resp.json();
+      const text = (body.content ?? []).find((b: any) => b.type === 'text')?.text ?? '{}';
+      const cats = JSON.parse(text).categories ?? [];
+      for (let i = 0; i < chunk.length; i++) out.push(cats[i] ?? 'Other');
+    } catch (e) {
+      console.error('categorize chunk failed:', e);
+      for (let i = 0; i < chunk.length; i++) out.push('Other');
+    }
   }
+  return out;
 }
 
 async function hash(s: string): Promise<string> {

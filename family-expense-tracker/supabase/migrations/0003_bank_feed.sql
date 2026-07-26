@@ -27,7 +27,7 @@ create policy bank_connections_select on bank_connections
 -- Transactions: external reference for idempotent bank syncs.
 alter table transactions add column if not exists external_ref text;
 create unique index if not exists idx_transactions_external_ref
-  on transactions (household_id, external_ref) where external_ref is not null;
+  on transactions (household_id, external_ref);
 
 -- Allow 'bank_feed' as a transaction source.
 do $$
