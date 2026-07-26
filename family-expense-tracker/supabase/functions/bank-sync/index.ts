@@ -160,6 +160,9 @@ Deno.serve(async (req) => {
           r.inserted = rows.length;
         }
       }
+      // Net out charge+refund round-trips so totals reflect real consumption.
+      const { data: netted } = await admin.rpc('net_refund_pairs', { hid: conn.household_id });
+      if (netted) r.refundsNetted = netted;
       await admin.from('bank_connections').update({ last_synced_at: new Date().toISOString() }).eq('id', conn.id);
     } catch (e) {
       r.error = String(e?.message ?? e);
