@@ -1,6 +1,6 @@
 // Minimal service worker: caches the app shell so the icon/launch works offline.
 // Live data (Supabase, the AI function, signed image URLs) always goes to network.
-const CACHE = 'hearth-v2';
+const CACHE = 'hearth-v3';
 const SHELL = [
   './',
   './index.html',
