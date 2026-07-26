@@ -5,3 +5,6 @@ web/config.js
 .branches
 .temp
 supabase/.temp
+
+# Netlify CLI local state
+.netlify/

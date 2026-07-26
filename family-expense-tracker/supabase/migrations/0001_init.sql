@@ -197,7 +197,7 @@ create or replace function create_household(p_name text, p_display_name text def
 returns households
 language plpgsql
 security definer
-set search_path = public
+set search_path = public, extensions
 as $$
 declare
   h households;
