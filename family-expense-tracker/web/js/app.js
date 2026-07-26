@@ -53,7 +53,10 @@ async function afterLogin() {
 // ------------------------------------------------------------------ helpers
 function startOfMonth(d) { return new Date(d.getFullYear(), d.getMonth(), 1); }
 function endOfMonth(d) { return new Date(d.getFullYear(), d.getMonth() + 1, 0); }
-function iso(d) { return d.toISOString().slice(0, 10); }
+function iso(d) {
+  // Local-date string — toISOString() would shift Berlin midnights back one day (UTC).
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
 function mount(html) { appEl.innerHTML = html; }
 function catById(id) { return state.categories.find((c) => c.id === id); }
 
