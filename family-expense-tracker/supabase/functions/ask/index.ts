@@ -107,15 +107,23 @@ Deno.serve(async (req) => {
     ];
 
     let answer = '';
-    for (let round = 0; round < 4; round++) {
+    let lastText = '';
+    const ROUNDS = 5;
+    for (let round = 0; round < ROUNDS; round++) {
+      const finalRound = round === ROUNDS - 1;
       const resp = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: { 'x-api-key': anthropicKey, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
-        body: JSON.stringify({ model: MODEL, max_tokens: 1500, system, tools, messages }),
+        body: JSON.stringify({
+          model: MODEL, max_tokens: 1500, system, tools, messages,
+          // Last round: no more searching — answer with what you have.
+          ...(finalRound ? { tool_choice: { type: 'none' } } : {}),
+        }),
       });
       if (!resp.ok) return json({ error: 'assistant unavailable', detail: (await resp.text()).slice(0, 200) }, 502);
       const body = await resp.json();
       const textParts = (body.content ?? []).filter((b: any) => b.type === 'text').map((b: any) => b.text);
+      if (textParts.length) lastText = textParts.join('\n');
       if (body.stop_reason !== 'tool_use') { answer = textParts.join('\n'); break; }
 
       messages.push({ role: 'assistant', content: body.content });
@@ -128,7 +136,11 @@ Deno.serve(async (req) => {
         if (!inp.include_hidden) q = q.eq('excluded', false);
         if (inp.date_from) q = q.gte('txn_date', inp.date_from);
         if (inp.date_to) q = q.lte('txn_date', inp.date_to);
-        if (inp.keywords) q = q.or(`merchant.ilike.%${String(inp.keywords).replace(/[%,()]/g, '')}%,description.ilike.%${String(inp.keywords).replace(/[%,()]/g, '')}%`);
+        if (inp.keywords) {
+          // PostgREST or() syntax wants * as the wildcard, not %.
+          const kw = String(inp.keywords).replace(/[%,()*]/g, '').trim();
+          if (kw) q = q.or(`merchant.ilike.*${kw}*,description.ilike.*${kw}*`);
+        }
         const { data: found, error } = await q;
         const lines = error ? `search error: ${error.message}` : (found ?? []).map((t) =>
           `${t.txn_date} ${t.direction === 'credit' ? '+' : '-'}${Number(t.amount).toFixed(2)} ${((t.merchant ?? t.description) ?? '').slice(0, 60)} [${(t as any).categories?.name ?? '?'}]${t.excluded ? ' (hidden transfer)' : ''}`).join('\n') || 'no matches';
@@ -136,7 +148,7 @@ Deno.serve(async (req) => {
       }
       messages.push({ role: 'user', content: results });
     }
-    if (!answer) answer = 'Sorry — I could not finish answering that one. Try rephrasing?';
+    if (!answer) answer = lastText || 'Sorry — I could not finish answering that one. Try rephrasing?';
     return json({ answer });
   } catch (e) {
     return json({ error: 'unexpected error', detail: String(e).slice(0, 200) }, 500);
