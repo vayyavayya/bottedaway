@@ -120,6 +120,22 @@ supabase secrets set --project-ref "$PROJECT_REF" \
   "ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY" "ANTHROPIC_MODEL=$MODEL" >/dev/null
 ok "Anthropic key + model ($MODEL) stored as Function secrets"
 
+# --- Optional: auto-confirm emails (smooth 2-person start) -----------------
+CONFIRM_OFF="${CONFIRM_OFF:-}"
+if [ -z "$CONFIRM_OFF" ]; then
+  ask CONFIRM_OFF "Auto-confirm new accounts (no email link needed)? [Y/n]"
+fi
+case "${CONFIRM_OFF:-Y}" in
+  [Nn]*) info "Leaving email confirmation ON — each of you confirms via an email link." ;;
+  *)
+    curl -sS -X PATCH "$API/v1/projects/$PROJECT_REF/config/auth" \
+      -H "Authorization: Bearer $TOKEN" -H "Content-Type: application/json" \
+      -d '{"mailer_autoconfirm": true}' >/dev/null \
+      && ok "Email auto-confirm enabled" \
+      || info "Could not toggle auto-confirm (do it in dashboard → Auth → Providers → Email)"
+    ;;
+esac
+
 # --- Write web config -----------------------------------------------------
 bold "5) Writing web/config.js"
 cat > web/config.js <<EOF
