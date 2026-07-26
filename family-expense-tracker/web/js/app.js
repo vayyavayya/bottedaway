@@ -246,14 +246,14 @@ async function viewHome() {
 
   const byCat = groupByCategory(debits);
   const legend = byCat.map((g) => `
-    <div class="leg"><span class="dot" style="background:${g.color}"></span>
+    <div class="leg" data-cat="${g.id}" style="cursor:pointer"><span class="dot" style="background:${g.color}"></span>
       <span>${esc(g.icon)} ${esc(g.name)}</span>
       <span class="pct">${totalSpent ? Math.round((g.value / totalSpent) * 100) : 0}%</span>
       <span class="amt">${money(g.value, state.currency)}</span></div>`).join('');
 
   const bars = byCat.slice(0, 6).map((g) => {
     const pct = totalSpent ? (g.value / totalSpent) * 100 : 0;
-    return `<div class="bar-row"><span class="ic">${esc(g.icon)}</span>
+    return `<div class="bar-row" data-cat="${g.id}" style="cursor:pointer"><span class="ic">${esc(g.icon)}</span>
       <span class="nm">${esc(g.name)}</span>
       <div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${g.color}"></div></div>
       <span class="amt">${money(g.value, state.currency)}</span></div>`;
@@ -303,6 +303,29 @@ async function viewHome() {
     state.month = startOfMonth(new Date(state.month.getFullYear(), state.month.getMonth() + 1, 1));
     viewHome();
   });
+  v.querySelectorAll('[data-cat]').forEach((el) =>
+    el.addEventListener('click', () => openCategorySheet(el.dataset.cat, byCat, debits)));
+}
+
+function openCategorySheet(catId, byCat, debits) {
+  const g = byCat.find((x) => String(x.id) === String(catId));
+  if (!g) return;
+  const rows = debits
+    .filter((t) => (t.category_id || 'none') === g.id)
+    .sort((a, b) => (a.txn_date < b.txn_date ? 1 : -1));
+  const items = rows.map((t) => `<div class="item">
+      <div class="ic">${esc(g.icon)}</div>
+      <div class="body">
+        <div class="t">${esc(t.merchant || t.description || 'Transaction')}</div>
+        <div class="s">${fmtDate(t.txn_date)}${t.source === 'bank_feed' ? '' : ' · 🧾 scanned'}</div>
+      </div>
+      <div class="amt">${money(t.amount, t.currency || state.currency)}</div>
+    </div>`).join('');
+  showSheet(`
+    <h2>${esc(g.icon)} ${esc(g.name)} — ${monthLabel(state.month)}</h2>
+    <p class="muted" style="margin:2px 0 10px">${rows.length} transaction${rows.length === 1 ? '' : 's'} ·
+      <strong>${money(g.value, state.currency)}</strong></p>
+    <div class="list" style="max-height:56vh;overflow-y:auto">${items || '<p class="muted">Nothing here.</p>'}</div>`);
 }
 
 function txnRow(t) {
@@ -661,7 +684,7 @@ function groupByCategory(debits) {
   for (const t of debits) {
     const cat = t.categories || {};
     const id = t.category_id || 'none';
-    const cur = m.get(id) || { value: 0, name: cat.name || 'Uncategorized', icon: cat.icon || '📦', color: cat.color || '#64748b' };
+    const cur = m.get(id) || { id, value: 0, name: cat.name || 'Uncategorized', icon: cat.icon || '📦', color: cat.color || '#64748b' };
     cur.value += Number(t.amount || 0);
     m.set(id, cur);
   }
