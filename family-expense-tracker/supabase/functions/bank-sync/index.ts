@@ -107,14 +107,26 @@ Deno.serve(async (req) => {
         }
 
         if (fresh.length) {
+          // Household rules first (user corrections that stick), AI for the rest.
+          const { data: rules } = await admin.from('category_rules')
+            .select('pattern, category_id').eq('household_id', conn.household_id);
+          const ruled = new Map<number, string>();
+          fresh.forEach((c, i) => {
+            const hay = `${c.merchant ?? ''} ${c.description ?? ''}`.toLowerCase();
+            const hit = (rules ?? []).find((ru) => hay.includes(ru.pattern.toLowerCase()));
+            if (hit) ruled.set(i, hit.category_id);
+          });
+          const unruled = fresh.filter((_, i) => !ruled.has(i));
           const catNames = (cats ?? []).map((c) => c.name);
-          const assigned = await categorize(fresh, catNames);
+          const assignedUnruled = await categorize(unruled, catNames);
+          let u = 0;
+          const assigned = fresh.map((_, i) => ruled.has(i) ? null : assignedUnruled[u++]);
           const rows = fresh.map((c, i) => ({
             household_id: conn.household_id,
             txn_date: c.txn_date, merchant: c.merchant,
             description: c.description, amount: c.amount,
             direction: c.direction, currency: c.currency,
-            category_id: catIdByName.get((assigned[i] ?? 'other').toLowerCase()) ?? otherId,
+            category_id: ruled.get(i) ?? catIdByName.get((assigned[i] ?? 'other').toLowerCase()) ?? otherId,
             source: 'bank_feed', external_ref: c.external_ref,
           }));
           const { error } = await admin.from('transactions')
