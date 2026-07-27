@@ -269,8 +269,8 @@ async function viewHome() {
     </div>
 
     <section class="stat-grid">
-      <div class="stat"><div class="label">Spent</div><div class="value spend">${money(totalSpent, state.currency)}</div></div>
-      <div class="stat"><div class="label">Money in</div><div class="value credit">${money(totalIn, state.currency)}</div></div>
+      <div class="stat" data-flow="debit" style="cursor:pointer"><div class="label">Spent</div><div class="value spend">${money(totalSpent, state.currency)}</div></div>
+      <div class="stat" data-flow="credit" style="cursor:pointer"><div class="label">Money in</div><div class="value credit">${money(totalIn, state.currency)}</div></div>
     </section>
 
     ${txns.length === 0 ? emptyState('No activity yet this month', 'Tap ＋ to snap a grocery bill or upload a statement.') : `
@@ -305,6 +305,27 @@ async function viewHome() {
   });
   v.querySelectorAll('[data-cat]').forEach((el) =>
     el.addEventListener('click', () => openCategorySheet(el.dataset.cat, byCat, debits)));
+  v.querySelectorAll('[data-flow]').forEach((el) =>
+    el.addEventListener('click', () => openFlowSheet(el.dataset.flow, el.dataset.flow === 'debit' ? debits : credits)));
+}
+
+function openFlowSheet(direction, rows) {
+  const credit = direction === 'credit';
+  const total = rows.reduce((s, t) => s + Number(t.amount || 0), 0);
+  const sorted = [...rows].sort((a, b) => (a.txn_date < b.txn_date ? 1 : -1));
+  const items = sorted.map((t) => `<div class="item">
+      <div class="ic">${esc(t.categories?.icon || (credit ? '💰' : '💳'))}</div>
+      <div class="body">
+        <div class="t">${esc(t.merchant || t.description || 'Transaction')}</div>
+        <div class="s">${fmtDate(t.txn_date)} · ${esc(t.categories?.name || (credit ? 'Income' : 'Uncategorized'))}${t.source === 'bank_feed' ? '' : ' · 🧾'}</div>
+      </div>
+      <div class="amt ${credit ? 'credit' : ''}">${credit ? '+' : ''}${money(t.amount, t.currency || state.currency)}</div>
+    </div>`).join('');
+  showSheet(`
+    <h2>${credit ? '💰 Money in' : '💸 Spent'} — ${monthLabel(state.month)}</h2>
+    <p class="muted" style="margin:2px 0 10px">${sorted.length} transaction${sorted.length === 1 ? '' : 's'} ·
+      <strong>${money(total, state.currency)}</strong></p>
+    <div class="list" style="max-height:56vh;overflow-y:auto">${items || '<p class="muted">Nothing here.</p>'}</div>`);
 }
 
 function openCategorySheet(catId, byCat, debits) {
