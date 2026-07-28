@@ -1,0 +1,63 @@
+# =============================================================================
+# Hermes Agent — config.yaml
+# Target: Mac Studio (Apple Silicon), Telegram gateway, Docker-sandboxed exec
+# Install location: copy to ~/.hermes/config.yaml
+# -----------------------------------------------------------------------------
+# Secrets (bot token, API keys) do NOT go here — they live in ~/.hermes/.env
+# See .env.example in this folder.
+# =============================================================================
+
+# ---- Model / provider -------------------------------------------------------
+# Pick ONE. Default below is Nous Portal (subscription, OAuth login, no API key).
+# To use your own Anthropic key instead, set:
+#   model: "anthropic/claude-opus-4-8"
+# and put ANTHROPIC_API_KEY in ~/.hermes/.env, then run `hermes model`.
+#
+# NOTE: choosing the provider's *auth* (Nous Portal OAuth) is interactive and is
+# done once via `hermes setup` (Quick Setup) — see README step 3.
+model: "nousresearch/hermes-4-405b"
+
+# ---- Terminal backend: Docker sandbox --------------------------------------
+# Every terminal / execute_code call the agent makes runs inside ONE long-lived,
+# locked-down container instead of on the Mac host. Hermes hardens it
+# automatically (--cap-drop ALL, no-new-privileges, pids-limit, tmpfs caps).
+terminal:
+  backend: docker
+
+  # Multi-arch (arm64 + amd64) image with Python 3.11 + Node 20 preinstalled.
+  # Runs natively on Apple Silicon.
+  docker_image: "nikolaik/python-nodejs:python3.11-nodejs20"
+
+  # Do NOT bind the host cwd into the container — keep the sandbox clean.
+  docker_mount_cwd_to_workspace: false
+
+  # Run as container's own user, not your Mac UID.
+  docker_run_as_host_user: false
+
+  # Give the agent a persistent scratch dir that survives across sessions.
+  # The host side is created by install-hermes.sh. Everything the agent writes
+  # to /workspace lands here so YOU can inspect it from the Mac.
+  docker_volumes:
+    - "${HOME}/hermes-workspace:/workspace"
+
+  # Networking: bridge (default). Do NOT use --network=host on macOS Docker
+  # Desktop — it does not behave like Linux and breaks isolation guarantees.
+  docker_network: true
+
+  # Resource limits (Mac Studio has plenty; tune to taste). MB for memory/disk.
+  container_cpu: 4
+  container_memory: 8192
+  container_disk: 51200
+
+  # Persistence: keep the same container hot across /new, /reset, subagents,
+  # and Hermes restarts. Orphan reaper cleans up abandoned containers.
+  container_persistent: true
+  docker_persist_across_processes: true
+  docker_orphan_reaper: true
+
+  # Forward selected host env vars INTO the sandbox (optional).
+  # Add e.g. GITHUB_TOKEN here only if the agent genuinely needs it inside.
+  docker_forward_env: []
+
+  # Per-command timeout (seconds) for long-running agent commands.
+  timeout: 300
