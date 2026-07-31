@@ -1,0 +1,22 @@
+{
+  "_README": "The 'arc of the war': named phases plus a dated timeline of discrete events. 'type' drives colour: escalation (red), deescalation (aqua), neutral (grey). Events are overlaid as markers on the Brent and US10Y charts so you can see the market react to the war in real time. Cowork should append events as they happen and advance 'current_phase' index.",
+  "provenance": "seed-placeholder",
+  "current_phase": 3,
+  "phases": [
+    {"name": "Latent",        "blurb": "Rhetoric and posturing; no direct fire."},
+    {"name": "Kinetic onset", "blurb": "First exchanges; launches ramp, strait contested."},
+    {"name": "Peak intensity","blurb": "Blockade dynamics; transits collapse, interference peaks."},
+    {"name": "De-escalation", "blurb": "Launches fade, corridor reopens under escort, VLCCs prove it."},
+    {"name": "Cessation",     "blurb": "Interference near-zero, transits normalised, ceasefire holds."}
+  ],
+  "timeline": [
+    {"date": "2026-05-12", "type": "escalation",   "title": "First direct exchange", "note": "Opening strikes; launch count breaks from baseline."},
+    {"date": "2026-05-26", "type": "escalation",   "title": "Tanker seizures begin",  "note": "Interference incidents cross into double digits."},
+    {"date": "2026-06-02", "type": "escalation",   "title": "Hormuz effectively closed", "note": "Laden transits collapse below 10/day."},
+    {"date": "2026-06-09", "type": "neutral",      "title": "Peak launch week",       "note": "Iranian launches top out; ability-to-hurt at maximum."},
+    {"date": "2026-06-18", "type": "deescalation", "title": "Escort convoys announced", "note": "Naval escort of merchant traffic begins."},
+    {"date": "2026-06-30", "type": "deescalation", "title": "First VLCC transit since onset", "note": "Corridor proven for the largest hulls."},
+    {"date": "2026-07-14", "type": "deescalation", "title": "Ceasefire framework",    "note": "Launches into single digits; interference fading."},
+    {"date": "2026-07-27", "type": "deescalation", "title": "Transits back above 35/day", "note": "Strait functionally reopening; capacity failure confirmed in the data."}
+  ]
+}

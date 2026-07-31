@@ -1,0 +1,27 @@
+{
+  "_README": "Brent term structure snapshot, taken Monday when markets reopen. Backwardation (M1 > deferred) = physical tightness. Backwardation EASING (spread shrinking toward 0 / flipping to contango) = tightness relaxing before any headline says so. Update 'curve' each Monday with front-month settlement out to M6, and append the M1-M3 spread to 'spread_history'. No free tidy API for the futures curve — pull from ICE Brent settlements, Barchart, or Investing.com.",
+  "provenance": "seed-placeholder",
+  "as_of": "2026-07-27",
+  "curve": [
+    {"month": "M1", "price": 71.2},
+    {"month": "M2", "price": 70.5},
+    {"month": "M3", "price": 69.9},
+    {"month": "M4", "price": 69.4},
+    {"month": "M5", "price": 69.0},
+    {"month": "M6", "price": 68.7}
+  ],
+  "spread_history": [
+    {"period": "2026-05-11", "m1_m3": 0.9},
+    {"period": "2026-05-18", "m1_m3": 2.1},
+    {"period": "2026-05-25", "m1_m3": 4.8},
+    {"period": "2026-06-01", "m1_m3": 6.9},
+    {"period": "2026-06-08", "m1_m3": 7.4},
+    {"period": "2026-06-15", "m1_m3": 6.1},
+    {"period": "2026-06-22", "m1_m3": 5.0},
+    {"period": "2026-06-29", "m1_m3": 3.8},
+    {"period": "2026-07-06", "m1_m3": 2.7},
+    {"period": "2026-07-13", "m1_m3": 1.9},
+    {"period": "2026-07-20", "m1_m3": 1.5},
+    {"period": "2026-07-27", "m1_m3": 1.3}
+  ]
+}

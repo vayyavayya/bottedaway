@@ -1,0 +1,465 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Iran-US War Dashboard</title>
+<style>
+  :root{
+    color-scheme: dark;
+    --bg:#0f110d; --surface:#15170f00; --panel:#1a1c17; --panel-2:#20221c;
+    --line:#2c2f27; --grid:#242720;
+    --ink:#f4f5ee; --ink-2:#c3c2b7; --ink-3:#8b8d81;
+    --blue:#3987e5; --orange:#d95926; --aqua:#199e70; --yellow:#c98500;
+    --magenta:#d55181; --violet:#9085e9; --red:#e66767; --green:#2fa84f;
+    --good:#199e70; --bad:#e66767; --neutral:#8b8d81;
+    --mono:"SFMono-Regular",ui-monospace,"JetBrains Mono","Menlo",Consolas,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  }
+  @media (prefers-color-scheme: light){
+    :root:where(:not([data-theme="dark"])){
+      color-scheme:light;
+      --bg:#f6f6f2; --panel:#ffffff; --panel-2:#f0efe9;
+      --line:#e3e2da; --grid:#ebeae3;
+      --ink:#14150f; --ink-2:#52514a; --ink-3:#87867c;
+      --blue:#2a78d6; --orange:#eb6834; --aqua:#1baf7a; --yellow:#eda100;
+      --magenta:#e87ba4; --violet:#4a3aa7; --red:#e34948; --good:#1baf7a; --bad:#e34948;
+    }
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--bg);color:var(--ink);font-family:var(--sans);
+    font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased;
+    padding:24px;max-width:1180px;margin:0 auto}
+  h1{font-size:22px;margin:0;letter-spacing:-.01em;font-weight:650}
+  a{color:var(--blue)}
+  .muted{color:var(--ink-3)} .dim{color:var(--ink-2)}
+  .mono{font-family:var(--mono)}
+  header{display:flex;justify-content:space-between;align-items:flex-start;
+    gap:16px;flex-wrap:wrap;margin-bottom:6px}
+  .sub{color:var(--ink-2);font-size:13.5px;margin-top:4px;max-width:70ch}
+  .meta{text-align:right;font-size:12px;color:var(--ink-3);line-height:1.6;white-space:nowrap}
+  .badge{display:inline-block;padding:1px 7px;border-radius:999px;font-size:11px;
+    font-weight:600;letter-spacing:.02em;border:1px solid var(--line)}
+  .badge.seed{color:var(--yellow);border-color:color-mix(in srgb,var(--yellow) 40%,transparent)}
+  .badge.live{color:var(--aqua);border-color:color-mix(in srgb,var(--aqua) 40%,transparent)}
+  .badge.stale{color:var(--orange);border-color:color-mix(in srgb,var(--orange) 40%,transparent)}
+
+  section{margin-top:22px}
+  .h{font-size:12px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;
+    color:var(--ink-3);margin:0 0 10px}
+
+  /* ---- arc ---- */
+  .arc{display:flex;gap:4px;background:var(--panel);border:1px solid var(--line);
+    border-radius:12px;padding:6px}
+  .arc .ph{flex:1;padding:9px 10px;border-radius:8px;min-width:0}
+  .arc .ph .n{font-size:13px;font-weight:600}
+  .arc .ph .b{font-size:11.5px;color:var(--ink-3);margin-top:2px;line-height:1.35}
+  .arc .ph.active{background:color-mix(in srgb,var(--red) 16%,transparent);
+    box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--red) 45%,transparent)}
+  .arc .ph.active.deesc{background:color-mix(in srgb,var(--aqua) 16%,transparent);
+    box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--aqua) 45%,transparent)}
+  .arc .ph.done{opacity:.55}
+  .arc .ph.active .n{color:var(--ink)}
+
+  /* ---- stat tiles ---- */
+  .tiles{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+  @media(max-width:900px){.tiles{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:520px){.tiles{grid-template-columns:1fr}}
+  .tile{background:var(--panel);border:1px solid var(--line);border-radius:12px;
+    padding:14px;display:flex;flex-direction:column;gap:8px;position:relative;overflow:hidden}
+  .tile .lab{font-size:12.5px;color:var(--ink-2);font-weight:600;display:flex;
+    align-items:flex-start;gap:6px;min-height:2.4em;line-height:1.25}
+  .tile .lab .dot{margin-top:3px}
+  .tile .dot{width:8px;height:8px;border-radius:2px;flex:none}
+  .tile .val{font-family:var(--mono);font-size:30px;font-weight:600;letter-spacing:-.02em;
+    line-height:1;display:flex;align-items:baseline;gap:5px}
+  .tile .val .u{font-size:13px;color:var(--ink-3);font-weight:500}
+  .tile .delta{font-size:12px;font-family:var(--mono);display:flex;align-items:center;gap:5px}
+  .tile .delta .pill{padding:1px 6px;border-radius:6px;font-weight:600}
+  .up{color:var(--good)} .down{color:var(--bad)} .flat{color:var(--ink-3)}
+  .pill.good{background:color-mix(in srgb,var(--good) 18%,transparent);color:var(--good)}
+  .pill.bad{background:color-mix(in srgb,var(--bad) 18%,transparent);color:var(--bad)}
+  .pill.flat{background:var(--panel-2);color:var(--ink-3)}
+  .tile .spark{height:34px;margin-top:2px}
+  .tile .mean{font-size:11.5px;color:var(--ink-3);line-height:1.4}
+
+  /* ---- signal ---- */
+  .signal{border-radius:12px;padding:14px 16px;border:1px solid var(--line);
+    background:var(--panel);display:flex;gap:12px;align-items:flex-start}
+  .signal .k{font-family:var(--mono);font-size:12px;font-weight:700;padding:3px 8px;
+    border-radius:7px;flex:none}
+  .signal.fire .k{background:color-mix(in srgb,var(--red) 20%,transparent);color:var(--red)}
+  .signal.calm .k{background:color-mix(in srgb,var(--aqua) 20%,transparent);color:var(--aqua)}
+  .signal .t{font-size:13.5px}
+
+  /* ---- panels / charts ---- */
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:820px){.grid2{grid-template-columns:1fr}}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+  .card .ct{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
+  .card .ct .cn{font-size:13.5px;font-weight:600}
+  .card .ct .cv{font-family:var(--mono);font-size:13px;color:var(--ink-2)}
+  .chart{position:relative}
+  .chart svg{display:block;width:100%;height:auto;overflow:visible}
+  .tooltip{position:absolute;pointer-events:none;background:var(--panel-2);
+    border:1px solid var(--line);border-radius:8px;padding:6px 9px;font-size:12px;
+    font-family:var(--mono);white-space:nowrap;opacity:0;transition:opacity .08s;
+    box-shadow:0 6px 20px rgba(0,0,0,.35);z-index:5;color:var(--ink)}
+  .tooltip .tt-t{color:var(--ink-3);font-size:11px}
+
+  /* ---- correlation ---- */
+  .corr{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+  @media(max-width:900px){.corr{grid-template-columns:repeat(2,1fr)}}
+  .corr .c{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px}
+  .corr .c .cl{font-size:11.5px;color:var(--ink-2);line-height:1.3;min-height:2.6em}
+  .corr .c .r{font-family:var(--mono);font-size:24px;font-weight:600;margin-top:6px}
+  .corr .c .bar{height:5px;border-radius:3px;background:var(--panel-2);margin-top:7px;position:relative;overflow:hidden}
+  .corr .c .bar i{position:absolute;top:0;bottom:0;border-radius:3px}
+  .corr .c .n{font-size:10.5px;color:var(--ink-3);margin-top:5px}
+
+  /* ---- timeline / curve ---- */
+  .tl{display:flex;flex-direction:column;gap:0}
+  .tl .e{display:grid;grid-template-columns:78px 14px 1fr;gap:10px;padding:7px 0;position:relative}
+  .tl .e .d{font-family:var(--mono);font-size:11.5px;color:var(--ink-3);text-align:right;padding-top:1px}
+  .tl .e .m{position:relative}
+  .tl .e .m::before{content:"";position:absolute;left:4px;top:5px;width:8px;height:8px;
+    border-radius:50%;background:var(--neutral);box-shadow:0 0 0 3px var(--panel)}
+  .tl .e.escalation .m::before{background:var(--red)}
+  .tl .e.deescalation .m::before{background:var(--aqua)}
+  .tl .e .m::after{content:"";position:absolute;left:7px;top:11px;bottom:-9px;width:2px;background:var(--line)}
+  .tl .e:last-child .m::after{display:none}
+  .tl .e .tt{font-size:13px;font-weight:600}
+  .tl .e .nt{font-size:12px;color:var(--ink-3)}
+
+  .btns{display:flex;gap:8px;flex-wrap:wrap}
+  .btn{font:inherit;font-size:12.5px;background:var(--panel);color:var(--ink-2);
+    border:1px solid var(--line);border-radius:8px;padding:5px 11px;cursor:pointer}
+  .btn:hover{color:var(--ink);border-color:var(--ink-3)}
+  table{width:100%;border-collapse:collapse;font-size:12.5px;font-family:var(--mono)}
+  th,td{text-align:right;padding:5px 8px;border-bottom:1px solid var(--line)}
+  th:first-child,td:first-child{text-align:left}
+  th{color:var(--ink-3);font-weight:600;font-family:var(--sans);font-size:11.5px;
+    text-transform:uppercase;letter-spacing:.05em}
+  .hidden{display:none}
+  footer{margin-top:28px;padding-top:14px;border-top:1px solid var(--line);
+    font-size:11.5px;color:var(--ink-3);line-height:1.6}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:11.5px;color:var(--ink-2)}
+  .legend .li{display:flex;align-items:center;gap:5px}
+  .legend .sw{width:10px;height:3px;border-radius:2px}
+  .legend .sw.dot{width:8px;height:8px;border-radius:50%}
+</style>
+</head>
+<body>
+<div id="root"><div class="muted" style="padding:60px 0;text-align:center">Loading…</div></div>
+
+<script>
+const DASHBOARD = /*__DATA__*/null;
+
+// ------------------------------------------------------------------ helpers
+const $ = (t,c,h)=>{const e=document.createElement(t);if(c)e.className=c;if(h!=null)e.innerHTML=h;return e;};
+const fmt = (v,d=0)=> v==null||Number.isNaN(v) ? '–' : (+v).toLocaleString(undefined,{minimumFractionDigits:d,maximumFractionDigits:d});
+const parseDate = s => { const [y,m,d]=s.split('-').map(Number); return new Date(Date.UTC(y,m-1,d)); };
+const METRIC_COLOR = {launches:'--red',interference:'--orange',transits:'--aqua',vlcc:'--blue',backwardation:'--yellow'};
+const cssv = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+
+function deltaClass(delta, goodDir){
+  if(delta==null || delta===0) return {cls:'flat',pill:'flat',arrow:'→'};
+  const rising = delta>0;
+  const good = (goodDir==='up' && rising) || (goodDir==='down' && !rising);
+  return {cls: good?'up':'down', pill: good?'good':'bad', arrow: rising?'▲':'▼'};
+}
+
+// ------------------------------------------------------------------ charts
+// small sparkline for tiles
+function sparkline(series, colorVar){
+  const W=220,H=34,pad=3;
+  const xs=series.map((_,i)=>i), ys=series.map(p=>p.value);
+  const minY=Math.min(...ys), maxY=Math.max(...ys), rng=(maxY-minY)||1;
+  const X=i=> pad + i*(W-2*pad)/Math.max(1,xs.length-1);
+  const Y=v=> H-pad - (v-minY)/rng*(H-2*pad);
+  const pts=series.map((p,i)=>[X(i),Y(p.value)]);
+  const line=pts.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ');
+  const area=line+` L ${X(xs.length-1).toFixed(1)} ${H-pad} L ${X(0).toFixed(1)} ${H-pad} Z`;
+  const c=cssv(colorVar), last=pts[pts.length-1];
+  const id='g'+Math.random().toString(36).slice(2,8);
+  return `<svg class="spark" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">
+    <defs><linearGradient id="${id}" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="${c}" stop-opacity=".22"/><stop offset="1" stop-color="${c}" stop-opacity="0"/>
+    </linearGradient></defs>
+    <path d="${area}" fill="url(#${id})"/>
+    <path d="${line}" fill="none" stroke="${c}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+    <circle cx="${last[0].toFixed(1)}" cy="${last[1].toFixed(1)}" r="3" fill="${c}"/>
+  </svg>`;
+}
+
+// full line chart with axis, grid, event markers, hover crosshair
+function lineChart(host, series, opts){
+  const {colorVar='--blue', unit='', decimals=1, events=[], valueKey='close', dateKey='date'} = opts;
+  if(!series || series.length<2){ host.innerHTML='<div class="muted" style="padding:24px 0;text-align:center">no market data — run <code>python build.py</code> online</div>'; return; }
+  const W=560,H=190, L=42,R=12,T=12,B=22;
+  const data=series.map(p=>({t:parseDate(p[dateKey]).getTime(), v:p[valueKey]}));
+  const t0=data[0].t, t1=data[data.length-1].t, tr=(t1-t0)||1;
+  const vs=data.map(d=>d.v); let minV=Math.min(...vs),maxV=Math.max(...vs);
+  const padV=(maxV-minV)*0.12||1; minV-=padV; maxV+=padV; const vr=maxV-minV;
+  const X=t=> L+(t-t0)/tr*(W-L-R);
+  const Y=v=> T+(maxV-v)/vr*(H-T-B);
+  const c=cssv(colorVar);
+  const line=data.map((d,i)=>(i?'L':'M')+X(d.t).toFixed(1)+' '+Y(d.v).toFixed(1)).join(' ');
+  const area=line+` L ${X(t1).toFixed(1)} ${H-B} L ${X(t0).toFixed(1)} ${H-B} Z`;
+  const id='c'+Math.random().toString(36).slice(2,8);
+  // gridlines (4)
+  let grid='';
+  for(let i=0;i<=3;i++){ const v=minV+vr*i/3, y=Y(v);
+    grid+=`<line x1="${L}" x2="${W-R}" y1="${y.toFixed(1)}" y2="${y.toFixed(1)}" stroke="${cssv('--grid')}" stroke-width="1"/>`+
+          `<text x="${L-6}" y="${(y+3.5).toFixed(1)}" text-anchor="end" font-size="10" fill="${cssv('--ink-3')}" font-family="monospace">${fmt(v,decimals)}</text>`; }
+  // event markers
+  let ev='';
+  events.forEach(e=>{ const t=parseDate(e.date).getTime(); if(t<t0||t>t1) return;
+    const x=X(t), ec = e.type==='escalation'?cssv('--red'):e.type==='deescalation'?cssv('--aqua'):cssv('--neutral');
+    ev+=`<line x1="${x.toFixed(1)}" x2="${x.toFixed(1)}" y1="${T}" y2="${H-B}" stroke="${ec}" stroke-width="1" stroke-dasharray="3 3" opacity=".65"/>`+
+        `<circle cx="${x.toFixed(1)}" cy="${T}" r="3" fill="${ec}"/>`; });
+  // x labels: first & last
+  const dlab=t=>{const d=new Date(t);return (d.getUTCMonth()+1)+'/'+d.getUTCDate();};
+  host.innerHTML=`<svg viewBox="0 0 ${W} ${H}">
+    <defs><linearGradient id="${id}" x1="0" x2="0" y1="0" y2="1">
+      <stop offset="0" stop-color="${c}" stop-opacity=".20"/><stop offset="1" stop-color="${c}" stop-opacity="0"/></linearGradient></defs>
+    ${grid}${ev}
+    <path d="${area}" fill="url(#${id})"/>
+    <path d="${line}" fill="none" stroke="${c}" stroke-width="2" stroke-linejoin="round"/>
+    <text x="${L}" y="${H-6}" font-size="10" fill="${cssv('--ink-3')}" font-family="monospace">${dlab(t0)}</text>
+    <text x="${W-R}" y="${H-6}" text-anchor="end" font-size="10" fill="${cssv('--ink-3')}" font-family="monospace">${dlab(t1)}</text>
+    <g class="hoverg" opacity="0"><line class="hx" y1="${T}" y2="${H-B}" stroke="${cssv('--ink-3')}" stroke-width="1"/>
+      <circle class="hc" r="3.5" fill="${c}" stroke="${cssv('--panel')}" stroke-width="1.5"/></g>
+    <rect class="ovl" x="${L}" y="${T}" width="${W-L-R}" height="${H-T-B}" fill="transparent"/>
+  </svg><div class="tooltip"></div>`;
+  // hover
+  const svg=host.querySelector('svg'), ovl=host.querySelector('.ovl'), g=host.querySelector('.hoverg');
+  const hx=host.querySelector('.hx'), hc=host.querySelector('.hc'), tip=host.querySelector('.tooltip');
+  ovl.addEventListener('mousemove',ev=>{
+    const pt=svg.createSVGPoint(); pt.x=ev.clientX; pt.y=ev.clientY;
+    const loc=pt.matrixTransform(svg.getScreenCTM().inverse());
+    const t=t0+(loc.x-L)/(W-L-R)*tr;
+    let best=data[0],bd=Infinity; data.forEach(d=>{const dd=Math.abs(d.t-t);if(dd<bd){bd=dd;best=d;}});
+    const x=X(best.t), y=Y(best.v); g.setAttribute('opacity','1');
+    hx.setAttribute('x1',x);hx.setAttribute('x2',x);hc.setAttribute('cx',x);hc.setAttribute('cy',y);
+    const d=new Date(best.t);
+    tip.style.opacity='1';
+    tip.innerHTML=`<div class="tt-t">${d.getUTCFullYear()}-${String(d.getUTCMonth()+1).padStart(2,'0')}-${String(d.getUTCDate()).padStart(2,'0')}</div>${fmt(best.v,decimals)}${unit}`;
+    const bb=host.getBoundingClientRect(), sx=bb.width/W;
+    let lx=x*sx+10; if(lx>bb.width-90)lx=x*sx-90;
+    tip.style.left=lx+'px'; tip.style.top=(y*(bb.height/H)-4)+'px';
+  });
+  ovl.addEventListener('mouseleave',()=>{g.setAttribute('opacity','0');tip.style.opacity='0';});
+}
+
+// backwardation curve (small)
+function curveChart(host, curve){
+  if(!curve||curve.length<2){host.innerHTML='';return;}
+  const W=560,H=150,L=38,R=12,T=12,B=22;
+  const vs=curve.map(p=>p.price); let minV=Math.min(...vs),maxV=Math.max(...vs);
+  const pad=(maxV-minV)*0.25||1; minV-=pad;maxV+=pad; const vr=maxV-minV;
+  const X=i=>L+i*(W-L-R)/(curve.length-1), Y=v=>T+(maxV-v)/vr*(H-T-B);
+  const c=cssv('--yellow');
+  const line=curve.map((p,i)=>(i?'L':'M')+X(i).toFixed(1)+' '+Y(p.price).toFixed(1)).join(' ');
+  let grid='';for(let i=0;i<=2;i++){const v=minV+vr*i/2,y=Y(v);
+    grid+=`<line x1="${L}" x2="${W-R}" y1="${y}" y2="${y}" stroke="${cssv('--grid')}"/>`+
+    `<text x="${L-6}" y="${y+3.5}" text-anchor="end" font-size="10" fill="${cssv('--ink-3')}" font-family="monospace">${fmt(v,1)}</text>`;}
+  let pts='',lab='';curve.forEach((p,i)=>{pts+=`<circle cx="${X(i).toFixed(1)}" cy="${Y(p.price).toFixed(1)}" r="3.5" fill="${c}"/>`;
+    lab+=`<text x="${X(i).toFixed(1)}" y="${H-6}" text-anchor="middle" font-size="10" fill="${cssv('--ink-3')}" font-family="monospace">${p.month}</text>`;});
+  host.innerHTML=`<svg viewBox="0 0 ${W} ${H}">${grid}
+    <path d="${line}" fill="none" stroke="${c}" stroke-width="2"/>${pts}${lab}</svg>`;
+}
+
+// ------------------------------------------------------------------ render
+function render(D){
+  const root=document.getElementById('root'); root.innerHTML='';
+  const prov = D.provenance||'';
+  const isSeed = /seed|placeholder/i.test(prov);
+
+  // header
+  const header=$('header');
+  const gen = new Date(D.generated_at);
+  const src = D.market?.brent?.source || 'none';
+  const srcMap = {live:['live','market: live'], cached:['stale','market: cached'],
+                  sample:['seed','market: SAMPLE'], none:['stale','market: n/a']};
+  const [srcCls,srcTxt] = srcMap[src] || srcMap.none;
+  header.appendChild($('div','', `<h1>Iran–US War · Live Dashboard</h1>
+    <div class="sub">Five numbers, no narrative. The day <b>interference falls while transits climb</b>, that's capacity failure arriving — it shows up here before any announcement.</div>`));
+  header.appendChild($('div','meta',
+    `<span class="badge ${isSeed?'seed':'live'}">${isSeed?'SEED DATA':'sourced'}</span>
+     <span class="badge ${srcCls}">${srcTxt}</span><br>
+     built ${gen.toISOString().replace('T',' ').slice(0,16)} UTC`));
+  root.appendChild(header);
+
+  // arc
+  const arcSec=$('section'); arcSec.appendChild($('div','h','Arc of the war'));
+  const arc=$('div','arc'); const cur=D.arc.current_phase;
+  D.arc.phases.forEach((p,i)=>{
+    const active=i===cur, deesc=cur>=3;
+    const el=$('div','ph'+(active?' active'+(deesc?' deesc':''):'')+(i<cur?' done':''));
+    el.innerHTML=`<div class="n">${i+1}. ${p.name}</div><div class="b">${p.blurb}</div>`;
+    arc.appendChild(el);
+  });
+  arcSec.appendChild(arc); root.appendChild(arcSec);
+
+  // tiles (the five numbers)
+  const tSec=$('section'); tSec.appendChild($('div','h','The five numbers'));
+  const tiles=$('div','tiles');
+  const order=[['launches',D.metrics.launches],['interference',D.metrics.interference],
+    ['transits',D.metrics.transits],['vlcc',D.metrics.vlcc]];
+  order.forEach(([k,m])=>{
+    const dc=deltaClass(m.delta,m.direction_good);
+    const t=$('div','tile');
+    t.innerHTML=`<div class="lab"><span class="dot" style="background:${cssv(METRIC_COLOR[k])}"></span>${m.label}</div>
+      <div class="val">${fmt(m.latest)}<span class="u">${m.unit}</span></div>
+      <div class="delta ${dc.cls}"><span class="pill ${dc.pill}">${dc.arrow} ${m.delta==null?'–':fmt(Math.abs(m.delta))}</span><span class="muted">wk/wk</span></div>
+      ${sparkline(m.series,METRIC_COLOR[k])}
+      <div class="mean">${m.meaning}</div>`;
+    tiles.appendChild(t);
+  });
+  // backwardation tile (5th)
+  const bw=D.backwardation, bdc=deltaClass(bw.delta,'down');
+  const bt=$('div','tile');
+  bt.innerHTML=`<div class="lab"><span class="dot" style="background:${cssv('--yellow')}"></span>Brent backwardation</div>
+    <div class="val">${fmt(bw.latest,1)}<span class="u">$ M1–M3</span></div>
+    <div class="delta ${bdc.cls}"><span class="pill ${bdc.pill}">${bdc.arrow} ${bw.delta==null?'–':fmt(Math.abs(bw.delta),1)}</span><span class="muted">wk/wk</span></div>
+    ${sparkline((bw.history||[]).map(h=>({value:h.m1_m3})),'--yellow')}
+    <div class="mean">Front-month premium over deferred. Easing toward 0 = physical tightness relaxing before the headlines.</div>`;
+  tiles.appendChild(bt);
+  tSec.appendChild(tiles); root.appendChild(tSec);
+
+  // signal
+  const iDelta=D.metrics.interference.delta, tDelta=D.metrics.transits.delta;
+  const capacityFailure = (iDelta!=null&&iDelta<0)&&(tDelta!=null&&tDelta>0);
+  const sSec=$('section');
+  const sig=$('div','signal '+(capacityFailure?'calm':'fire'));
+  sig.innerHTML = capacityFailure
+    ? `<span class="k">SIGNAL ✓</span><div class="t"><b>Capacity failure arriving.</b> Interference is falling (${fmt(iDelta)}/wk) while transits climb (+${fmt(tDelta)}/day). This is the war ending in the data — ahead of any announcement.</div>`
+    : `<span class="k">WATCH</span><div class="t">The end-signal has <b>not</b> triggered: it fires when tanker-interference falls <i>and</i> Hormuz transits rise in the same week. Interference wk/wk ${fmt(iDelta)}, transits wk/wk ${fmt(tDelta)}.</div>`;
+  sSec.appendChild(sig); root.appendChild(sSec);
+
+  // market charts
+  const mSec=$('section');
+  mSec.appendChild($('div','h','Markets vs the war'));
+  const g2=$('div','grid2');
+  [['brent',D.market.brent,'--orange',1,'$'],['us10y',D.market.us10y,'--blue',2,'%']].forEach(([k,m,cv,dec,unit])=>{
+    const card=$('div','card');
+    card.innerHTML=`<div class="ct"><span class="cn">${m.label}</span>
+      <span class="cv">${m.latest==null?'–':fmt(m.latest,dec)+unit}</span></div>
+      <div class="chart"></div>`;
+    lineChart(card.querySelector('.chart'), m.series, {colorVar:cv,unit,decimals:dec,events:D.events});
+    g2.appendChild(card);
+  });
+  mSec.appendChild(g2);
+  const leg=$('div','legend'); leg.style.marginTop='10px';
+  leg.innerHTML=`<span class="li"><span class="sw dot" style="background:${cssv('--red')}"></span>escalation event</span>
+    <span class="li"><span class="sw dot" style="background:${cssv('--aqua')}"></span>de-escalation event</span>
+    <span class="muted">dashed lines mark war events on the price series</span>`;
+  mSec.appendChild(leg);
+  root.appendChild(mSec);
+
+  // backwardation curve + correlations
+  const bSec=$('section'); const bg=$('div','grid2');
+  const bcard=$('div','card');
+  bcard.innerHTML=`<div class="ct"><span class="cn">Brent forward curve</span>
+    <span class="cv">as of ${bw.as_of||'–'}</span></div><div class="chart cc"></div>
+    <div class="muted" style="font-size:11.5px;margin-top:6px">Downward slope = backwardation (tightness). Flattening = tightness relaxing.</div>`;
+  bcard.querySelector('.cc') && curveChart(bcard.querySelector('.cc'), bw.curve);
+  bg.appendChild(bcard);
+
+  // correlation card
+  const C=D.correlations;
+  const corrItems=[
+    ['Interference ↔ Brent', C.interference_vs_brent, '--orange'],
+    ['Transits ↔ Brent', C.transits_vs_brent, '--aqua'],
+    ['Launches ↔ Brent', C.launches_vs_brent, '--red'],
+    ['VLCC ↔ Brent', C.vlcc_vs_brent, '--blue'],
+    ['Brent ↔ US 10Y (Δ)', C.brent_vs_us10y, '--violet'],
+  ];
+  const ccard=$('div','card');
+  ccard.innerHTML=`<div class="ct"><span class="cn">Correlations</span><span class="cv">Pearson r</span></div>`;
+  const cg=$('div','corr');
+  corrItems.forEach(([lab,obj,cv])=>{
+    const r=obj?obj.r:null, n=obj?obj.n:0;
+    const c=$('div','c');
+    const pct=r==null?0:Math.abs(r)*50;
+    const col = r==null?cssv('--ink-3'):(r>=0?cssv('--good'):cssv('--bad'));
+    c.innerHTML=`<div class="cl">${lab}</div>
+      <div class="r" style="color:${col}">${r==null?'–':(r>=0?'+':'')+r.toFixed(2)}</div>
+      <div class="bar"><i style="background:${col};${r>=0?'left:50%':'right:50%'};width:${pct}%"></i>
+        <span style="position:absolute;left:50%;top:-1px;bottom:-1px;width:1px;background:var(--line)"></span></div>
+      <div class="n">n=${n} wk</div>`;
+    cg.appendChild(c);
+  });
+  ccard.appendChild(cg); bg.appendChild(ccard);
+  bSec.appendChild($('div','h','Backwardation & correlation')); bSec.appendChild(bg);
+  root.appendChild(bSec);
+
+  // timeline + table toggle
+  const eSec=$('section');
+  const head=$('div'); head.style.cssText='display:flex;justify-content:space-between;align-items:center';
+  head.appendChild($('div','h','War timeline'));
+  const btns=$('div','btns');
+  const bTl=$('button','btn','Timeline'), bTbl=$('button','btn','Data table');
+  btns.appendChild(bTl); btns.appendChild(bTbl); head.appendChild(btns);
+  eSec.appendChild(head);
+
+  const tl=$('div','tl');
+  [...D.events].reverse().forEach(e=>{
+    const el=$('div','e '+e.type);
+    el.innerHTML=`<div class="d">${e.date.slice(5)}</div><div class="m"></div>
+      <div><div class="tt">${e.title}</div><div class="nt">${e.note||''}</div></div>`;
+    tl.appendChild(el);
+  });
+  eSec.appendChild(tl);
+
+  // data table (accessibility / non-color path)
+  const tbl=$('div','hidden');
+  let rows='';
+  const periods=D.metrics.launches.series.map(p=>p.period);
+  periods.forEach((per,i)=>{
+    const g=k=>D.metrics[k].series[i]?.value;
+    rows+=`<tr><td>${per}</td><td>${fmt(g('launches'))}</td><td>${fmt(g('interference'))}</td>
+      <td>${fmt(g('transits'))}</td><td>${fmt(g('vlcc'))}</td>
+      <td>${bw.history[i]?fmt(bw.history[i].m1_m3,1):'–'}</td></tr>`;
+  });
+  tbl.innerHTML=`<div class="card"><table><thead><tr><th>Week</th><th>Launches</th>
+    <th>Interference</th><th>Transits/d</th><th>VLCC</th><th>Backw. M1-M3</th></tr></thead>
+    <tbody>${rows}</tbody></table></div>`;
+  eSec.appendChild(tbl);
+  bTl.onclick=()=>{tl.classList.remove('hidden');tbl.classList.add('hidden');};
+  bTbl.onclick=()=>{tl.classList.add('hidden');tbl.classList.remove('hidden');};
+  root.appendChild(eSec);
+
+  // footer
+  const f=$('footer');
+  f.innerHTML=`<b>Data model.</b> Market series (Brent, US 10Y) pull live from Stooq via <code>build.py</code>.
+    The four conflict metrics + Brent curve are OSINT-fed in <code>data/*.json</code> — no free real-time API exists for them; refresh each period from the sources listed in those files (UKMTO, Lloyd's List, Kpler/Vortexa, ACLED, ISW, ICE settlements).
+    ${isSeed?'<b style="color:var(--yellow)"> Current conflict numbers are illustrative seed data</b> — replace before relying on them.':''}
+    Correlations are Pearson r on weekly-aligned points; not causation. Built for situational awareness, not trading advice.`;
+  root.appendChild(f);
+}
+
+// ------------------------------------------------------------------ bootstrap (runs last, after all helpers are initialised)
+(async function(){
+  let data = DASHBOARD;
+  if(!data){
+    try{ const r = await fetch('data/dashboard.json',{cache:'no-store'}); data = await r.json(); }
+    catch(e){
+      document.getElementById('root').innerHTML =
+        '<div class="card" style="margin-top:40px"><b>No data yet.</b><br><br>'+
+        'Run the pipeline first:<br><code class="mono">pip install -r requirements.txt &amp;&amp; python build.py</code>'+
+        '<br><br>That writes <code class="mono">data/dashboard.json</code> and a standalone '+
+        '<code class="mono">dashboard.html</code>. Open that file, or serve this folder '+
+        '(<code class="mono">python serve.py</code>) and reload.</div>';
+      return;
+    }
+  }
+  try{ render(data); }
+  catch(e){ document.getElementById('root').innerHTML =
+    '<div class="card">Render error: '+String(e)+'</div>'; console.error(e); }
+})();
+</script>
+</body>
+</html>
