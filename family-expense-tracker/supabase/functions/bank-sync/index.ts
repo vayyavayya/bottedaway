@@ -169,6 +169,40 @@ Deno.serve(async (req) => {
     }
     report.push(r);
   }
+
+  // ---- FX normalization: convert any non-EUR amounts (all sources) to EUR ----
+  // ECB reference rates via frankfurter.app; original amount/currency preserved.
+  try {
+    const { data: fxRows } = await admin.from('transactions')
+      .select('id, txn_date, amount, currency')
+      .neq('currency', 'EUR').is('original_currency', null).limit(500);
+    if (fxRows?.length) {
+      const rates = new Map<string, number>();
+      let converted = 0;
+      for (const row of fxRows) {
+        const key = `${row.txn_date}:${row.currency}`;
+        if (!rates.has(key)) {
+          const resp = await fetch(`https://api.frankfurter.app/${row.txn_date}?from=${encodeURIComponent(row.currency)}&to=EUR`);
+          if (!resp.ok) { rates.set(key, NaN); continue; }
+          rates.set(key, (await resp.json())?.rates?.EUR ?? NaN);
+        }
+        const rate = rates.get(key)!;
+        if (!Number.isFinite(rate)) continue;
+        const eur = Math.round(Number(row.amount) * rate * 100) / 100;
+        const { error } = await admin.from('transactions').update({
+          original_amount: row.amount,
+          original_currency: row.currency,
+          amount: eur,
+          currency: 'EUR',
+        }).eq('id', row.id);
+        if (!error) converted++;
+      }
+      if (converted) report.push({ fx_converted_to_eur: converted });
+    }
+  } catch (e) {
+    report.push({ fx_error: String(e?.message ?? e) });
+  }
+
   return json({ ok: true, report });
 });
 
