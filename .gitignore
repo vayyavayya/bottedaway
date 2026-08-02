@@ -24,3 +24,8 @@ state/
 # Local testing
 .test/
 *.test.py
+
+# Daily Driver runtime state (per-user; keep the directory)
+data/daily_driver/*.json
+data/daily_driver/*.jsonl
+!data/daily_driver/.gitkeep
