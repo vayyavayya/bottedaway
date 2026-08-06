@@ -66,6 +66,12 @@ CREATE TABLE IF NOT EXISTS events (
 
 CREATE INDEX IF NOT EXISTS idx_events_doc ON events(doc_id, id DESC);
 
+CREATE TABLE IF NOT EXISTS state (
+    key        TEXT PRIMARY KEY,
+    value      TEXT NOT NULL DEFAULT '',
+    updated_at REAL NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS batches (
     id          INTEGER PRIMARY KEY AUTOINCREMENT,
     kind        TEXT NOT NULL DEFAULT 'import',
@@ -92,6 +98,7 @@ MIGRATIONS: list[tuple[str, str]] = [
     ("documents", "enhance_mode TEXT NOT NULL DEFAULT ''"),
     ("documents", "searchable INTEGER NOT NULL DEFAULT 0"),
     ("documents", "routed_by TEXT NOT NULL DEFAULT ''"),
+    ("documents", "person TEXT NOT NULL DEFAULT ''"),
 ]
 
 

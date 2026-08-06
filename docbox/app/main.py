@@ -13,7 +13,7 @@ from fastapi.responses import FileResponse, JSONResponse, RedirectResponse, Resp
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-from . import auth, db, enhance, extract, importer, ingest, llm, pdfbuild, routing, storage, worker
+from . import auth, db, enhance, extract, gdrive, importer, ingest, llm, pdfbuild, routing, storage, worker
 from .config import settings
 from .naming import safe_filename, safe_folder
 from .pipeline import enqueue
@@ -33,8 +33,10 @@ async def lifespan(_: FastAPI):
     settings.resolve_secret()
     db.init_db()
     worker.start()
+    gdrive.start()
     log.info("library at %s", settings.library_dir)
     yield
+    gdrive.stop()
     worker.stop()
 
 
@@ -120,11 +122,16 @@ def health() -> dict:
         "worker_running": worker.is_running(),
         "llm": {
             "enabled": settings.llm_enabled,
+            "provider": llm.provider(),
+            "local": llm.is_local(),
+            "has_key": bool(settings.llm_api_key) or llm.is_local(),
             "reachable": llm.available(),
-            "model": settings.llm_model,
+            "model": llm.model_name(),
             "vision_model": settings.vision_model or None,
             "installed": llm.installed_models(),
         },
+        "gdrive": gdrive.status(),
+        "household": settings.household,
         "extraction": extract.capabilities(),
         "scanning": {
             **enhance.available(),
@@ -535,6 +542,20 @@ def import_folder(body: ImportFolderBody, user: dict = Depends(user_dep)) -> dic
     except (ingest.IngestError, OSError) as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     return report.as_dict()
+
+
+@app.post("/api/gdrive/sync")
+def gdrive_sync(full: bool = False, user: dict = Depends(user_dep)) -> dict:
+    """Pull anything new out of the watched Google Drive folder right now."""
+    try:
+        return gdrive.sync(user["username"], full=full).as_dict()
+    except gdrive.DriveError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+@app.get("/api/gdrive")
+def gdrive_status(user: dict = Depends(user_dep)) -> dict:
+    return gdrive.status()
 
 
 @app.get("/api/batches")

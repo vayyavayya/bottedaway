@@ -10,6 +10,9 @@
                                 bulk import, e.g. a CamScanner export
     organize [--apply] [--folder F]
                                 apply the filing rules to what is already here
+    gdrive-check                verify Drive access and list what it can see
+    gdrive-sync [--full] [--limit N]
+                                pull new files from the watched Drive folder
     status                      queue + capability overview
 """
 
@@ -20,7 +23,7 @@ import sys
 import time
 from pathlib import Path
 
-from . import auth, db, enhance, extract, importer, llm, pdfbuild, routing, storage, worker
+from . import auth, db, enhance, extract, gdrive, importer, llm, pdfbuild, routing, storage, worker
 from .config import settings
 from .pipeline import enqueue, process_document
 
@@ -237,6 +240,53 @@ def cmd_organize(args: list[str]) -> None:
         print("re-run with --apply to do it")
 
 
+def cmd_gdrive_check(_: list[str]) -> None:
+    """Prove the credentials work before trusting the watcher with them."""
+    if not settings.gdrive_credentials:
+        sys.exit("DOCBOX_GDRIVE_CREDENTIALS is not set (path to the JSON key)")
+    try:
+        gdrive.access_token(force=True)
+        print("auth:      ok")
+    except gdrive.DriveError as exc:
+        sys.exit(f"auth failed: {exc}")
+
+    folder_id = settings.gdrive_folder_id
+    if folder_id:
+        print(f"folder id: {folder_id}")
+    else:
+        folder_id = gdrive.find_folder(settings.gdrive_folder_name) or ""
+        if not folder_id:
+            sys.exit(
+                f"no folder named {settings.gdrive_folder_name!r} is visible.\n"
+                "Share it with the service account's email address, or set "
+                "DOCBOX_GDRIVE_FOLDER_ID."
+            )
+        print(f"folder:    {settings.gdrive_folder_name} -> {folder_id}")
+
+    files = gdrive.list_children(folder_id)
+    print(f"visible:   {len(files)} file(s)")
+    for item in files[:10]:
+        where = item.get("_path") or "/"
+        print(f"  {where:<24} {item['name']}")
+    if len(files) > 10:
+        print(f"  ... and {len(files) - 10} more")
+
+
+def cmd_gdrive_sync(args: list[str]) -> None:
+    full = _flag(args, "--full")
+    limit = int(_value(args, "--limit", "0") or 0)
+    try:
+        report = gdrive.sync(full=full, limit=limit)
+    except gdrive.DriveError as exc:
+        sys.exit(str(exc))
+    print(f"scanned {report.scanned}, imported {report.imported}, "
+          f"duplicates {report.duplicates}, skipped {report.skipped}, failed {report.failed}")
+    for line in report.errors[:10]:
+        print(f"  ! {line}")
+    if not worker.is_running():
+        print("start the server to let the model read and file them")
+
+
 def cmd_status(_: list[str]) -> None:
     row = db.query_one(
         "SELECT COUNT(*) AS total, SUM(status='pending') AS pending, "
@@ -246,7 +296,17 @@ def cmd_status(_: list[str]) -> None:
     print(f"database:  {settings.db_path}")
     print(f"documents: {row['total'] or 0} "
           f"(pending {row['pending'] or 0}, failed {row['failed'] or 0}, review {row['review'] or 0})")
-    print(f"ollama:    {settings.ollama_url} reachable={llm.available()} model={settings.llm_model}")
+    where = "on this machine" if llm.is_local() else "HOSTED — document text leaves this machine"
+    print(f"model:     {llm.provider()} {llm.model_name()} ({where})")
+    print(f"           {llm.base_url()} reachable={llm.available()} "
+          f"key={'set' if settings.llm_api_key else 'none'}")
+    if settings.household:
+        print(f"household: {', '.join(settings.household)}")
+    drive = gdrive.status()
+    if drive["configured"]:
+        last = time.strftime("%Y-%m-%d %H:%M", time.localtime(drive["last_sync"])) if drive["last_sync"] else "never"
+        print(f"gdrive:    {drive['folder']} -> {drive['into']} "
+              f"(watcher {'on' if drive['watcher_running'] else 'off'}, last sync {last})")
     installed = llm.installed_models()
     if installed:
         print(f"models:    {', '.join(installed)}")
@@ -268,6 +328,8 @@ COMMANDS = {
     "reprocess": cmd_reprocess,
     "import": cmd_import,
     "organize": cmd_organize,
+    "gdrive-check": cmd_gdrive_check,
+    "gdrive-sync": cmd_gdrive_sync,
     "status": cmd_status,
 }
 

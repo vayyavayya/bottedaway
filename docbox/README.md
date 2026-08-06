@@ -1,17 +1,20 @@
 # Docbox
 
-A shared document library for two people, built to replace a CamScanner
+A shared document library for a family, built to replace a CamScanner
 subscription: scan with the phone, get a clean high-quality searchable PDF, and
-have a local LLM name it `YYYYMMDD-what-it-is.pdf` and file it in the right
-folder.
+have a model read it, name it `YYYYMMDD-what-it-is.pdf` and file it in the right
+folder. The model can be hosted (Nous Research, OpenAI) or local (Ollama) —
+one setting.
 
-Everything runs on your own machine. No cloud, no subscription, no third party
-holding your bank statements.
+**Start here if you are setting it up:** [`HANDOFF.md`](HANDOFF.md).
 
 - **Scanner** with edge detection, dewarping, shadow removal and one-tap
   enhancement — our answer to CamScanner's Omnifix. See [`SCANNING.md`](SCANNING.md).
-- **Bulk import** of your existing CamScanner library, OCR'd and filed
-  automatically. See [`MIGRATING.md`](MIGRATING.md).
+- **Google Drive sync** — CamScanner auto-exports there, so old and new scans
+  flow in on their own. See [`GDRIVE.md`](GDRIVE.md).
+- **Bulk import** from a zip or folder too. See [`MIGRATING.md`](MIGRATING.md).
+- **Filing by person** — a medical letter about one of the children lands in
+  their folder, a gas bill does not.
 - **Home-screen app** for iOS Safari: folders, search inside document text,
   rename, move.
 - **Share-sheet ingest** through a small iOS Shortcut. See [`SHORTCUT.md`](SHORTCUT.md).
@@ -25,9 +28,10 @@ holding your bank statements.
 
 ```
  iOS share sheet ─┐
- camera scan   ───┼──▶  enhance  ──▶  Inbox/  ──▶  worker  ──▶  extract text ──▶ local LLM
- bulk import   ───┤     dewarp        (raw file)              pdf text │ OCR    date/title/type
- web upload    ───┘     de-shadow                                      │             │
+ camera scan   ───┼──▶  enhance  ──▶  Inbox/  ──▶  worker  ──▶  extract text ──▶    model
+ google drive  ───┤     dewarp        (raw file)              pdf text │ OCR    date/title/type
+ zip / folder  ───┤     de-shadow                                      │        /person
+ web upload    ───┘                                                    │             │
                                                                  no text found       ▼
                                                                        ▼        rename + file
                                                               vision model      Finance/Invoices/2024
@@ -47,15 +51,29 @@ the inbox rather than being filed somewhere you will never find it.
 
 ## Setup
 
-### 1. Install the model
+### 1. Choose the model that reads your documents
+
+**Hosted (default).** Better answers on messy OCR, nothing to install:
 
 ```bash
-brew install ollama          # or: https://ollama.com/download
-ollama serve &
-ollama pull qwen2.5:3b       # ~2 GB, fine on any recent Mac or a mini PC
+export DOCBOX_LLM_PROVIDER=nous          # or openai, openrouter
+export DOCBOX_LLM_API_KEY=sk-...
 ```
 
-Alternatives: `llama3.2:3b` (faster), `qwen2.5:7b` (better on messy OCR, ~5 GB).
+`make status` lists the models your key can actually reach; set
+`DOCBOX_LLM_MODEL` to one of them, or leave it empty for the provider default.
+
+> With a hosted provider the extracted text of every document — bank statements,
+> medical letters, payslips — is sent to that provider's API. That is the trade
+> for the better naming.
+
+**Local.** Nothing leaves the machine:
+
+```bash
+export DOCBOX_LLM_PROVIDER=ollama
+brew install ollama && ollama serve &
+ollama pull qwen2.5:3b       # ~2 GB, fine on any recent Mac or a mini PC
+```
 
 ### 2. Install OCR and image tooling
 
@@ -78,10 +96,11 @@ make adduser NAME=her
 make run                  # http://localhost:8484
 ```
 
-Or with Docker, which bundles Ollama, OCR, poppler and OpenCV:
+Or with Docker, which bundles OCR, poppler, OpenCV and an optional Ollama:
 
 ```bash
 docker compose up -d
+# only if you chose the local provider:
 docker compose exec ollama ollama pull qwen2.5:3b
 ```
 
@@ -110,7 +129,8 @@ in the share sheet.
 | **Auto-filing** | Confident documents move to `Finance/Invoices/2024`, `Medical/2023`, `Insurance`… by the rules in `<data>/routing.json`, which you can edit. |
 | **Check name** badge | The model was unsure. Tap, fix the name, save — your name is then pinned and survives every future AI pass. |
 | **Search** | Matches names, sender, and the extracted text, so you can find a document by a word inside it. |
-| **Import** | Settings → upload a zipped export, or `python -m app.cli import <folder>`. |
+| **Import** | Google Drive syncs on its own; or Settings → upload a zipped export, or `python -m app.cli import <folder>`. |
+| **Filing by person** | Set `DOCBOX_HOUSEHOLD` and a medical letter about one child lands in `Family/<Name>/Medical`. |
 | **Preview filing / File everything** | Dry-run the filing rules over the whole library, then apply them. |
 | **Delete** | Moves to `.trash/` inside the library. Nothing is destroyed. |
 
@@ -145,17 +165,18 @@ app/
   pipeline.py  the job: extract -> analyse -> rename -> file
   worker.py    background thread; queue state in SQLite, so restarts resume
   extract.py   pdf text, OCR, docx, images — every dependency optional
-  llm.py       Ollama client, prompt, tolerant JSON parsing, heuristic fallback
+  gdrive.py    the Google Drive watcher: incremental, read-only, deduped
+  llm.py       Nous/OpenAI/Ollama clients, prompt, JSON parsing, fallbacks
   naming.py    slugs, date parsing, YYYYMMDD-title.ext, collision handling
   storage.py   nested folders, path safety, moves, soft delete
   auth.py      scrypt passwords, HMAC sessions, per-user API tokens
-  cli.py       adduser / import / organize / reprocess / status
+  cli.py       adduser / import / gdrive-sync / organize / reprocess / status
 web/           the PWA — plain HTML, CSS and JS, no build step
-tests/         84 tests
+tests/         101 tests
 ```
 
 ```bash
-make test     # no Ollama, OCR or camera needed; all stubbed or synthesised
+make test     # no API key, OCR, camera or network needed — all stubbed
 make status   # what this machine can actually do right now
 ```
 
@@ -200,7 +221,8 @@ known exactly and the pipeline is measured against them rather than eyeballed.
 | `GET` | `/api/documents/{id}/file` | inline preview, `?download=true` to save |
 | `PATCH` | `/api/documents/{id}` | rename, move, edit fields, pin the name |
 | `POST` | `/api/documents/{id}/reprocess` | run the model again |
-| `GET` | `/api/health` | model reachable? OCR? OpenCV? worker alive? |
+| `POST` | `/api/gdrive/sync` | pull new files from Drive now (`?full=true` to re-scan) |
+| `GET` | `/api/health` | model reachable? OCR? OpenCV? Drive? worker alive? |
 
 Auth is a session cookie in the browser, or `Authorization: Bearer <token>` for
 Shortcuts.

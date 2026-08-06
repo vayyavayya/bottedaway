@@ -147,6 +147,7 @@ def process_document(doc_id: int) -> dict:
         "doc_date": analysis.date,
         "doc_type": analysis.doc_type,
         "correspondent": analysis.correspondent,
+        "person": analysis.person,
         "summary": analysis.summary,
         "confidence": analysis.confidence,
         "text_excerpt": extraction.text[:4000],

@@ -7,13 +7,19 @@ services:
       # The library is plain files — swap this for your synced folder if you like.
       - ./data:/data
     environment:
-      DOCBOX_OLLAMA_URL: http://ollama:11434
-      DOCBOX_LLM_MODEL: ${DOCBOX_LLM_MODEL:-qwen2.5:3b}
+      # Hosted by default; set DOCBOX_LLM_PROVIDER=ollama in .env to stay local.
+      DOCBOX_LLM_PROVIDER: ${DOCBOX_LLM_PROVIDER:-nous}
+      DOCBOX_LLM_API_KEY: ${DOCBOX_LLM_API_KEY:-}
+      DOCBOX_LLM_MODEL: ${DOCBOX_LLM_MODEL:-}
+      DOCBOX_LLM_BASE_URL: ${DOCBOX_LLM_BASE_URL:-}
+      DOCBOX_HOUSEHOLD: ${DOCBOX_HOUSEHOLD:-}
       DOCBOX_OCR_LANGS: ${DOCBOX_OCR_LANGS:-eng+deu}
-    depends_on:
-      - ollama
+      DOCBOX_GDRIVE_ENABLED: ${DOCBOX_GDRIVE_ENABLED:-false}
+      DOCBOX_GDRIVE_CREDENTIALS: ${DOCBOX_GDRIVE_CREDENTIALS:-}
+      DOCBOX_GDRIVE_FOLDER_NAME: ${DOCBOX_GDRIVE_FOLDER_NAME:-CamScanner}
     restart: unless-stopped
 
+  # Only needed for DOCBOX_LLM_PROVIDER=ollama. Harmless to leave running.
   ollama:
     image: ollama/ollama:latest
     volumes:

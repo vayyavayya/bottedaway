@@ -17,5 +17,9 @@ pillow>=10.0
 # iPhone HEIC photos. Needs libheif on the host; optional but recommended.
 pillow-heif>=0.15
 
+# Google Drive import. Only needed with DOCBOX_GDRIVE_ENABLED=true and a
+# service-account key; an OAuth refresh token needs no extra package.
+google-auth>=2.28
+
 # Dev
 pytest>=8.0

@@ -623,10 +623,20 @@ el('btn-settings').onclick = async () => {
     <div style="margin-top:14px">
       <div class="kv"><span>Library</span><span>${esc(health.library || '')}</span></div>
       <div class="kv"><span>Worker</span><span>${health.worker_running ? 'running' : 'stopped'}</span></div>
-      <div class="kv"><span>Model</span><span>${esc(llm.model || '')} ${llm.reachable ? '· ready' : '· offline'}</span></div>
+      <div class="kv"><span>Model</span><span>${esc(llm.provider || '')} · ${esc(llm.model || '')} ${llm.reachable ? '· ready' : (llm.has_key ? '· unreachable' : '· no API key')}</span></div>
+      <div class="kv"><span>Where</span><span>${llm.local ? 'on your machine' : 'hosted — document text is sent to the provider'}</span></div>
       <div class="kv"><span>OCR</span><span>${health.extraction && health.extraction.tesseract ? 'tesseract ready' : 'not installed'}</span></div>
       <div class="kv"><span>Scanning</span><span>${(health.scanning || {}).opencv ? 'full pipeline' : 'basic (no OpenCV)'} · ${(health.scanning || {}).tesseract_pdf ? 'searchable PDFs' : 'image PDFs'}</span></div>
       <div class="kv"><span>Auto-filing</span><span>${health.auto_file ? 'on' : 'off'}</span></div>
+    </div>
+
+    <p class="muted" style="margin-top:18px">Google Drive</p>
+    <div class="kv"><span>Folder</span><span>${esc(String((health.gdrive || {}).folder || '—'))}</span></div>
+    <div class="kv"><span>Watcher</span><span>${(health.gdrive || {}).watcher_running ? 'checking every ' + (health.gdrive || {}).poll_minutes + ' min' : 'off'}</span></div>
+    <div class="kv"><span>Last sync</span><span>${(health.gdrive || {}).last_sync ? prettyDate((health.gdrive || {}).last_sync) : 'never'}</span></div>
+    <div class="rowbtns">
+      <button class="ghost" id="drive-sync">Check Drive now</button>
+      <button class="ghost" id="drive-full">Re-scan everything</button>
     </div>
 
     <p class="muted" style="margin-top:18px">Bring in an old library</p>
@@ -669,6 +679,24 @@ el('btn-settings').onclick = async () => {
     }
   };
   const status = (text) => { el('import-status').textContent = text; };
+
+  const driveSync = async (full) => {
+    busy(true);
+    status(full ? 'Re-reading the whole Drive folder…' : 'Checking Google Drive…');
+    try {
+      const result = await postJson(`/api/gdrive/sync?full=${full}`, {});
+      status(`Drive: looked at ${result.scanned}, imported ${result.imported}, `
+             + `${result.duplicates} already here, ${result.skipped} skipped, `
+             + `${result.failed} failed.`);
+      await refreshAll();
+    } catch (error) {
+      status(`Drive sync failed: ${error.message}`);
+    } finally {
+      busy(false);
+    }
+  };
+  el('drive-sync').onclick = () => driveSync(false);
+  el('drive-full').onclick = () => driveSync(true);
 
   el('import-zip').onchange = async (event) => {
     const file = event.target.files[0];

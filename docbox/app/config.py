@@ -43,12 +43,31 @@ class Settings:
     inbox_name: str = field(default_factory=lambda: _env("DOCBOX_INBOX_NAME", "Inbox"))
     max_upload_mb: int = field(default_factory=lambda: _env_int("DOCBOX_MAX_UPLOAD_MB", 64))
 
-    # Local LLM (Ollama)
-    ollama_url: str = field(default_factory=lambda: _env("DOCBOX_OLLAMA_URL", "http://127.0.0.1:11434").rstrip("/"))
-    llm_model: str = field(default_factory=lambda: _env("DOCBOX_LLM_MODEL", "qwen2.5:3b"))
+    # The model that reads documents.
+    # provider: nous | openai | openrouter | ollama   (see app/llm.py PROVIDERS)
+    llm_provider: str = field(default_factory=lambda: _env("DOCBOX_LLM_PROVIDER", "nous").lower())
+    llm_api_key: str = field(default_factory=lambda: (
+        _env("DOCBOX_LLM_API_KEY", "") or _env("NOUS_API_KEY", "") or _env("OPENAI_API_KEY", "")
+    ))
+    llm_base_url: str = field(default_factory=lambda: _env("DOCBOX_LLM_BASE_URL", "").rstrip("/"))
+    llm_model: str = field(default_factory=lambda: _env("DOCBOX_LLM_MODEL", ""))
     vision_model: str = field(default_factory=lambda: _env("DOCBOX_VISION_MODEL", ""))
     llm_timeout: int = field(default_factory=lambda: _env_int("DOCBOX_LLM_TIMEOUT", 180))
     llm_enabled: bool = field(default_factory=lambda: _env_bool("DOCBOX_LLM_ENABLED", True))
+
+    # Names the model is told to look for, so a document about one person can be
+    # filed under them. Comma-separated.
+    household: list[str] = field(default_factory=lambda: [
+        name.strip() for name in _env("DOCBOX_HOUSEHOLD", "").split(",") if name.strip()
+    ])
+
+    # Google Drive import (CamScanner auto-exports there)
+    gdrive_enabled: bool = field(default_factory=lambda: _env_bool("DOCBOX_GDRIVE_ENABLED", False))
+    gdrive_credentials: str = field(default_factory=lambda: _env("DOCBOX_GDRIVE_CREDENTIALS", ""))
+    gdrive_folder_id: str = field(default_factory=lambda: _env("DOCBOX_GDRIVE_FOLDER_ID", ""))
+    gdrive_folder_name: str = field(default_factory=lambda: _env("DOCBOX_GDRIVE_FOLDER_NAME", "CamScanner"))
+    gdrive_into: str = field(default_factory=lambda: _env("DOCBOX_GDRIVE_INTO", ""))
+    gdrive_poll_minutes: int = field(default_factory=lambda: _env_int("DOCBOX_GDRIVE_POLL_MINUTES", 15))
 
     # Scanning: quality of the PDFs a camera capture turns into
     scan_dpi: int = field(default_factory=lambda: _env_int("DOCBOX_SCAN_DPI", 300))
