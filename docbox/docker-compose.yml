@@ -1,0 +1,28 @@
+services:
+  docbox:
+    build: .
+    ports:
+      - "8484:8484"
+    volumes:
+      # The library is plain files — swap this for your synced folder if you like.
+      - ./data:/data
+    environment:
+      DOCBOX_OLLAMA_URL: http://ollama:11434
+      DOCBOX_LLM_MODEL: ${DOCBOX_LLM_MODEL:-qwen2.5:3b}
+      DOCBOX_OCR_LANGS: ${DOCBOX_OCR_LANGS:-eng+deu}
+    depends_on:
+      - ollama
+    restart: unless-stopped
+
+  ollama:
+    image: ollama/ollama:latest
+    volumes:
+      - ollama:/root/.ollama
+    ports:
+      - "11434:11434"
+    restart: unless-stopped
+    # After the first `docker compose up -d`, pull the model once:
+    #   docker compose exec ollama ollama pull qwen2.5:3b
+
+volumes:
+  ollama:

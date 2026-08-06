@@ -1,0 +1,16 @@
+# Core — required
+fastapi>=0.110
+uvicorn[standard]>=0.27
+python-multipart>=0.0.9
+httpx>=0.26
+pydantic>=2.5
+
+# Text extraction — recommended (PDF text, image handling, multi-page scan -> PDF)
+pypdf>=4.0
+pillow>=10.0
+
+# Optional: iPhone HEIC photos without conversion. Needs libheif on the host.
+# pillow-heif>=0.15
+
+# Dev
+pytest>=8.0

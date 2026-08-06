@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Docbox</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<meta name="theme-color" content="#111417" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f7f7f8" media="(prefers-color-scheme: light)">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Docbox">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/static/icons/apple-touch-icon.png">
+<link rel="icon" href="/static/icons/icon-192.png">
+<link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+
+<!-- ------------------------------------------------------------- login -->
+<section id="auth" class="screen hidden">
+  <div class="auth-card">
+    <h1 class="logo">Docbox</h1>
+    <p class="muted" id="auth-sub">Shared document library</p>
+    <form id="auth-form">
+      <input id="auth-user" type="text" placeholder="name" autocapitalize="none"
+             autocorrect="off" autocomplete="username" required>
+      <input id="auth-pass" type="password" placeholder="password"
+             autocomplete="current-password" required>
+      <button class="primary" type="submit" id="auth-submit">Sign in</button>
+    </form>
+    <p class="error" id="auth-error"></p>
+  </div>
+</section>
+
+<!-- -------------------------------------------------------------- main -->
+<section id="app" class="screen hidden">
+  <header class="topbar">
+    <div class="topbar-row">
+      <h1 class="logo small">Docbox</h1>
+      <div class="grow"></div>
+      <button class="icon-btn" id="btn-refresh" title="Refresh" aria-label="Refresh">&#8635;</button>
+      <button class="icon-btn" id="btn-settings" title="Settings" aria-label="Settings">&#9881;</button>
+    </div>
+    <input id="search" type="search" placeholder="Search name, sender or text" autocapitalize="none">
+    <nav class="folders" id="folders"></nav>
+    <div class="filters">
+      <button class="chip" data-filter="all">Everything</button>
+      <button class="chip" data-filter="review">Needs review</button>
+      <button class="chip" data-filter="pending">Working</button>
+    </div>
+  </header>
+
+  <main id="list" class="list"></main>
+
+  <footer class="actionbar">
+    <label class="action">
+      <input type="file" id="input-scan" accept="image/*" capture="environment" multiple hidden>
+      <span class="action-icon">&#128247;</span><span>Scan</span>
+    </label>
+    <label class="action">
+      <input type="file" id="input-files" multiple hidden>
+      <span class="action-icon">&#8679;</span><span>Upload</span>
+    </label>
+    <button class="action" id="btn-newfolder">
+      <span class="action-icon">&#128193;</span><span>Folder</span>
+    </button>
+  </footer>
+</section>
+
+<!-- ------------------------------------------------------------ detail -->
+<div id="sheet" class="sheet hidden">
+  <div class="sheet-backdrop" data-close></div>
+  <div class="sheet-body">
+    <div class="sheet-handle" data-close></div>
+    <button class="sheet-close" data-close aria-label="Close">&#10005;</button>
+    <div id="sheet-content"></div>
+  </div>
+</div>
+
+<div id="toast" class="toast hidden"></div>
+<div id="progress" class="progress hidden"><div class="bar"></div></div>
+
+<script src="/static/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,176 @@
+"""Admin CLI: `python -m app.cli <command>`.
+
+    adduser <name> [password]   create an account, print its API token
+    passwd <name> [password]    change a password
+    token <name>                rotate and print the iOS Shortcut token
+    users                       list accounts
+    scan-library                adopt files that were copied into the library by hand
+    reprocess [--all|--failed|--review|<id>...]
+    status                      queue + capability overview
+"""
+
+from __future__ import annotations
+
+import getpass
+import sys
+import time
+
+from . import auth, db, extract, llm, storage, worker
+from .config import settings
+from .pipeline import enqueue, process_document
+
+
+def _prompt_password(given: str | None) -> str:
+    if given:
+        return given
+    first = getpass.getpass("password: ")
+    if first != getpass.getpass("repeat: "):
+        sys.exit("passwords do not match")
+    return first
+
+
+def cmd_adduser(args: list[str]) -> None:
+    if not args:
+        sys.exit("usage: adduser <name> [password]")
+    password = _prompt_password(args[1] if len(args) > 1 else None)
+    try:
+        user = auth.create_user(args[0], password)
+    except ValueError as exc:
+        sys.exit(str(exc))
+    print(f"created {user['username']} (id {user['id']})")
+    print(f"API token (for the iOS Shortcut): {user['api_token']}")
+
+
+def cmd_passwd(args: list[str]) -> None:
+    if not args:
+        sys.exit("usage: passwd <name> [password]")
+    password = _prompt_password(args[1] if len(args) > 1 else None)
+    try:
+        auth.set_password(args[0], password)
+    except ValueError as exc:
+        sys.exit(str(exc))
+    print("password updated")
+
+
+def cmd_token(args: list[str]) -> None:
+    if not args:
+        sys.exit("usage: token <name>")
+    row = db.query_one("SELECT id FROM users WHERE username = ?", (args[0].strip().lower(),))
+    if not row:
+        sys.exit("no such user")
+    print(auth.rotate_token(int(row["id"])))
+
+
+def cmd_users(_: list[str]) -> None:
+    rows = db.query("SELECT id, username, created_at FROM users ORDER BY id")
+    if not rows:
+        print("no users yet — run: python -m app.cli adduser <name>")
+        return
+    for row in rows:
+        created = time.strftime("%Y-%m-%d", time.localtime(row["created_at"]))
+        print(f"{row['id']:>3}  {row['username']:<20} created {created}")
+
+
+def cmd_scan_library(_: list[str]) -> None:
+    """Pick up files dropped into the library folder outside the app."""
+    known = {
+        (r["folder"], r["filename"])
+        for r in db.query("SELECT folder, filename FROM documents")
+    }
+    added = 0
+    for folder in storage.list_folders():
+        directory = storage.folder_path(folder)
+        if not directory.exists():
+            continue
+        for path in sorted(directory.iterdir()):
+            if not path.is_file() or path.name.startswith("."):
+                continue
+            if (folder, path.name) in known:
+                continue
+            now = time.time()
+            doc_id = db.insert("documents", {
+                "folder": folder,
+                "filename": path.name,
+                "original_name": path.name,
+                "ext": path.suffix.lower(),
+                "mime": storage.guess_mime(path.name),
+                "size": path.stat().st_size,
+                "sha256": storage.sha256_file(path),
+                "status": "pending",
+                "next_attempt": now,
+                "uploaded_by": "filesystem",
+                "created_at": now,
+                "updated_at": now,
+            })
+            db.log_event(doc_id, "adopted", f"{folder}/{path.name}", "cli")
+            added += 1
+    print(f"adopted {added} file(s)")
+
+
+def cmd_reprocess(args: list[str]) -> None:
+    if args and args[0] == "--all":
+        rows = db.query("SELECT id FROM documents")
+    elif args and args[0] == "--failed":
+        rows = db.query("SELECT id FROM documents WHERE status = 'failed'")
+    elif args and args[0] == "--review":
+        rows = db.query("SELECT id FROM documents WHERE needs_review = 1")
+    elif args:
+        rows = [{"id": int(a)} for a in args if a.isdigit()]
+    else:
+        sys.exit("usage: reprocess [--all|--failed|--review|<id>...]")
+
+    ids = [int(r["id"]) for r in rows]
+    for doc_id in ids:
+        db.update("documents", doc_id, {"attempts": 0, "pinned_name": 0})
+        enqueue(doc_id)
+    print(f"queued {len(ids)} document(s)")
+
+    if not worker.is_running():
+        print("worker not running — processing inline")
+        for doc_id in ids:
+            print(f"  {doc_id}: {process_document(doc_id)}")
+
+
+def cmd_status(_: list[str]) -> None:
+    row = db.query_one(
+        "SELECT COUNT(*) AS total, SUM(status='pending') AS pending, "
+        "SUM(status='failed') AS failed, SUM(needs_review=1) AS review FROM documents"
+    )
+    print(f"library:   {settings.library_dir}")
+    print(f"database:  {settings.db_path}")
+    print(f"documents: {row['total'] or 0} "
+          f"(pending {row['pending'] or 0}, failed {row['failed'] or 0}, review {row['review'] or 0})")
+    print(f"ollama:    {settings.ollama_url} reachable={llm.available()} model={settings.llm_model}")
+    installed = llm.installed_models()
+    if installed:
+        print(f"models:    {', '.join(installed)}")
+    print(f"extract:   {extract.capabilities()}")
+
+
+COMMANDS = {
+    "adduser": cmd_adduser,
+    "passwd": cmd_passwd,
+    "token": cmd_token,
+    "users": cmd_users,
+    "scan-library": cmd_scan_library,
+    "reprocess": cmd_reprocess,
+    "status": cmd_status,
+}
+
+
+def main(argv: list[str] | None = None) -> None:
+    argv = list(argv if argv is not None else sys.argv[1:])
+    if not argv or argv[0] in {"-h", "--help", "help"}:
+        print(__doc__)
+        return
+    command = COMMANDS.get(argv[0])
+    if not command:
+        sys.exit(f"unknown command {argv[0]!r}\n{__doc__}")
+    settings.ensure_dirs()
+    settings.resolve_secret()
+    db.init_db()
+    command(argv[1:])
+
+
+if __name__ == "__main__":
+    main()
