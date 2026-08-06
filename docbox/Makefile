@@ -4,7 +4,7 @@ BIN := $(VENV)/bin
 PORT ?= 8484
 HOST ?= 0.0.0.0
 
-.PHONY: help venv install run dev test adduser users status models scan-library reprocess clean
+.PHONY: help venv install run dev test adduser users status models scan-library import organize reprocess clean
 
 help:
 	@echo "make install       create the venv and install dependencies"
@@ -15,6 +15,8 @@ help:
 	@echo "make status        queue, model and OCR status"
 	@echo "make models        pull the small local models with Ollama"
 	@echo "make scan-library  adopt files copied into the library by hand"
+	@echo "make import        bulk import an export: make import FROM=~/CamScanner"
+	@echo "make organize      apply the filing rules (ARGS=--apply to commit)"
 	@echo "make reprocess     re-run the AI naming over everything (ARGS=--failed)"
 
 $(BIN)/python:
@@ -46,6 +48,12 @@ status: venv
 
 scan-library: venv
 	$(BIN)/python -m app.cli scan-library
+
+import: venv
+	$(BIN)/python -m app.cli import $(FROM) $(ARGS)
+
+organize: venv
+	$(BIN)/python -m app.cli organize $(ARGS)
 
 reprocess: venv
 	$(BIN)/python -m app.cli reprocess $(ARGS)

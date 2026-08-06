@@ -72,9 +72,23 @@ def test_safe_filename_blocks_traversal():
 def test_safe_folder():
     assert safe_folder("Inbox") == "Inbox"
     assert safe_folder("Bills 2024") == "Bills 2024"
-    assert safe_folder("../secrets") == "Inbox"  # traversal collapses to the default
     assert safe_folder("") == "Inbox"
-    assert safe_folder("a/b/c") == "a"  # single level only
+
+
+def test_safe_folder_nests():
+    assert safe_folder("Finance/Invoices/2024") == "Finance/Invoices/2024"
+    assert safe_folder("/Finance/Invoices/") == "Finance/Invoices"
+    assert safe_folder("Finance\\Invoices") == "Finance/Invoices"
+    assert safe_folder("a/b/c/d/e/f") == "a/b/c/d"  # capped depth
+
+
+def test_safe_folder_drops_traversal():
+    # `..` segments are removed rather than kept, so the path stays relative and
+    # inside the library; storage.folder_path() re-checks containment on top.
+    for attempt in ["../secrets", "../../etc/passwd", "..", "foo/../../bar"]:
+        result = safe_folder(attempt)
+        assert ".." not in result.split("/")
+        assert not result.startswith("/")
 
 
 def test_looks_machine_generated():

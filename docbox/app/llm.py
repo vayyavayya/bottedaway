@@ -37,7 +37,7 @@ Rules: use the document's own language for correspondent, English for doc_type.
 Never invent a date that is not in the text. Output JSON only."""
 
 USER_TEMPLATE = """Original filename: {filename}
-
+{hint}
 --- DOCUMENT TEXT (may be noisy OCR) ---
 {text}
 --- END ---
@@ -189,10 +189,14 @@ def _chat(messages: list[dict], model: str) -> str:
     return (body.get("message") or {}).get("content", "")
 
 
-def analyze_text(text: str, filename: str) -> Analysis:
+def analyze_text(text: str, filename: str, hint: str = "") -> Analysis:
     if not settings.llm_enabled:
         return Analysis(source="none", error="llm disabled")
-    prompt = USER_TEMPLATE.format(filename=filename, text=text[: settings.extract_max_chars])
+    # An import keeps the folder the document sat in before — real signal.
+    hint_line = f"It was filed under: {hint}\n" if hint else ""
+    prompt = USER_TEMPLATE.format(
+        filename=filename, hint=hint_line, text=text[: settings.extract_max_chars]
+    )
     try:
         raw = _chat(
             [

@@ -5,12 +5,17 @@ python-multipart>=0.0.9
 httpx>=0.26
 pydantic>=2.5
 
-# Text extraction — recommended (PDF text, image handling, multi-page scan -> PDF)
+# Scanning — required for edge detection, dewarping and the enhancement filters.
+# Without these the scanner degrades to contrast/sharpening only (see SCANNING.md).
+opencv-python-headless>=4.9
+numpy>=1.26
+
+# Documents — PDF text, image handling, multi-page PDF assembly
 pypdf>=4.0
 pillow>=10.0
 
-# Optional: iPhone HEIC photos without conversion. Needs libheif on the host.
-# pillow-heif>=0.15
+# iPhone HEIC photos. Needs libheif on the host; optional but recommended.
+pillow-heif>=0.15
 
 # Dev
 pytest>=8.0

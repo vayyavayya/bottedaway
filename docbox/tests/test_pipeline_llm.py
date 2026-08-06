@@ -131,3 +131,105 @@ def test_unreachable_model_falls_back_instead_of_failing(signed_in, monkeypatch)
     assert doc["filename"].startswith("20220602-")  # date still scraped from the text
     assert doc["needs_review"] is True      # but a human should look
     assert "ollama" in doc["error"].lower()
+
+
+def test_confident_documents_are_filed_into_folders(signed_in, stub_ollama, monkeypatch):
+    """The model says invoice/Stadtwerke -> the utilities rule files it by year."""
+    client = signed_in
+    monkeypatch.setattr(settings, "auto_file", True)
+    upload = client.post(
+        "/api/upload",
+        files={"files": ("IMG_9001.txt", b"Stadtwerke Munich electricity 17.03.2024", "text/plain")},
+    )
+    doc_id = upload.json()["results"][0]["document"]["id"]
+    assert upload.json()["results"][0]["document"]["folder"] == settings.inbox_name
+
+    result = process_document(doc_id)
+    assert result["folder"] == "Home/Utilities/2024"
+    assert result["routed_by"] == "utilities"
+
+    doc = client.get(f"/api/documents/{doc_id}").json()["document"]
+    assert doc["folder"] == "Home/Utilities/2024"
+    assert storage.doc_path(doc["folder"], doc["filename"]).exists()
+    # ...and the folder filter finds it, including from the parent.
+    assert any(d["id"] == doc_id for d in
+               client.get("/api/documents", params={"folder": "Home"}).json()["documents"])
+
+
+def test_unsure_documents_stay_in_the_inbox(signed_in, stub_ollama, monkeypatch):
+    monkeypatch.setattr(settings, "auto_file", True)
+    monkeypatch.setitem(REPLY, "confidence", 0.2)
+    try:
+        upload = signed_in.post(
+            "/api/upload",
+            files={"files": ("IMG_9002.txt", b"something illegible 18.03.2024", "text/plain")},
+        )
+        doc_id = upload.json()["results"][0]["document"]["id"]
+        result = process_document(doc_id)
+        assert result["folder"] == settings.inbox_name
+        assert result["routed_by"] == ""
+    finally:
+        REPLY["confidence"] = 0.92
+
+
+def test_auto_file_can_be_turned_off(signed_in, stub_ollama, monkeypatch):
+    monkeypatch.setattr(settings, "auto_file", False)
+    upload = signed_in.post(
+        "/api/upload",
+        files={"files": ("IMG_9003.txt", b"Stadtwerke Munich electricity 19.03.2024", "text/plain")},
+    )
+    doc_id = upload.json()["results"][0]["document"]["id"]
+    assert process_document(doc_id)["folder"] == settings.inbox_name
+
+
+def test_pinned_names_are_never_moved_or_renamed(signed_in, stub_ollama, monkeypatch):
+    monkeypatch.setattr(settings, "auto_file", True)
+    upload = signed_in.post(
+        "/api/upload",
+        files={"files": ("IMG_9004.txt", b"Stadtwerke Munich electricity 20.03.2024", "text/plain")},
+    )
+    doc_id = upload.json()["results"][0]["document"]["id"]
+    signed_in.patch(f"/api/documents/{doc_id}", json={"filename": "my-own-name"})
+    result = process_document(doc_id)
+    assert result["filename"] == "my-own-name.txt"
+    assert result["folder"] == settings.inbox_name
+
+
+def test_organize_endpoint_dry_runs_then_applies(signed_in, stub_ollama, monkeypatch):
+    """Filing rules can be applied to documents that are already in the library."""
+    monkeypatch.setattr(settings, "auto_file", False)   # land in the inbox first
+    upload = signed_in.post(
+        "/api/upload",
+        files={"files": ("IMG_9005.txt", b"Stadtwerke Munich electricity 21.03.2024", "text/plain")},
+    )
+    doc_id = upload.json()["results"][0]["document"]["id"]
+    process_document(doc_id)
+    assert signed_in.get(f"/api/documents/{doc_id}").json()["document"]["folder"] == settings.inbox_name
+
+    dry = signed_in.post("/api/organize", json={"apply": False}).json()
+    assert dry["applied"] is False
+    assert dry["moved"] == 0
+    assert any(m["id"] == doc_id and m["to"] == "Home/Utilities/2024" for m in dry["moves"])
+    # nothing actually moved
+    assert signed_in.get(f"/api/documents/{doc_id}").json()["document"]["folder"] == settings.inbox_name
+
+    applied = signed_in.post("/api/organize", json={"apply": True}).json()
+    assert applied["moved"] >= 1
+    doc = signed_in.get(f"/api/documents/{doc_id}").json()["document"]
+    assert doc["folder"] == "Home/Utilities/2024"
+    assert storage.doc_path(doc["folder"], doc["filename"]).exists()
+
+
+def test_import_hint_reaches_the_model(signed_in, stub_ollama):
+    """The folder a document sat in before the import is real signal about what
+    it is, so it has to reach the prompt."""
+    from app.ingest import ingest_bytes
+
+    _StubOllama.prompts.clear()
+    doc = ingest_bytes(
+        b"Allianz Versicherung policy documents for the car, dated 05.06.2023, "
+        b"renewal terms enclosed.",
+        "scan.txt", "tester", hint="Insurance/Car", process=False,
+    )
+    process_document(doc["document"]["id"])
+    assert any("Insurance/Car" in prompt for prompt in _StubOllama.prompts)

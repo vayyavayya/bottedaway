@@ -1,17 +1,20 @@
 # Docbox
 
-A shared document library for two people, with an inbox you can dump anything
-into and a small local LLM that reads each document and renames it
-`YYYYMMDD-what-it-is.pdf`.
+A shared document library for two people, built to replace a CamScanner
+subscription: scan with the phone, get a clean high-quality searchable PDF, and
+have a local LLM name it `YYYYMMDD-what-it-is.pdf` and file it in the right
+folder.
 
-Scan a bank letter with your phone, it arrives as `IMG_0042.pdf`, and a few
-seconds later it is `20240317-stadtwerke-electricity-bill.pdf` — filed, searchable,
-and never sent to anyone else's computer.
+Everything runs on your own machine. No cloud, no subscription, no third party
+holding your bank statements.
 
-- **Home-screen app** for iOS Safari (PWA): folders, search, camera scanning,
+- **Scanner** with edge detection, dewarping, shadow removal and one-tap
+  enhancement — our answer to CamScanner's Omnifix. See [`SCANNING.md`](SCANNING.md).
+- **Bulk import** of your existing CamScanner library, OCR'd and filed
+  automatically. See [`MIGRATING.md`](MIGRATING.md).
+- **Home-screen app** for iOS Safari: folders, search inside document text,
   rename, move.
-- **Share-sheet ingest** via a small iOS Shortcut — see [`SHORTCUT.md`](SHORTCUT.md).
-- **Local model only.** Ollama on your machine. Nothing leaves the house.
+- **Share-sheet ingest** through a small iOS Shortcut. See [`SHORTCUT.md`](SHORTCUT.md).
 - **The library is just folders and files.** Point it at a synced folder and both
   of you have the documents in the Files app too. Delete the app tomorrow and the
   documents are still there, well named.
@@ -22,21 +25,23 @@ and never sent to anyone else's computer.
 
 ```
  iOS share sheet ─┐
- camera scan   ───┼──▶  Inbox/  ──▶  worker  ──▶  extract text  ──▶  local LLM  ──▶  rename
- web upload    ───┘     (raw file)               pdf text │ OCR      date/title       on disk
-                                                          │
-                                                    no text found
-                                                          ▼
-                                              vision model (optional)
-                                                          │
-                                                   still nothing
-                                                          ▼
-                                          date scraped from text + flagged "check name"
+ camera scan   ───┼──▶  enhance  ──▶  Inbox/  ──▶  worker  ──▶  extract text ──▶ local LLM
+ bulk import   ───┤     dewarp        (raw file)              pdf text │ OCR    date/title/type
+ web upload    ───┘     de-shadow                                      │             │
+                                                                 no text found       ▼
+                                                                       ▼        rename + file
+                                                              vision model      Finance/Invoices/2024
+                                                                       │
+                                                                still nothing
+                                                                       ▼
+                                                        keep the name, flag "check name",
+                                                              leave it in the inbox
 ```
 
 The file is written to disk **before** anything clever happens, and every failure
-path keeps the file and flags it for review. An offline model, a broken scan, or
-a document in a language the model mangles costs you a rename, never a document.
+path keeps it. An offline model, a missing OCR binary, a hopeless scan — each
+costs you a rename, never a document. Anything the model is unsure about stays in
+the inbox rather than being filed somewhere you will never find it.
 
 ---
 
@@ -47,23 +52,24 @@ a document in a language the model mangles costs you a rename, never a document.
 ```bash
 brew install ollama          # or: https://ollama.com/download
 ollama serve &
-ollama pull qwen2.5:3b       # ~2 GB, runs fine on any recent Mac or a mini PC
+ollama pull qwen2.5:3b       # ~2 GB, fine on any recent Mac or a mini PC
 ```
 
-`qwen2.5:3b` is a good default. Alternatives worth trying: `llama3.2:3b`
-(faster), `qwen2.5:7b` (noticeably better on messy OCR, ~5 GB).
+Alternatives: `llama3.2:3b` (faster), `qwen2.5:7b` (better on messy OCR, ~5 GB).
 
-### 2. Install OCR (for anything scanned)
+### 2. Install OCR and image tooling
 
 ```bash
-brew install tesseract tesseract-lang poppler   # macOS
-sudo apt install tesseract-ocr tesseract-ocr-deu poppler-utils   # Debian/Ubuntu
+# macOS
+brew install tesseract tesseract-lang poppler
+# Debian/Ubuntu
+sudo apt install tesseract-ocr tesseract-ocr-deu poppler-utils
 ```
 
-Without these, PDFs with a text layer still work; photos and scans fall back to
-their original names and get flagged.
+Without tesseract, PDFs with a text layer still work, scans fall back to their
+original names, and PDFs are not searchable. `make status` tells you what you have.
 
-### 3. Run Docbox
+### 3. Run it
 
 ```bash
 make install
@@ -72,24 +78,26 @@ make adduser NAME=her
 make run                  # http://localhost:8484
 ```
 
-Or with Docker (bundles Ollama, OCR and poppler):
+Or with Docker, which bundles Ollama, OCR, poppler and OpenCV:
 
 ```bash
 docker compose up -d
 docker compose exec ollama ollama pull qwen2.5:3b
 ```
 
-Then open the app, add it to your home screen, and build the Shortcut:
-[`SHORTCUT.md`](SHORTCUT.md).
-
-### 4. Point it at a folder you already sync (optional, recommended)
+### 4. Point it at a folder you already sync (recommended)
 
 ```bash
 export DOCBOX_LIBRARY_DIR="$HOME/Library/Mobile Documents/com~apple~CloudDocs/Documents/Docbox"
 ```
 
-Both of you then see the same named files in the iOS Files app, with or without
-the web app. See [`.env.example`](.env.example) for every setting.
+See [`.env.example`](.env.example) for every setting.
+
+### 5. On each phone
+
+Open the URL in **Safari** → Share → **Add to Home Screen**, then build the
+Shortcut from [`SHORTCUT.md`](SHORTCUT.md) (about two minutes) so Docbox appears
+in the share sheet.
 
 ---
 
@@ -97,27 +105,26 @@ the web app. See [`.env.example`](.env.example) for every setting.
 
 | | |
 |---|---|
-| **Inbox** | Everything lands here. It is the pile you clean up when you feel like it. |
-| **Scan** | Camera → multiple photos become one PDF, in order. |
-| **Upload** | Any file from the Files app. |
-| **Check name** badge | The model was unsure. Tap, fix the name, save — your name is then pinned and survives future AI passes. |
-| **Rename with AI** | Re-runs the model, e.g. after installing a better one. |
-| **Search** | Matches file names, sender, and the extracted text — so you can find a document by a word inside it. |
+| **Scan** | Take one or more photos → review each page, pick a filter (Auto / Magic / B&W / Grey / Colour / Photo), reorder or delete pages → save as one PDF. |
+| **Inbox** | Where everything lands, and where anything the model was unsure about stays. |
+| **Auto-filing** | Confident documents move to `Finance/Invoices/2024`, `Medical/2023`, `Insurance`… by the rules in `<data>/routing.json`, which you can edit. |
+| **Check name** badge | The model was unsure. Tap, fix the name, save — your name is then pinned and survives every future AI pass. |
+| **Search** | Matches names, sender, and the extracted text, so you can find a document by a word inside it. |
+| **Import** | Settings → upload a zipped export, or `python -m app.cli import <folder>`. |
+| **Preview filing / File everything** | Dry-run the filing rules over the whole library, then apply them. |
 | **Delete** | Moves to `.trash/` inside the library. Nothing is destroyed. |
 
-Files you copy into the library folder by hand are picked up with
-`make scan-library`.
+Files copied into the library folder by hand are picked up with `make scan-library`.
 
 ---
 
 ## Remote access
 
-Docbox binds to your LAN by default. To use it away from home, pick one:
+Docbox binds to your LAN. To use it away from home, pick one:
 
-- **Tailscale** (simplest): install on the server and both phones, then use the
+- **Tailscale** (simplest): install on the server and both phones, use the
   tailnet URL. No ports opened.
-- **Cloudflare Tunnel**: `cloudflared tunnel --url http://localhost:8484` gives
-  you an HTTPS hostname.
+- **Cloudflare Tunnel**: `cloudflared tunnel --url http://localhost:8484`.
 - **Reverse proxy** (Caddy/nginx) with a real certificate.
 
 Put HTTPS in front of it if it leaves your LAN: the session cookie and the
@@ -129,54 +136,71 @@ Shortcut token are bearer credentials.
 
 ```
 app/
-  main.py      FastAPI routes: auth, documents, upload, share target
-  ingest.py    upload -> inbox (dedupe by hash, images -> single PDF, links)
-  pipeline.py  the job: extract -> analyse -> rename, with the fallback ladder
-  worker.py    background thread; queue state lives in SQLite so restarts resume
+  main.py      FastAPI routes: auth, documents, scan, import, organize
+  enhance.py   the scanner: page detection, dewarp, de-shadow, filters
+  pdfbuild.py  high-quality PDFs with a searchable text layer
+  importer.py  bulk import of an old library (folder or zip), with hints
+  routing.py   the filing rules — which folder a document belongs in
+  ingest.py    upload -> inbox (hash dedupe, parallel page enhancement)
+  pipeline.py  the job: extract -> analyse -> rename -> file
+  worker.py    background thread; queue state in SQLite, so restarts resume
   extract.py   pdf text, OCR, docx, images — every dependency optional
   llm.py       Ollama client, prompt, tolerant JSON parsing, heuristic fallback
   naming.py    slugs, date parsing, YYYYMMDD-title.ext, collision handling
-  storage.py   path safety, moves, soft delete
+  storage.py   nested folders, path safety, moves, soft delete
   auth.py      scrypt passwords, HMAC sessions, per-user API tokens
-  cli.py       adduser / token / status / scan-library / reprocess
+  cli.py       adduser / import / organize / reprocess / status
 web/           the PWA — plain HTML, CSS and JS, no build step
-tests/         33 tests, including a stub Ollama for the full rename flow
+tests/         84 tests
 ```
 
 ```bash
-make test     # no Ollama or OCR needed; both are stubbed or disabled
-make status   # what the box can actually do right now
+make test     # no Ollama, OCR or camera needed; all stubbed or synthesised
+make status   # what this machine can actually do right now
 ```
+
+The scanner tests are worth knowing about: they project a page through a real
+pinhole camera model, so the true corner positions and the true A4 aspect are
+known exactly and the pipeline is measured against them rather than eyeballed.
 
 ---
 
 ## Things worth knowing before you extend it
 
-- **Auth is deliberately small** — two accounts, shared library, no per-document
-  permissions. Adding roles means touching `auth.py` and every route.
+- **Auto-filing is conservative on purpose.** Below `confidence_floor` (0.55) or
+  when the model was not involved at all, documents stay in the inbox. Loosen it
+  in `routing.json` if you would rather have more filed and occasionally wrong.
+- **Folders nest up to four levels** (`naming.MAX_FOLDER_DEPTH`). Tapping a
+  parent shows everything underneath it.
 - **Search is `LIKE`** over names and the first 4 000 characters of extracted
-  text. SQLite FTS5 is the obvious upgrade if the library gets large.
-- **Folders are one level deep.** Nesting means changing `safe_folder()`,
-  `storage.folder_path()` and the folder chips in `web/app.js`.
+  text. SQLite FTS5 is the obvious upgrade for a large library.
 - **One document at a time** through the worker, on purpose: a 3B model on a
-  laptop is happier serial. Raise it in `worker.py` if you have a GPU.
-- **The model prompt is in `llm.py`** (`SYSTEM_PROMPT`) — that is the first place
-  to tune if the names come out wrong. `DOC_TYPES` is the closed vocabulary.
-- **Filename shape** is `naming.build_filename()`. Want
-  `YYYYMMDD-sender-type-title`? It is one function and it is unit-tested.
+  laptop is happier serial. Scan *pages* are parallel; documents are not.
+- **The prompt is in `llm.py`** (`SYSTEM_PROMPT`) — the first place to tune if
+  names come out wrong. `DOC_TYPES` is the closed vocabulary the rules match on.
+- **Filename shape** is `naming.build_filename()`. Want `YYYYMMDD-sender-type-title`?
+  One function, and it is unit-tested.
+- **Re-enhancing a saved PDF is not possible** — the original photos are gone
+  once the PDF is built, which is why the scanner asks for the filter before
+  saving. Single-image documents can be re-enhanced (`/api/documents/{id}/enhance`).
 
 ## API
 
 | Method | Path | Purpose |
 |---|---|---|
+| `POST` | `/api/scan` | photos → one enhanced searchable PDF (`mode`, `crop`, `orient`, `searchable`) |
+| `POST` | `/api/enhance/preview` | enhance one image and hand it straight back |
 | `POST` | `/api/upload` | multipart `files[]`, optional `folder`, `combine=true` |
-| `POST` | `/api/scan` | images in order → one PDF |
-| `POST` | `/api/link` | `{url, title, note}` |
-| `GET` | `/api/documents` | `?folder=&q=&status=&review=true` |
+| `POST` | `/api/import/zip` | upload a zipped export |
+| `POST` | `/api/import/folder` | import a path on the server |
+| `GET` | `/api/batches` | import progress |
+| `POST` | `/api/organize` | dry-run (`apply:false`) or apply the filing rules |
+| `GET`/`PUT` | `/api/routing` | read or replace the filing rules |
+| `GET` | `/api/documents` | `?folder=&q=&status=&review=true&deep=true` |
 | `GET` | `/api/documents/{id}/file` | inline preview, `?download=true` to save |
 | `PATCH` | `/api/documents/{id}` | rename, move, edit fields, pin the name |
 | `POST` | `/api/documents/{id}/reprocess` | run the model again |
-| `GET` | `/api/health` | model reachable? OCR installed? worker alive? |
+| `GET` | `/api/health` | model reachable? OCR? OpenCV? worker alive? |
 
 Auth is a session cookie in the browser, or `Authorization: Bearer <token>` for
 Shortcuts.

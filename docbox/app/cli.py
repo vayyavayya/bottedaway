@@ -6,6 +6,10 @@
     users                       list accounts
     scan-library                adopt files that were copied into the library by hand
     reprocess [--all|--failed|--review|<id>...]
+    import <folder|zip> [--user NAME] [--into FOLDER] [--group-images]
+                                bulk import, e.g. a CamScanner export
+    organize [--apply] [--folder F]
+                                apply the filing rules to what is already here
     status                      queue + capability overview
 """
 
@@ -14,8 +18,9 @@ from __future__ import annotations
 import getpass
 import sys
 import time
+from pathlib import Path
 
-from . import auth, db, extract, llm, storage, worker
+from . import auth, db, enhance, extract, importer, llm, pdfbuild, routing, storage, worker
 from .config import settings
 from .pipeline import enqueue, process_document
 
@@ -131,6 +136,107 @@ def cmd_reprocess(args: list[str]) -> None:
             print(f"  {doc_id}: {process_document(doc_id)}")
 
 
+def _flag(args: list[str], name: str) -> bool:
+    return name in args
+
+
+def _value(args: list[str], name: str, default: str = "") -> str:
+    if name in args:
+        index = args.index(name)
+        if index + 1 < len(args):
+            return args[index + 1]
+    return default
+
+
+def cmd_import(args: list[str]) -> None:
+    if not args:
+        sys.exit("usage: import <folder|zip> [--user NAME] [--into FOLDER] [--group-images]")
+
+    source = Path(args[0]).expanduser()
+    user = _value(args, "--user") or _default_user()
+    into = _value(args, "--into") or None
+    group = _flag(args, "--group-images")
+
+    if not source.exists():
+        sys.exit(f"no such path: {source}")
+
+    def show(report) -> None:
+        done = report.imported + report.skipped_duplicate + report.skipped_unsupported + report.failed
+        print(
+            f"\r  {done}/{report.total}  imported {report.imported}"
+            f"  duplicates {report.skipped_duplicate}"
+            f"  skipped {report.skipped_unsupported}"
+            f"  failed {report.failed}",
+            end="", flush=True,
+        )
+
+    print(f"importing {source} as {user}...")
+    if source.is_file() and source.suffix.lower() == ".zip":
+        report = importer.import_zip(source.read_bytes(), user, into=into, group_images=group)
+    else:
+        report = importer.import_folder(source, user, into=into, group_images=group, progress=show)
+    print()
+    for line in report.errors[:10]:
+        print(f"  ! {line}")
+    print(
+        f"done: {report.imported} imported, {report.skipped_duplicate} duplicates, "
+        f"{report.skipped_unsupported} unsupported, {report.failed} failed"
+    )
+    if not worker.is_running():
+        print("start the server (or `make run`) to let the model read and file them")
+
+
+def _default_user() -> str:
+    row = db.query_one("SELECT username FROM users ORDER BY id LIMIT 1")
+    if not row:
+        sys.exit("no users yet — run: python -m app.cli adduser <name>")
+    return row["username"]
+
+
+def cmd_organize(args: list[str]) -> None:
+    """Apply the filing rules to documents already in the library."""
+    from .llm import Analysis
+
+    apply = _flag(args, "--apply")
+    folder = _value(args, "--folder")
+    config = routing.load_rules()
+
+    where, params = ["status = 'done'", "pinned_name = 0"], []
+    if folder:
+        where.append("(folder = ? OR folder LIKE ?)")
+        params.extend([folder, f"{folder}/%"])
+    rows = db.query(f"SELECT * FROM documents WHERE {' AND '.join(where)}", params)
+
+    moved = 0
+    for row in rows:
+        analysis = Analysis(
+            date=row["doc_date"], title=row["title"], doc_type=row["doc_type"],
+            correspondent=row["correspondent"], summary=row["summary"],
+            confidence=row["confidence"],
+            source="llm" if row["confidence"] else "heuristic",
+        )
+        route = routing.choose_folder(analysis, row["text_excerpt"],
+                                      current=row["folder"], config=config)
+        if not route.confident or route.folder == row["folder"]:
+            continue
+        moved += 1
+        arrow = "->" if apply else "would ->"
+        print(f"  {row['folder']}/{row['filename']}  {arrow}  {route.folder}  ({route.rule})")
+        if apply:
+            final = storage.move_document(row["folder"], row["filename"],
+                                          route.folder, row["filename"])
+            db.update("documents", int(row["id"]), {
+                "folder": route.folder, "filename": final,
+                "routed_by": route.rule, "updated_at": time.time(),
+            })
+    if apply and moved:
+        storage.prune_empty_folders()
+    print(f"{moved} document(s) {'moved' if apply else 'would move'} "
+          f"(of {len(rows)} considered)")
+    if not apply and moved:
+        print("re-run with --apply to do it")
+
+
 def cmd_status(_: list[str]) -> None:
     row = db.query_one(
         "SELECT COUNT(*) AS total, SUM(status='pending') AS pending, "
@@ -145,6 +251,12 @@ def cmd_status(_: list[str]) -> None:
     if installed:
         print(f"models:    {', '.join(installed)}")
     print(f"extract:   {extract.capabilities()}")
+    print(f"scanning:  {enhance.available()} {pdfbuild.capabilities()}")
+    print(f"routing:   {routing.rules_path()} (auto_file={routing.load_rules().get('auto_file')})")
+    batches = db.query("SELECT * FROM batches ORDER BY id DESC LIMIT 3")
+    for batch in batches:
+        print(f"import:    {batch['source']} -> {batch['imported']}/{batch['total']} "
+              f"({batch['status']})")
 
 
 COMMANDS = {
@@ -154,6 +266,8 @@ COMMANDS = {
     "users": cmd_users,
     "scan-library": cmd_scan_library,
     "reprocess": cmd_reprocess,
+    "import": cmd_import,
+    "organize": cmd_organize,
     "status": cmd_status,
 }
 

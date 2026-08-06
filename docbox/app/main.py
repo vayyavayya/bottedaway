@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import logging
 import time
 from contextlib import asynccontextmanager
@@ -12,7 +13,7 @@ from fastapi.responses import FileResponse, JSONResponse, RedirectResponse, Resp
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-from . import auth, db, extract, ingest, llm, storage, worker
+from . import auth, db, enhance, extract, importer, ingest, llm, pdfbuild, routing, storage, worker
 from .config import settings
 from .naming import safe_filename, safe_folder
 from .pipeline import enqueue
@@ -78,6 +79,25 @@ class LinkBody(BaseModel):
     folder: str | None = None
 
 
+class ImportFolderBody(BaseModel):
+    path: str
+    into: str | None = None
+    group_images: bool = False
+
+
+class OrganizeBody(BaseModel):
+    apply: bool = False
+    folder: str | None = None
+    limit: int = 2000
+
+
+class RoutingBody(BaseModel):
+    auto_file: bool = True
+    confidence_floor: float = 0.55
+    keyword_rules: list[dict] = []
+    rules: list[dict] = []
+
+
 def doc_json(row) -> dict:
     data = dict(row)
     data.pop("text_excerpt", None)
@@ -106,6 +126,14 @@ def health() -> dict:
             "installed": llm.installed_models(),
         },
         "extraction": extract.capabilities(),
+        "scanning": {
+            **enhance.available(),
+            **pdfbuild.capabilities(),
+            "dpi": settings.scan_dpi,
+            "mode": settings.scan_mode,
+            "searchable": settings.scan_searchable,
+        },
+        "auto_file": settings.auto_file,
     }
 
 
@@ -168,15 +196,29 @@ def rotate_token(user: dict = Depends(user_dep)) -> dict:
 @app.get("/api/folders")
 def folders(user: dict = Depends(user_dep)) -> dict:
     counts = {
-        row["folder"]: row["n"]
+        row["folder"]: int(row["n"])
         for row in db.query("SELECT folder, COUNT(*) AS n FROM documents GROUP BY folder")
     }
-    return {
-        "folders": [
-            {"name": name, "count": counts.get(name, 0), "inbox": name == settings.inbox_name}
-            for name in storage.list_folders()
-        ]
-    }
+    names = storage.list_folders()
+    # A folder in the DB whose directory vanished should still be listed.
+    for name in counts:
+        if name not in names:
+            names.append(name)
+
+    out = []
+    for name in names:
+        prefix = f"{name}/"
+        nested = sum(n for folder, n in counts.items() if folder.startswith(prefix))
+        out.append({
+            "name": name,
+            "label": name.split("/")[-1],
+            "depth": name.count("/"),
+            "count": counts.get(name, 0),
+            "total": counts.get(name, 0) + nested,
+            "inbox": name == settings.inbox_name,
+        })
+    out.sort(key=lambda f: (not f["inbox"], f["name"].lower()))
+    return {"folders": out, "suggested": routing.known_folders()}
 
 
 @app.post("/api/folders")
@@ -193,14 +235,20 @@ def list_documents(
     q: str = "",
     status: str = "",
     review: bool = False,
+    deep: bool = True,
     limit: int = 100,
     offset: int = 0,
     user: dict = Depends(user_dep),
 ) -> dict:
     where, params = [], []
     if folder:
-        where.append("folder = ?")
-        params.append(safe_folder(folder, settings.inbox_name))
+        target = safe_folder(folder, settings.inbox_name)
+        if deep:  # tapping "Finance" should show what is filed underneath it
+            where.append("(folder = ? OR folder LIKE ?)")
+            params.extend([target, f"{target}/%"])
+        else:
+            where.append("folder = ?")
+            params.append(target)
     if status:
         where.append("status = ?")
         params.append(status)
@@ -357,9 +405,10 @@ async def upload(
     folder: str = Form(default=""),
     combine: bool = Form(default=False),
     name: str = Form(default=""),
+    mode: str = Form(default=""),
     user: dict = Depends(user_dep),
 ) -> dict:
-    """Multipart upload. `combine=true` staples the images into one PDF."""
+    """Multipart upload. `combine=true` turns the images into one scanned PDF."""
     uploads = list(files)
     if not uploads:
         # Shortcuts and some share extensions post the part under a different name.
@@ -379,6 +428,9 @@ async def upload(
                 user["username"],
                 folder=folder or None,
                 name_hint=name,
+                enhance_mode=mode or settings.scan_mode,
+                orient=settings.scan_auto_orient,
+                searchable=settings.scan_searchable,
             )
             return {"results": [result]}
 
@@ -399,14 +451,191 @@ async def scan(
     files: list[UploadFile] = File(...),
     folder: str = Form(default=""),
     name: str = Form(default=""),
+    mode: str = Form(default=""),
+    crop: bool = Form(default=True),
+    orient: bool = Form(default=False),
+    searchable: bool = Form(default=True),
     user: dict = Depends(user_dep),
 ) -> dict:
-    """Camera pages in order -> one PDF in the inbox."""
+    """Camera pages in order -> one enhanced, searchable PDF."""
     images = [(f.filename or "page", await f.read()) for f in files]
     try:
-        return ingest.ingest_scan(images, user["username"], folder=folder or None, name_hint=name)
+        return ingest.ingest_scan(
+            images, user["username"],
+            folder=folder or None,
+            name_hint=name,
+            enhance_mode=mode or settings.scan_mode,
+            crop=crop,
+            orient=orient or settings.scan_auto_orient,
+            searchable=searchable and settings.scan_searchable,
+        )
     except ingest.IngestError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+@app.post("/api/enhance/preview")
+async def enhance_preview(
+    file: UploadFile = File(...),
+    mode: str = Form(default="auto"),
+    crop: bool = Form(default=True),
+    user: dict = Depends(user_dep),
+) -> Response:
+    """Enhance one page and hand it straight back, so the UI can show a
+    before/after without writing anything to the library."""
+    data = await file.read()
+    if not data:
+        raise HTTPException(status_code=400, detail="empty image")
+    cleaned, report = enhance.enhance(data, mode=mode, crop=crop)
+    media = "image/png" if cleaned[:4] == b"\x89PNG" else "image/jpeg"
+    return Response(
+        content=cleaned,
+        media_type=media,
+        headers={"X-Scan-Report": json.dumps(report.as_dict())[:1800]},
+    )
+
+
+@app.post("/api/documents/{doc_id}/enhance")
+def reenhance(doc_id: int, mode: str = "magic", user: dict = Depends(user_dep)) -> dict:
+    try:
+        return ingest.rebuild_scan(doc_id, mode, user["username"])
+    except ingest.IngestError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+
+# ------------------------------------------------------------------- import
+
+
+@app.post("/api/import/zip")
+async def import_zip(
+    file: UploadFile = File(...),
+    into: str = Form(default=""),
+    group_images: bool = Form(default=False),
+    user: dict = Depends(user_dep),
+) -> dict:
+    """Upload a zipped CamScanner export and file the whole thing."""
+    data = await file.read()
+    try:
+        report = importer.import_zip(
+            data, user["username"], into=into or None, group_images=group_images
+        )
+    except ingest.IngestError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    return report.as_dict()
+
+
+@app.post("/api/import/folder")
+def import_folder(body: ImportFolderBody, user: dict = Depends(user_dep)) -> dict:
+    """Import a folder that is already on the server — the fast path for a big
+    export sitting in iCloud Drive or on a NAS share."""
+    try:
+        report = importer.import_folder(
+            Path(body.path), user["username"],
+            into=body.into, group_images=body.group_images,
+        )
+    except (ingest.IngestError, OSError) as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    return report.as_dict()
+
+
+@app.get("/api/batches")
+def list_batches(limit: int = 20, user: dict = Depends(user_dep)) -> dict:
+    rows = db.query(
+        "SELECT * FROM batches ORDER BY id DESC LIMIT ?", (max(1, min(limit, 100)),)
+    )
+    return {"batches": [importer.batch_status(int(r["id"])) for r in rows]}
+
+
+@app.get("/api/batches/{batch_id}")
+def batch(batch_id: int, user: dict = Depends(user_dep)) -> dict:
+    status = importer.batch_status(batch_id)
+    if not status:
+        raise HTTPException(status_code=404, detail="no such batch")
+    return status
+
+
+# ------------------------------------------------------------------ filing
+
+
+@app.get("/api/routing")
+def get_routing(user: dict = Depends(user_dep)) -> dict:
+    return {"routing": routing.load_rules(), "path": str(routing.rules_path())}
+
+
+@app.put("/api/routing")
+def put_routing(body: RoutingBody, user: dict = Depends(user_dep)) -> dict:
+    payload = body.model_dump()
+    try:
+        routing.rules_path().write_text(json.dumps(payload, indent=2))
+    except OSError as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+    return {"routing": payload}
+
+
+@app.post("/api/organize")
+def organize(body: OrganizeBody, user: dict = Depends(user_dep)) -> dict:
+    """Apply the filing rules to documents already in the library.
+
+    `apply=false` is a dry run: it reports where everything would go without
+    touching a single file. Run it after editing routing.json.
+    """
+    config = routing.load_rules()
+    where, params = ["status = 'done'", "pinned_name = 0"], []
+    if body.folder:
+        target = safe_folder(body.folder, settings.inbox_name)
+        where.append("(folder = ? OR folder LIKE ?)")
+        params.extend([target, f"{target}/%"])
+
+    rows = db.query(
+        f"SELECT * FROM documents WHERE {' AND '.join(where)} ORDER BY id LIMIT ?",
+        [*params, max(1, min(body.limit, 5000))],
+    )
+
+    moves, moved = [], 0
+    for row in rows:
+        analysis = llm.Analysis(
+            date=row["doc_date"], title=row["title"], doc_type=row["doc_type"],
+            correspondent=row["correspondent"], summary=row["summary"],
+            confidence=row["confidence"], source="llm" if row["confidence"] else "heuristic",
+        )
+        route = routing.choose_folder(
+            analysis, row["text_excerpt"], current=row["folder"], config=config
+        )
+        if not route.confident or route.folder == row["folder"]:
+            continue
+        entry = {
+            "id": int(row["id"]),
+            "filename": row["filename"],
+            "from": row["folder"],
+            "to": route.folder,
+            "rule": route.rule,
+        }
+        if body.apply:
+            try:
+                final = storage.move_document(
+                    row["folder"], row["filename"], route.folder, row["filename"]
+                )
+            except FileNotFoundError:
+                entry["error"] = "file missing on disk"
+                moves.append(entry)
+                continue
+            db.update("documents", int(row["id"]), {
+                "folder": route.folder, "filename": final,
+                "routed_by": route.rule, "updated_at": time.time(),
+            })
+            db.log_event(int(row["id"]), "filed",
+                         f"{row['folder']} -> {route.folder} ({route.rule})", user["username"])
+            moved += 1
+        moves.append(entry)
+
+    if body.apply and moved:
+        storage.prune_empty_folders()
+    return {
+        "considered": len(rows),
+        "moves": moves[:500],
+        "would_move": len(moves),
+        "moved": moved,
+        "applied": body.apply,
+    }
 
 
 @app.post("/api/link")

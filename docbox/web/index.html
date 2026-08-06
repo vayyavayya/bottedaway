@@ -67,6 +67,57 @@
   </footer>
 </section>
 
+<!-- ----------------------------------------------------------- scanner -->
+<section id="scanner" class="screen scanner hidden">
+  <header class="scanbar">
+    <button class="linkbtn" id="scan-cancel">Cancel</button>
+    <span id="scan-count">0 pages</span>
+    <button class="linkbtn strong" id="scan-save">Save</button>
+  </header>
+
+  <div class="scan-stage">
+    <img id="scan-preview" alt="page preview">
+    <div class="scan-spinner hidden" id="scan-spinner"></div>
+  </div>
+
+  <div class="scan-pages" id="scan-pages"></div>
+
+  <div class="scan-controls">
+    <div class="filters" id="scan-modes">
+      <button class="chip active" data-mode="auto">Auto</button>
+      <button class="chip" data-mode="magic">Magic</button>
+      <button class="chip" data-mode="bw">B&amp;W</button>
+      <button class="chip" data-mode="gray">Grey</button>
+      <button class="chip" data-mode="color">Colour</button>
+      <button class="chip" data-mode="photo">Photo</button>
+      <button class="chip" data-mode="none">Original</button>
+    </div>
+
+    <div class="scan-actions">
+      <button class="ghost" id="scan-prev">&#8592;</button>
+      <button class="ghost" id="scan-rotate-left" title="Move page earlier">&#8676;</button>
+      <button class="ghost danger" id="scan-delete">Delete page</button>
+      <button class="ghost" id="scan-rotate-right" title="Move page later">&#8677;</button>
+      <button class="ghost" id="scan-next">&#8594;</button>
+    </div>
+
+    <label class="action wide">
+      <input type="file" id="scan-more" accept="image/*" capture="environment" multiple hidden>
+      <span>+ Add pages</span>
+    </label>
+
+    <div class="field">
+      <label for="scan-name">Name (optional — the model names it otherwise)</label>
+      <input id="scan-name" type="text" placeholder="leave empty for AI naming">
+    </div>
+    <div class="field">
+      <label for="scan-folder">Folder</label>
+      <select id="scan-folder"></select>
+    </div>
+    <p class="muted" id="scan-note"></p>
+  </div>
+</section>
+
 <!-- ------------------------------------------------------------ detail -->
 <div id="sheet" class="sheet hidden">
   <div class="sheet-backdrop" data-close></div>

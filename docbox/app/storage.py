@@ -8,7 +8,7 @@ import shutil
 from pathlib import Path
 
 from .config import settings
-from .naming import dedupe_filename, safe_filename, safe_folder
+from .naming import MAX_FOLDER_DEPTH, dedupe_filename, safe_filename, safe_folder
 
 TEXT_EXTS = {".txt", ".md", ".csv", ".log", ".json", ".url"}
 IMAGE_EXTS = {".jpg", ".jpeg", ".png", ".heic", ".heif", ".webp", ".gif", ".tif", ".tiff", ".bmp"}
@@ -36,11 +36,20 @@ def doc_path(folder: str, filename: str) -> Path:
 
 
 def list_folders() -> list[str]:
+    """Every folder in the library as a relative path, inbox first."""
     root = library_root()
-    names = sorted(
-        (p.name for p in root.iterdir() if p.is_dir() and not p.name.startswith(".")),
-        key=lambda n: (n != settings.inbox_name, n.lower()),
-    )
+    names: list[str] = []
+    for path in root.rglob("*"):
+        if not path.is_dir():
+            continue
+        relative = path.relative_to(root)
+        if any(part.startswith(".") for part in relative.parts):
+            continue
+        if len(relative.parts) > MAX_FOLDER_DEPTH:
+            continue
+        names.append(relative.as_posix())
+
+    names.sort(key=lambda n: (n != settings.inbox_name, n.lower()))
     if settings.inbox_name not in names:
         names.insert(0, settings.inbox_name)
     return names
@@ -52,6 +61,24 @@ def create_folder(name: str) -> str:
         raise ValueError("invalid folder name")
     (library_root() / folder).mkdir(parents=True, exist_ok=True)
     return folder
+
+
+def prune_empty_folders() -> int:
+    """Drop folders left empty after a move. The inbox always stays."""
+    root = library_root()
+    removed = 0
+    for path in sorted(root.rglob("*"), key=lambda p: len(p.parts), reverse=True):
+        if not path.is_dir() or path.name.startswith("."):
+            continue
+        if path.relative_to(root).as_posix() == settings.inbox_name:
+            continue
+        if not any(path.iterdir()):
+            try:
+                path.rmdir()
+                removed += 1
+            except OSError:
+                pass
+    return removed
 
 
 def taken_names(folder: str) -> set[str]:

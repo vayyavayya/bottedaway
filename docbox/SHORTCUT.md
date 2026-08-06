@@ -63,23 +63,42 @@ within a few seconds.
 Append a **Show Notification** action with text `Filed to Docbox` so you get
 feedback without opening the app.
 
-### Optional: scan straight from the Shortcut
+### Strongly recommended: a second Shortcut that scans
 
-Add **Scan Document** (Apple's built-in scanner, with edge detection) as action 1
-and feed `Scanned Document` into the form field instead of `Shortcut Input`.
-Multi-page scans arrive as a single PDF. Put this Shortcut on your home screen
-and it becomes a one-tap scanner.
+This is the one that replaces the CamScanner icon on your home screen.
+
+New Shortcut, named **Scan to Docbox**:
+
+| # | Action | Settings |
+|---|--------|----------|
+| 1 | **Scan Document** | Apple's own scanner — live edge detection in the viewfinder, multi-page, auto-capture |
+| 2 | **Get Contents of URL** | URL `https://YOUR-HOST/api/scan`, POST, header `Authorization: Bearer TOKEN`, body **Form** with field `files` (File) = `Scanned Document` |
+
+Optionally add a form field `mode` with `magic`, `bw` or `auto` to pick the
+filter, and `folder` to bypass the inbox.
+
+Why bother when the app already has a Scan button: iOS Safari cannot draw a live
+edge-detection overlay in the viewfinder, so the in-app scanner is "photograph
+the page, we will find the edges afterwards". Apple's scanner shows you the
+outline as you shoot and auto-captures when the page is square in frame. Both end
+up in the same enhancement pipeline — Apple's just feels better to shoot with.
+
+Add it to your home screen (Shortcuts → ⋯ → Add to Home Screen) and it is a
+one-tap scanner.
 
 ---
 
 ## 4. Sending several photos as one document
 
-Two ways:
+Three ways:
 
-- **In the app**: tap **Scan**, take/choose multiple photos — more than one photo
-  is automatically stapled into a single PDF, in the order chosen.
-- **In a Shortcut**: post them all to `/api/upload` with an extra form field
-  `combine` = `true`.
+- **In the app**: tap **Scan**, take or choose several photos. You then get a
+  review screen: pick a filter, reorder or delete pages, and save the lot as one
+  enhanced, searchable PDF.
+- **Apple's scanner**: the *Scan to Docbox* Shortcut above — multi-page scans
+  arrive as a single document.
+- **In any Shortcut**: post the images to `/api/scan`, or to `/api/upload` with
+  the extra form field `combine` = `true`.
 
 ## 5. Sharing a link instead of a file
 
@@ -100,5 +119,6 @@ model names from the page title. If you want a dedicated one, POST JSON to
 | `401` | Token wrong, or a space crept into `Bearer <token>` |
 | `400 no files in request` | The form field must be named `files` and typed **File** |
 | `400 unsupported file type` | See `ALLOWED_EXTS` in `app/storage.py` |
+| Scan takes several seconds | Normal: each 12 MP page is dewarped and enhanced on the server (~2 s), pages in parallel. `SCANNING.md` has the numbers |
 | Shortcut missing from the share sheet | *Show in Share Sheet* is off, or the input types exclude that item |
 | Works at home, not on cellular | Docbox is on your LAN — see the remote-access section in `README.md` |

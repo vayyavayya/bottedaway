@@ -120,11 +120,10 @@ def find_date_in_text(text: str) -> str:
             a, b, c = match.groups()
             if kind == "ymd":
                 got = _build(int(a), int(b), int(c))
-            elif kind == "dmy_slash":
-                # Ambiguous: 03/04/2024. Prefer D/M unless the first number can't be a day.
-                got = _build(int(c), int(b), int(a)) or _build(int(c), int(a), int(b))
             else:
-                got = _build(int(c), int(b), int(a))
+                # Ambiguous: 03/04/2024 and CamScanner's 03-17-2024. Prefer
+                # day-first, fall back to month-first when that is impossible.
+                got = _build(int(c), int(b), int(a)) or _build(int(c), int(a), int(b))
             if got:
                 return got
 
@@ -184,14 +183,29 @@ def safe_filename(name: str) -> str:
     return cleaned[:120]
 
 
+MAX_FOLDER_DEPTH = 4
+
+
+def safe_segment(name: str) -> str:
+    """One path component, sanitized. Returns '' if nothing survives."""
+    cleaned = _UNSAFE_NAME.sub("-", transliterate(name or "")).strip("-. ")
+    if cleaned in {".", ".."}:
+        return ""
+    return cleaned[:60]
+
+
 def safe_folder(name: str, default: str = "Inbox") -> str:
-    """Single-level folder name; no traversal, no separators."""
-    cleaned = (name or "").strip().strip("/")
-    if not cleaned or cleaned in {".", ".."}:
+    """Folder path inside the library, e.g. `Finance/Invoices/2024`.
+
+    Nested up to MAX_FOLDER_DEPTH levels; every component is sanitized and any
+    traversal attempt is dropped rather than escaping the library root.
+    """
+    raw = (name or "").replace("\\", "/").strip().strip("/")
+    if not raw:
         return default
-    cleaned = cleaned.split("/")[0].split("\\")[0]
-    cleaned = _UNSAFE_NAME.sub("-", transliterate(cleaned)).strip("-. ")
-    return cleaned[:60] or default
+    segments = [safe_segment(part) for part in raw.split("/")]
+    segments = [s for s in segments if s][:MAX_FOLDER_DEPTH]
+    return "/".join(segments) or default
 
 
 def looks_machine_generated(name: str) -> bool:
@@ -210,6 +224,12 @@ def looks_machine_generated(name: str) -> bool:
         r"^\d{6,}([_\- ]\d+)*$",
         r"^[0-9a-f]{16,}$",
         r"^untitled.*",
+        r"^camscanner.*",
+        r"^cs[_-]?\d+.*",
+        r"^adobe scan.*",
+        r"^scanned[ _-].*",
+        r"^neu[ae]s dokument.*",
+        r"^new doc(ument)?[ _-]?\d*.*",
         r"^unbenannt.*",
         r"^file[_\- ]?\d*$",
         r"^pdf[_\- ]?\d+.*",

@@ -118,9 +118,15 @@ function renderFolders() {
   const chips = [`<button class="chip ${state.folder === '' ? 'active' : ''}" data-folder="">All folders</button>`];
   for (const folder of state.folders) {
     const active = state.folder === folder.name ? 'active' : '';
+    // Nested folders show as `Invoices` with a faint `Finance ›` in front, so a
+    // deep tree still fits on a phone.
+    const parts = folder.name.split('/');
+    const leaf = parts.pop();
+    const trail = parts.length ? `<span class="count">${esc(parts.join(' › '))} ›</span> ` : '';
+    const count = folder.total ?? folder.count;
     chips.push(
-      `<button class="chip ${active}" data-folder="${esc(folder.name)}">` +
-      `${folder.inbox ? '📥 ' : ''}${esc(folder.name)}<span class="count">${folder.count}</span></button>`
+      `<button class="chip ${active}" data-folder="${esc(folder.name)}" title="${esc(folder.name)}">` +
+      `${folder.inbox ? '📥 ' : ''}${trail}${esc(leaf)}<span class="count">${count}</span></button>`
     );
   }
   nav.innerHTML = chips.join('');
@@ -368,10 +374,207 @@ el('input-files').onchange = (event) => {
 };
 
 el('input-scan').onchange = (event) => {
-  const files = [...event.target.files];
-  // More than one photo means a multi-page document: staple it into one PDF.
-  sendFiles(files, { combine: files.length > 1 });
+  openScanner([...event.target.files]);
   event.target.value = '';
+};
+
+/* --------------------------------------------------------------- scanner */
+
+const scan = { pages: [], index: 0, mode: 'auto', busy: false, backfilling: false };
+
+/** Shrink a photo before previewing it — a 4000px capture makes the round trip
+ *  slow, and the preview only has to look right on a phone screen. */
+function previewCopy(file, maxEdge = 1100) {
+  return new Promise((resolve) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      const scaleBy = Math.min(1, maxEdge / Math.max(img.width, img.height));
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.round(img.width * scaleBy);
+      canvas.height = Math.round(img.height * scaleBy);
+      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+      URL.revokeObjectURL(url);
+      canvas.toBlob((blob) => resolve(blob || file), 'image/jpeg', 0.85);
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); resolve(file); };
+    img.src = url;
+  });
+}
+
+async function openScanner(files) {
+  if (!files.length) return;
+  scan.pages = [];
+  scan.index = 0;
+  scan.mode = 'auto';
+  el('scanner').classList.remove('hidden');
+  el('scan-name').value = '';
+  el('scan-folder').innerHTML = state.folders
+    .map((f) => `<option value="${esc(f.name)}">${esc(f.name)}</option>`).join('');
+  await addScanPages(files);
+}
+
+async function addScanPages(files) {
+  for (const file of files) {
+    scan.pages.push({ file, small: await previewCopy(file), preview: null, mode: null });
+  }
+  renderScanPages();
+  await showScanPage(scan.pages.length - files.length);
+}
+
+function renderScanPages() {
+  el('scan-count').textContent = `${scan.pages.length} page${scan.pages.length === 1 ? '' : 's'}`;
+  el('scan-pages').innerHTML = scan.pages.map((page, i) => `
+    <button class="scan-thumb ${i === scan.index ? 'active' : ''}" data-page="${i}">
+      ${page.preview ? `<img src="${page.preview}" alt="">` : ''}
+      <span>${i + 1}</span>
+    </button>`).join('');
+  el('scan-pages').querySelectorAll('[data-page]').forEach((node) => {
+    node.onclick = () => showScanPage(Number(node.dataset.page));
+  });
+  el('scan-save').disabled = !scan.pages.length;
+}
+
+/** Enhance one page server-side and cache the result on the page object. */
+async function renderPage(page) {
+  const form = new FormData();
+  form.append('file', page.small, 'page.jpg');
+  form.append('mode', scan.mode);
+  const response = await fetch('/api/enhance/preview', {
+    method: 'POST', body: form, credentials: 'same-origin',
+  });
+  if (!response.ok) throw new Error(await response.text());
+  const report = JSON.parse(response.headers.get('X-Scan-Report') || '{}');
+  if (page.preview) URL.revokeObjectURL(page.preview);
+  page.preview = URL.createObjectURL(await response.blob());
+  page.mode = scan.mode;
+  return report;
+}
+
+async function showScanPage(index) {
+  if (!scan.pages.length) { closeScanner(); return; }
+  scan.index = Math.max(0, Math.min(index, scan.pages.length - 1));
+  const page = scan.pages[scan.index];
+  renderScanPages();
+
+  if (page.preview && page.mode === scan.mode) {
+    el('scan-preview').src = page.preview;
+    backfillPreviews();
+    return;
+  }
+  el('scan-spinner').classList.remove('hidden');
+  try {
+    const report = await renderPage(page);
+    el('scan-preview').src = page.preview;
+    el('scan-note').textContent = [
+      report.cropped ? 'edges found' : 'no edges found — full frame kept',
+      report.applied ? `filter: ${report.applied}` : '',
+      ...(report.warnings || []),
+    ].filter(Boolean).join(' · ');
+    renderScanPages();
+  } catch (error) {
+    el('scan-note').textContent = `preview failed: ${error.message}`;
+    el('scan-preview').src = URL.createObjectURL(page.small);
+  } finally {
+    el('scan-spinner').classList.add('hidden');
+  }
+  backfillPreviews();
+}
+
+/** Fill in the other thumbnails one at a time, so the strip isn't a row of
+ *  blanks while you look at page 1. Serial on purpose: the enhancement is CPU
+ *  work on the server and the visible page must not queue behind five others. */
+async function backfillPreviews() {
+  if (scan.backfilling) return;
+  scan.backfilling = true;
+  try {
+    for (const page of scan.pages) {
+      if (page.mode === scan.mode) continue;
+      const mode = scan.mode;
+      try {
+        await renderPage(page);
+      } catch {
+        break;      // offline or server busy: leave the rest blank, no spam
+      }
+      if (mode !== scan.mode) break;   // the user switched filters; start over
+      renderScanPages();
+    }
+  } finally {
+    scan.backfilling = false;
+  }
+}
+
+el('scan-modes').querySelectorAll('[data-mode]').forEach((btn) => {
+  btn.onclick = () => {
+    scan.mode = btn.dataset.mode;
+    el('scan-modes').querySelectorAll('.chip').forEach((c) => c.classList.remove('active'));
+    btn.classList.add('active');
+    scan.pages.forEach((p) => { p.mode = null; });   // every page re-renders lazily
+    showScanPage(scan.index);
+  };
+});
+
+el('scan-prev').onclick = () => showScanPage(scan.index - 1);
+el('scan-next').onclick = () => showScanPage(scan.index + 1);
+
+el('scan-delete').onclick = () => {
+  const [removed] = scan.pages.splice(scan.index, 1);
+  if (removed?.preview) URL.revokeObjectURL(removed.preview);
+  if (!scan.pages.length) { closeScanner(); return; }
+  showScanPage(Math.min(scan.index, scan.pages.length - 1));
+};
+
+function movePage(delta) {
+  const target = scan.index + delta;
+  if (target < 0 || target >= scan.pages.length) return;
+  const [page] = scan.pages.splice(scan.index, 1);
+  scan.pages.splice(target, 0, page);
+  showScanPage(target);
+}
+el('scan-rotate-left').onclick = () => movePage(-1);
+el('scan-rotate-right').onclick = () => movePage(1);
+
+el('scan-more').onchange = (event) => {
+  addScanPages([...event.target.files]);
+  event.target.value = '';
+};
+
+el('scan-cancel').onclick = () => closeScanner();
+
+function closeScanner() {
+  scan.pages.forEach((p) => p.preview && URL.revokeObjectURL(p.preview));
+  scan.pages = [];
+  el('scanner').classList.add('hidden');
+  el('scan-preview').removeAttribute('src');
+  el('scan-note').textContent = '';
+}
+
+el('scan-save').onclick = async () => {
+  if (!scan.pages.length || scan.busy) return;
+  scan.busy = true;
+  el('scan-save').disabled = true;
+  const form = new FormData();
+  // The originals go to the server: the previews were downscaled for speed.
+  scan.pages.forEach((page, i) => form.append('files', page.file, `page-${i + 1}.jpg`));
+  form.append('mode', scan.mode);
+  form.append('folder', el('scan-folder').value || '');
+  form.append('name', el('scan-name').value || '');
+
+  busy(true);
+  toast(`Building a ${scan.pages.length}-page PDF…`);
+  try {
+    const result = await api('/api/scan', { method: 'POST', body: form });
+    const pdf = result.scan?.pdf || {};
+    closeScanner();
+    toast(pdf.searchable ? 'Saved — searchable PDF' : 'Saved');
+    await refreshAll();
+  } catch (error) {
+    toast(`Could not save: ${error.message}`);
+    el('scan-save').disabled = false;
+  } finally {
+    scan.busy = false;
+    busy(false);
+  }
 };
 
 el('btn-newfolder').onclick = async () => {
@@ -422,7 +625,26 @@ el('btn-settings').onclick = async () => {
       <div class="kv"><span>Worker</span><span>${health.worker_running ? 'running' : 'stopped'}</span></div>
       <div class="kv"><span>Model</span><span>${esc(llm.model || '')} ${llm.reachable ? '· ready' : '· offline'}</span></div>
       <div class="kv"><span>OCR</span><span>${health.extraction && health.extraction.tesseract ? 'tesseract ready' : 'not installed'}</span></div>
+      <div class="kv"><span>Scanning</span><span>${(health.scanning || {}).opencv ? 'full pipeline' : 'basic (no OpenCV)'} · ${(health.scanning || {}).tesseract_pdf ? 'searchable PDFs' : 'image PDFs'}</span></div>
+      <div class="kv"><span>Auto-filing</span><span>${health.auto_file ? 'on' : 'off'}</span></div>
     </div>
+
+    <p class="muted" style="margin-top:18px">Bring in an old library</p>
+    <label class="action wide">
+      <input type="file" id="import-zip" accept=".zip,application/zip" hidden>
+      <span>Upload a zipped export (CamScanner, Files, Drive)</span>
+    </label>
+    <div class="field">
+      <label for="import-path">…or a folder already on the server</label>
+      <input id="import-path" type="text" placeholder="/Users/you/iCloud Drive/CamScanner"
+             autocapitalize="none" autocorrect="off">
+    </div>
+    <div class="rowbtns">
+      <button class="ghost" id="import-go">Import folder</button>
+      <button class="ghost" id="organize-dry">Preview filing</button>
+      <button class="ghost" id="organize-go">File everything</button>
+    </div>
+    <p class="muted" id="import-status" style="white-space:pre-wrap"></p>
 
     <p class="muted" style="margin-top:18px">iOS Share Sheet token</p>
     <code class="token" id="tok">${esc(info.api_token)}</code>
@@ -446,6 +668,69 @@ el('btn-settings').onclick = async () => {
       toast('Copy failed — long-press to select');
     }
   };
+  const status = (text) => { el('import-status').textContent = text; };
+
+  el('import-zip').onchange = async (event) => {
+    const file = event.target.files[0];
+    event.target.value = '';
+    if (!file) return;
+    const form = new FormData();
+    form.append('file', file, file.name);
+    busy(true);
+    status(`Uploading ${file.name}… this can take a while for a big export.`);
+    try {
+      const result = await api('/api/import/zip', { method: 'POST', body: form });
+      status(`Imported ${result.imported}, ${result.duplicates} already here, `
+             + `${result.unsupported} skipped, ${result.failed} failed. `
+             + `The model is reading them now.`);
+      await refreshAll();
+    } catch (error) {
+      status(`Import failed: ${error.message}`);
+    } finally {
+      busy(false);
+    }
+  };
+
+  el('import-go').onclick = async () => {
+    const path = el('import-path').value.trim();
+    if (!path) { status('Give the folder path on the machine running Docbox.'); return; }
+    busy(true);
+    status('Walking the folder…');
+    try {
+      const result = await postJson('/api/import/folder', { path });
+      status(`Imported ${result.imported}, ${result.duplicates} already here, `
+             + `${result.unsupported} skipped, ${result.failed} failed.`);
+      await refreshAll();
+    } catch (error) {
+      status(`Import failed: ${error.message}`);
+    } finally {
+      busy(false);
+    }
+  };
+
+  const organize = async (apply) => {
+    busy(true);
+    try {
+      const result = await postJson('/api/organize', { apply });
+      if (!result.would_move) { status('Nothing to move — everything is already filed.'); return; }
+      if (apply) {
+        status(`Filed ${result.moved} document(s).`);
+        await refreshAll();
+      } else {
+        const sample = result.moves.slice(0, 8)
+          .map((m) => `${m.filename} → ${m.to}`).join('\n');
+        status(`${result.would_move} would move:\n${sample}`
+               + (result.would_move > 8 ? `\n…and ${result.would_move - 8} more` : ''));
+      }
+    } catch (error) {
+      status(error.message);
+    } finally {
+      busy(false);
+    }
+  };
+  el('organize-dry').onclick = () => organize(false);
+  el('organize-go').onclick = () => organize(true);
+
   el('copy-token').onclick = () => copy(el('tok').textContent, 'Token');
   el('copy-url').onclick = () => copy(shortcutUrl, 'URL');
   el('rotate-token').onclick = async () => {

@@ -50,6 +50,17 @@ class Settings:
     llm_timeout: int = field(default_factory=lambda: _env_int("DOCBOX_LLM_TIMEOUT", 180))
     llm_enabled: bool = field(default_factory=lambda: _env_bool("DOCBOX_LLM_ENABLED", True))
 
+    # Scanning: quality of the PDFs a camera capture turns into
+    scan_dpi: int = field(default_factory=lambda: _env_int("DOCBOX_SCAN_DPI", 300))
+    scan_quality: int = field(default_factory=lambda: _env_int("DOCBOX_SCAN_QUALITY", 92))
+    scan_page_size: str = field(default_factory=lambda: _env("DOCBOX_SCAN_PAGE_SIZE", "a4").lower())
+    scan_mode: str = field(default_factory=lambda: _env("DOCBOX_SCAN_MODE", "auto").lower())
+    scan_searchable: bool = field(default_factory=lambda: _env_bool("DOCBOX_SCAN_SEARCHABLE", True))
+    scan_auto_orient: bool = field(default_factory=lambda: _env_bool("DOCBOX_SCAN_AUTO_ORIENT", False))
+
+    # Filing
+    auto_file: bool = field(default_factory=lambda: _env_bool("DOCBOX_AUTO_FILE", True))
+
     # Text extraction
     ocr_enabled: bool = field(default_factory=lambda: _env_bool("DOCBOX_OCR_ENABLED", True))
     ocr_langs: str = field(default_factory=lambda: _env("DOCBOX_OCR_LANGS", "eng+deu"))

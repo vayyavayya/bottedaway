@@ -1,20 +1,25 @@
 """Everything that puts a new file into the library.
 
 One entry point per shape of input: raw bytes (upload / share sheet), a set of
-photos to staple into one PDF (multi-page scan), or a shared link.
+photos to turn into a scanned PDF, or a shared link.
 """
 
 from __future__ import annotations
 
 import hashlib
-import io
+import json
+import logging
+import os
 import time
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 
-from . import db, storage, worker
+from . import db, enhance, pdfbuild, storage, worker
 from .config import settings
 from .naming import safe_filename, safe_folder
 from .pipeline import enqueue
+
+log = logging.getLogger("docbox.ingest")
 
 
 class IngestError(Exception):
@@ -39,6 +44,9 @@ def ingest_bytes(
     folder: str | None = None,
     mime: str = "",
     process: bool = True,
+    hint: str = "",
+    batch_id: int | None = None,
+    extra: dict | None = None,
 ) -> dict:
     if not data:
         raise IngestError("empty file")
@@ -63,7 +71,7 @@ def ingest_bytes(
     name, path = storage.write_upload(target_folder, original, data)
 
     now = time.time()
-    doc_id = db.insert("documents", {
+    values = {
         "folder": target_folder,
         "filename": name,
         "original_name": original,
@@ -74,9 +82,13 @@ def ingest_bytes(
         "status": "pending" if process else "done",
         "next_attempt": now,
         "uploaded_by": user,
+        "source_hint": hint[:200],
+        "batch_id": batch_id,
         "created_at": now,
         "updated_at": now,
-    })
+    }
+    values.update(extra or {})
+    doc_id = db.insert("documents", values)
     db.log_event(doc_id, "uploaded", f"{original} -> {target_folder}/{name}", user)
 
     if process:
@@ -87,36 +99,75 @@ def ingest_bytes(
     return {"duplicate": False, "document": dict(row) if row else {"id": doc_id}}
 
 
-def images_to_pdf(images: list[tuple[str, bytes]]) -> bytes:
-    """Multi-page phone scan -> a single PDF, in the order given."""
+# ------------------------------------------------------------------ scanning
+
+
+def _prepare_one(name: str, data: bytes, mode: str, crop: bool, orient: bool):
     try:
-        from PIL import Image  # type: ignore
-    except ImportError as exc:  # pragma: no cover - depends on install
-        raise IngestError("Pillow is required to combine images into a PDF") from exc
+        return enhance.enhance(data, mode=mode, crop=crop, orient=orient)
+    except Exception as exc:  # a bad page must not lose the whole scan
+        log.warning("enhancement failed for %s: %s", name, exc)
+        report = enhance.ScanReport(mode=mode, applied="failed")
+        report.warnings.append(str(exc))
+        return data, report
 
-    try:
-        import pillow_heif  # type: ignore
 
-        pillow_heif.register_heif_opener()
-    except Exception:
-        pass
+def prepare_pages(
+    images: list[tuple[str, bytes]],
+    mode: str = "auto",
+    crop: bool = True,
+    orient: bool = False,
+) -> tuple[list[bytes], list[dict]]:
+    """Run every captured photo through the enhancement pipeline.
 
-    pages = []
+    Pages go through a thread pool: OpenCV releases the GIL, so a 5-page scan
+    costs about as much wall-clock as its slowest page rather than the sum.
+    """
+    if not images:
+        return [], []
+    if len(images) == 1:
+        cleaned, report = _prepare_one(images[0][0], images[0][1], mode, crop, orient)
+        return [cleaned], [report.as_dict()]
+
     for name, data in images:
-        try:
-            img = Image.open(io.BytesIO(data))
-            img.load()
-        except Exception as exc:
-            raise IngestError(f"could not read image {name}: {exc}") from exc
-        pages.append(img.convert("RGB"))
-    if not pages:
+        if not data:
+            raise IngestError(f"empty page: {name}")
+
+    workers = min(len(images), max(1, (os.cpu_count() or 2) - 1), 4)
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        results = list(pool.map(
+            lambda item: _prepare_one(item[0], item[1], mode, crop, orient), images
+        ))
+    return [r[0] for r in results], [r[1].as_dict() for r in results]
+
+
+def images_to_pdf(
+    images: list[tuple[str, bytes]],
+    mode: str = "auto",
+    crop: bool = True,
+    orient: bool = False,
+    searchable: bool = True,
+    dpi: int | None = None,
+    quality: int | None = None,
+) -> tuple[bytes, dict]:
+    """Phone photos -> one enhanced, searchable, print-resolution PDF."""
+    if not images:
         raise IngestError("no images given")
 
-    buffer = io.BytesIO()
-    pages[0].save(buffer, format="PDF", save_all=True, append_images=pages[1:], resolution=200)
-    for page in pages:
-        page.close()
-    return buffer.getvalue()
+    pages, reports = prepare_pages(images, mode=mode, crop=crop, orient=orient)
+    try:
+        pdf, report = pdfbuild.build_pdf(
+            pages,
+            dpi=dpi or settings.scan_dpi,
+            quality=quality or settings.scan_quality,
+            searchable=searchable,
+            langs=settings.ocr_langs,
+            page_size=settings.scan_page_size,
+        )
+    except Exception as exc:
+        raise IngestError(f"could not build the PDF: {exc}") from exc
+
+    return pdf, {"pages": reports, "pdf": report.as_dict()}
 
 
 def ingest_scan(
@@ -124,16 +175,74 @@ def ingest_scan(
     user: str,
     folder: str | None = None,
     name_hint: str = "",
+    enhance_mode: str = "auto",
+    crop: bool = True,
+    orient: bool = False,
+    searchable: bool = True,
+    hint: str = "",
+    batch_id: int | None = None,
+    process: bool = True,
 ) -> dict:
-    pdf = images_to_pdf(images)
+    pdf, report = images_to_pdf(
+        images, mode=enhance_mode, crop=crop, orient=orient, searchable=searchable
+    )
     stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
     filename = safe_filename(name_hint or f"scan-{stamp}")
     if not filename.lower().endswith(".pdf"):
         filename += ".pdf"
-    return ingest_bytes(pdf, filename, user, folder=folder, mime="application/pdf")
+
+    result = ingest_bytes(
+        pdf, filename, user,
+        folder=folder,
+        mime="application/pdf",
+        process=process,
+        hint=hint,
+        batch_id=batch_id,
+        extra={
+            "page_count": report["pdf"].get("pages", len(images)),
+            "scan_report": json.dumps(report)[:4000],
+            "enhance_mode": enhance_mode,
+            "searchable": 1 if report["pdf"].get("searchable") else 0,
+        },
+    )
+    result["scan"] = report
+    return result
 
 
-def ingest_link(url: str, user: str, title: str = "", note: str = "", folder: str | None = None) -> dict:
+def rebuild_scan(doc_id: int, mode: str, user: str) -> dict:
+    """Re-run enhancement on an existing scan (a different mode, or a retry).
+
+    Only possible for image files — a PDF's original photos are gone once the
+    PDF is built, which is exactly why the UI asks for the mode before saving.
+    """
+    row = db.query_one("SELECT * FROM documents WHERE id = ?", (doc_id,))
+    if not row:
+        raise IngestError("document not found")
+    if row["ext"] not in storage.IMAGE_EXTS:
+        raise IngestError("only image documents can be re-enhanced")
+
+    path = storage.doc_path(row["folder"], row["filename"])
+    if not path.exists():
+        raise IngestError("file missing on disk")
+
+    cleaned, report = enhance.enhance(path.read_bytes(), mode=mode)
+    path.write_bytes(cleaned)
+    db.update("documents", doc_id, {
+        "size": len(cleaned),
+        "sha256": hashlib.sha256(cleaned).hexdigest(),
+        "enhance_mode": mode,
+        "scan_report": json.dumps({"pages": [report.as_dict()]})[:4000],
+        "updated_at": time.time(),
+    })
+    db.log_event(doc_id, "enhanced", f"mode={mode}", user)
+    return {"ok": True, "report": report.as_dict()}
+
+
+# --------------------------------------------------------------------- links
+
+
+def ingest_link(url: str, user: str, title: str = "", note: str = "",
+                folder: str | None = None) -> dict:
     """iOS shares links far more often than files; keep them as readable notes."""
     url = (url or "").strip()
     if not url:

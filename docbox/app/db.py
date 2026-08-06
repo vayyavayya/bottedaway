@@ -65,7 +65,34 @@ CREATE TABLE IF NOT EXISTS events (
 );
 
 CREATE INDEX IF NOT EXISTS idx_events_doc ON events(doc_id, id DESC);
+
+CREATE TABLE IF NOT EXISTS batches (
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    kind        TEXT NOT NULL DEFAULT 'import',
+    source      TEXT NOT NULL DEFAULT '',
+    total       INTEGER NOT NULL DEFAULT 0,
+    imported    INTEGER NOT NULL DEFAULT 0,
+    skipped     INTEGER NOT NULL DEFAULT 0,
+    failed      INTEGER NOT NULL DEFAULT 0,
+    status      TEXT NOT NULL DEFAULT 'running',
+    note        TEXT NOT NULL DEFAULT '',
+    actor       TEXT NOT NULL DEFAULT '',
+    created_at  REAL NOT NULL,
+    finished_at REAL
+);
 """
+
+# Columns added after v1. Applied on every start; adding a column twice is a
+# no-op because we check first.
+MIGRATIONS: list[tuple[str, str]] = [
+    ("documents", "source_hint TEXT NOT NULL DEFAULT ''"),
+    ("documents", "batch_id INTEGER"),
+    ("documents", "page_count INTEGER NOT NULL DEFAULT 0"),
+    ("documents", "scan_report TEXT NOT NULL DEFAULT ''"),
+    ("documents", "enhance_mode TEXT NOT NULL DEFAULT ''"),
+    ("documents", "searchable INTEGER NOT NULL DEFAULT 0"),
+    ("documents", "routed_by TEXT NOT NULL DEFAULT ''"),
+]
 
 
 def connect(path: Path | None = None) -> sqlite3.Connection:
@@ -89,6 +116,17 @@ def connect(path: Path | None = None) -> sqlite3.Connection:
 def init_db() -> None:
     conn = connect()
     conn.executescript(SCHEMA)
+    migrate()
+
+
+def migrate() -> None:
+    """Bring an older database up to date without losing anything."""
+    conn = connect()
+    for table, definition in MIGRATIONS:
+        column = definition.split()[0]
+        existing = {row["name"] for row in conn.execute(f"PRAGMA table_info({table})")}
+        if column not in existing:
+            conn.execute(f"ALTER TABLE {table} ADD COLUMN {definition}")
 
 
 def query(sql: str, params: Iterable[Any] = ()) -> list[sqlite3.Row]:

@@ -1,9 +1,12 @@
 FROM python:3.11-slim
 
-# tesseract = OCR for scans, poppler = PDF text + page rendering, libheif = iPhone photos
+# tesseract  = OCR + the searchable PDF layer
+# poppler     = PDF text extraction and page rendering
+# libheif     = iPhone HEIC photos
+# libglib     = the one shared library opencv-python-headless still links against
 RUN apt-get update && apt-get install -y --no-install-recommends \
         tesseract-ocr tesseract-ocr-deu tesseract-ocr-eng \
-        poppler-utils libheif1 \
+        poppler-utils libheif1 libglib2.0-0 \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /srv/docbox

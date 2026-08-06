@@ -1,13 +1,15 @@
-"""The actual job: read a document, ask the local model what it is, rename it."""
+"""The actual job: read a document, ask the local model what it is, name it,
+and file it in the right folder."""
 
 from __future__ import annotations
 
 import time
 from pathlib import Path
 
-from . import db, extract, llm, storage
+from . import db, extract, llm, routing, storage
 from .config import settings
 from .naming import build_filename, find_date_in_text
+from .storage import IMAGE_EXTS
 
 # Below this the model is guessing; keep the name but ask a human to glance at it.
 CONFIDENCE_FLOOR = 0.35
@@ -43,15 +45,15 @@ def claim_next() -> int | None:
     return int(row["id"]) if cur.rowcount else None
 
 
-def analyze_file(path: Path, original_name: str) -> tuple[llm.Analysis, extract.Extraction]:
+def analyze_file(path: Path, original_name: str, hint: str = "") -> tuple[llm.Analysis, extract.Extraction]:
     """Extraction + model call, with the fallbacks laid out in order."""
     extraction = extract.extract(path)
 
     analysis = llm.Analysis(source="none")
     if extraction.usable:
-        analysis = llm.analyze_text(extraction.text, original_name)
+        analysis = llm.analyze_text(extraction.text, original_name, hint=hint)
 
-    if analysis.source == "none" and path.suffix.lower() in storage.IMAGE_EXTS:
+    if analysis.source == "none" and path.suffix.lower() in IMAGE_EXTS:
         vision = llm.analyze_image(path)
         if vision.source != "none":
             analysis = vision
@@ -61,9 +63,10 @@ def analyze_file(path: Path, original_name: str) -> tuple[llm.Analysis, extract.
         fallback.error = analysis.error
         analysis = fallback
 
-    # The model is told never to invent a date; if it gave none, scrape the text.
+    # The model is told never to invent a date. If it gave none, scrape the
+    # text, then the filename — scanner apps stamp the date into it.
     if not analysis.date:
-        analysis.date = find_date_in_text(extraction.text)
+        analysis.date = find_date_in_text(extraction.text) or find_date_in_text(original_name)
 
     return analysis, extraction
 
@@ -84,7 +87,9 @@ def process_document(doc_id: int) -> dict:
         return {"ok": False, "error": "file missing"}
 
     try:
-        analysis, extraction = analyze_file(path, row["original_name"] or row["filename"])
+        analysis, extraction = analyze_file(
+            path, row["original_name"] or row["filename"], hint=row["source_hint"]
+        )
     except Exception as exc:  # extraction/model crash must not lose the file
         attempts = int(row["attempts"]) + 1
         failed = attempts >= settings.max_attempts
@@ -99,19 +104,6 @@ def process_document(doc_id: int) -> dict:
         db.log_event(doc_id, "error", f"{type(exc).__name__}: {exc}")
         return {"ok": False, "error": str(exc)}
 
-    filename = row["filename"]
-    renamed = False
-    if not row["pinned_name"]:
-        wanted = build_filename(
-            analysis.date,
-            analysis.title,
-            row["ext"].lstrip("."),
-            extra=analysis.correspondent,
-        )
-        if wanted != filename:
-            filename = storage.move_document(row["folder"], filename, row["folder"], wanted)
-            renamed = True
-
     weak = (
         analysis.source == "heuristic"
         or analysis.confidence < CONFIDENCE_FLOOR
@@ -119,7 +111,34 @@ def process_document(doc_id: int) -> dict:
         or not analysis.title
     )
 
+    # --- where does it belong?
+    folder = row["folder"]
+    routed_by = ""
+    if settings.auto_file and not row["pinned_name"]:
+        route = routing.choose_folder(analysis, extraction.text, current=folder)
+        if route.confident and route.folder != folder:
+            folder = route.folder
+            routed_by = route.rule
+
+    # --- what is it called?
+    filename = row["filename"]
+    renamed = False
+    if not row["pinned_name"]:
+        filename = build_filename(
+            analysis.date,
+            analysis.title,
+            row["ext"].lstrip("."),
+            extra=analysis.correspondent,
+        )
+
+    if (folder, filename) != (row["folder"], row["filename"]):
+        filename = storage.move_document(row["folder"], row["filename"], folder, filename)
+        renamed = True
+        if routed_by:
+            db.log_event(doc_id, "filed", f"{row['folder']} -> {folder} ({routed_by})")
+
     db.update("documents", doc_id, {
+        "folder": folder,
         "filename": filename,
         "status": "done",
         "attempts": int(row["attempts"]) + 1,
@@ -133,19 +152,22 @@ def process_document(doc_id: int) -> dict:
         "text_excerpt": extraction.text[:4000],
         "error": analysis.error,
         "renamed": 1 if (renamed or row["renamed"]) else 0,
+        "routed_by": routed_by,
         "updated_at": time.time(),
         "processed_at": time.time(),
     })
     db.log_event(
         doc_id,
         "processed",
-        f"{analysis.source}/{extraction.method} -> {filename}"
+        f"{analysis.source}/{extraction.method} -> {folder}/{filename}"
         + (f" ({analysis.error})" if analysis.error else ""),
     )
     return {
         "ok": True,
+        "folder": folder,
         "filename": filename,
         "renamed": renamed,
+        "routed_by": routed_by,
         "source": analysis.source,
         "method": extraction.method,
         "needs_review": weak,
