@@ -5,7 +5,7 @@
     "address": "73DRYB2YpoHiZUdq37hQmHTR7Yvg5qJKsxxaYrsJSBCJ",
     "chain": "solana",
     "added_date": "2026-08-06",
-    "notes": "5 days | -23.9% | MC $123K | Updated 07:00"
+    "notes": "5 days | -14.6% | MC $114K | Updated 22:09"
   },
   {
     "symbol": "STONKS",
@@ -13,6 +13,14 @@
     "address": "DC6HP2A7SUy49WeazfeWgbwxVpzKdEPuB46mtb7XBzWx",
     "chain": "solana",
     "added_date": "2026-08-10",
-    "notes": "1 days | +136.0% | MC $381K | Updated 07:00"
+    "notes": "1 days | +78.6% | MC $456K | Updated 22:09"
+  },
+  {
+    "symbol": "BULLEN",
+    "name": "BULLENCIAGA",
+    "address": "BULLENxRbvuwjo4DLBKBbh23cNQ4ZbpDeQKuoVXL7exN",
+    "chain": "solana",
+    "added_date": "2026-08-11",
+    "notes": "0 days | +8.9% | MC $253K | Updated 22:09"
   }
 ]
