@@ -5,6 +5,22 @@
     "address": "BsbsB3WLq7vbY5En3MBCAsTrcwaCxNKY2Mp5pGuLpump",
     "chain": "solana",
     "added_date": "2026-09-05",
-    "notes": "3 days | +12.3% | MC $320K | Updated 07:00"
+    "notes": "3 days | +17.4% | MC $311K | Updated 19:51"
+  },
+  {
+    "symbol": "APEWIF",
+    "name": "apewifdress",
+    "address": "DLvpmv8R4oTbC1DixU5yHLbBcmnvfTckGF3XFzLTpump",
+    "chain": "solana",
+    "added_date": "2026-09-08",
+    "notes": "0 days | +65.3% | MC $207K | Updated 19:51"
+  },
+  {
+    "symbol": "FLASH",
+    "name": "FLASH",
+    "address": "DD3AC2Cmr5rXzJ6ErRHeryx3ASLVMhSBALiUqeKcpump",
+    "chain": "solana",
+    "added_date": "2026-09-08",
+    "notes": "0 days | +44.5% | MC $233K | Updated 19:51"
   }
 ]
