@@ -1,18 +1,10 @@
 [
   {
-    "symbol": "ETAC",
-    "name": "ETAC",
-    "address": "7ghKoBZBAjGSgbxix5K5kFhQzu9mxVmbdPxRT8j27eEo",
-    "chain": "solana",
-    "added_date": "2026-09-19",
-    "notes": "10 days | +37.8% | MC $198K | Updated 07:00"
-  },
-  {
     "symbol": "BITDOG",
     "name": "BITCOIN DOG",
     "address": "B3jjDNkBw48utaFxRRSWxg4oUkN23YxodChdEf4bxhQS",
     "chain": "solana",
     "added_date": "2026-09-27",
-    "notes": "2 days | -17.1% | MC $276K | Updated 07:00"
+    "notes": "3 days | -11.8% | MC $222K | Updated 07:00"
   }
 ]
