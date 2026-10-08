@@ -1,18 +1,10 @@
 [
   {
-    "symbol": "BITDOG",
-    "name": "BITCOIN DOG",
-    "address": "B3jjDNkBw48utaFxRRSWxg4oUkN23YxodChdEf4bxhQS",
-    "chain": "solana",
-    "added_date": "2026-09-27",
-    "notes": "10 days | -14.5% | MC $106K | Updated 07:00"
-  },
-  {
     "symbol": "CRYPTOLIFR",
     "name": "CryptoLifer",
     "address": "Gyt8iNjA32HvWQ2fQC1V8Ab77phUTKDmvsW6u1r3omM8",
     "chain": "solana",
     "added_date": "2026-10-07",
-    "notes": "0 days | +4.2% | MC $218K | Updated 07:00"
+    "notes": "1 days | -2.8% | MC $212K | Updated 07:00"
   }
 ]
