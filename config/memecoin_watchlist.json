@@ -5,6 +5,22 @@
     "address": "Gyt8iNjA32HvWQ2fQC1V8Ab77phUTKDmvsW6u1r3omM8",
     "chain": "solana",
     "added_date": "2026-10-07",
-    "notes": "2 days | -32.6% | MC $142K | Updated 07:00"
+    "notes": "2 days | -24.1% | MC $147K | Updated 18:31"
+  },
+  {
+    "symbol": "GNODE",
+    "name": "Get a Node",
+    "address": "AhuPBbDHo2B77qehebV6AzsULve7ghpV41tovqhgpump",
+    "chain": "solana",
+    "added_date": "2026-10-09",
+    "notes": "0 days | +13.9% | MC $349K | Updated 18:31"
+  },
+  {
+    "symbol": "TRUMPTY",
+    "name": "Trumpty Dumpty",
+    "address": "26uqr1EAd5o9czpp3CxWGRPBgzya2733WC7faQX4mqNA",
+    "chain": "solana",
+    "added_date": "2026-10-09",
+    "notes": "0 days | +49.7% | MC $116K | Updated 18:31"
   }
 ]
