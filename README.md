@@ -8,7 +8,8 @@ Kickoff (paste into the Mac session):
 
 then: "Read PROMPT.md in full and build Phase 1 exactly as specified."
 
-## Current files (19.10.2026)
+## Current files (24.10.2026)
+- `MASTER_PLAN.md`: START HERE. Index of the whole plan, inventory with status, build order with dates.
 - `PROMPT.md`: full build spec.
 - `UPDATE_2026-10-19.md`: overrides PROMPT.md where they differ (weekly docs, radioshahall account, correction order, writer safety, privacy).
 - `COACH_PROMPT_v6_live.md`: current live cloud coach prompt = authoritative coaching rules (replaces Appendix A and v5).
