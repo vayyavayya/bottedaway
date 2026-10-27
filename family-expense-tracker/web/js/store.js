@@ -193,6 +193,31 @@ export async function updateTransactionCategory(txnId, categoryId) {
   if (error) throw error;
 }
 
+// ---------- Feedback ----------
+export async function sendFeedback({ householdId, authorName, kind, message, context }) {
+  const userId = await auth.userId();
+  const { error } = await supabase.from('feedback').insert({
+    household_id: householdId,
+    user_id: userId,
+    author_name: authorName || null,
+    kind,
+    message,
+    context,
+  });
+  if (error) throw error;
+}
+
+export async function listFeedback(householdId) {
+  const { data, error } = await supabase
+    .from('feedback')
+    .select('id, author_name, kind, message, status, resolution_note, created_at, updated_at')
+    .eq('household_id', householdId)
+    .order('created_at', { ascending: false })
+    .limit(50);
+  if (error) throw error;
+  return data || [];
+}
+
 // ---------- Assistant ----------
 export async function askAssistant(question, history) {
   const { data, error } = await supabase.functions.invoke('ask', {

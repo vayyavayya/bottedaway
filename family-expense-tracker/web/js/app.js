@@ -190,6 +190,7 @@ function renderShell() {
   mount(`
     <div class="topbar">
       <div><h1>Hearth</h1><div class="sub">${esc(subtitle)}</div></div>
+      <button id="fb-open" aria-label="Send feedback">💬 Feedback</button>
     </div>
     <div class="view" id="view"></div>
     <button class="fab" id="fab" title="Add bill">＋</button>
@@ -204,6 +205,7 @@ function renderShell() {
   appEl.querySelectorAll('.tabbar button').forEach((b) =>
     b.addEventListener('click', () => { state.view = b.dataset.view; renderView(); }));
   appEl.querySelector('#fab').addEventListener('click', () => { state.view = 'capture'; renderView(); });
+  appEl.querySelector('#fb-open').addEventListener('click', () => openFeedbackSheet());
   renderView();
 }
 
@@ -640,10 +642,16 @@ function categorySelect(selectedId) {
 // ------------------------------------------------------------------ SETTINGS
 async function viewSettings() {
   const v = document.getElementById('view');
-  const email = await store.auth.email();
-  const members = await store.getMembers(state.household.id);
+  const [email, members, feedback] = await Promise.all([
+    store.auth.email(),
+    store.getMembers(state.household.id),
+    store.listFeedback(state.household.id).catch(() => null), // null → table not deployed yet
+  ]);
   const memberRows = members.map((m) =>
     `<div class="kv"><span class="k">${esc(m.display_name || 'Member')}</span><span>${m.role}</span></div>`).join('');
+  const feedbackList = feedback === null
+    ? '<p class="muted" style="margin:12px 0 0">Feedback history appears here once the latest database update is applied.</p>'
+    : feedback.map(feedbackItem).join('');
 
   v.innerHTML = `
     <section class="card">
@@ -653,6 +661,14 @@ async function viewSettings() {
       <p class="muted" style="margin:0 0 8px">Share this code — they tap “Join with code” when they sign up.</p>
       <div class="copyrow"><code id="invite">${esc(state.household.invite_code)}</code>
         <button class="btn small" id="copy">Copy</button></div>
+    </section>
+
+    <section class="card">
+      <div class="section-title" style="margin:0 0 8px">Feedback & requests</div>
+      <p class="muted" style="margin:0 0 12px">Spotted a bug, a wrong number, or want something new? Tell Claude —
+      it works through your feedback, ships the improvements, and replies right here.</p>
+      <button class="btn" id="fb-new">💬 Send feedback</button>
+      <div class="fb-list">${feedbackList}</div>
     </section>
 
     <section class="card">
@@ -677,6 +693,111 @@ async function viewSettings() {
     catch { toast(state.household.invite_code); }
   });
   v.querySelector('#signout').addEventListener('click', () => store.auth.signOut());
+  v.querySelector('#fb-new').addEventListener('click', () => openFeedbackSheet());
+  v.querySelectorAll('[data-fb-reply]').forEach((b) => b.addEventListener('click', () => {
+    const original = feedback?.find((f) => f.id === b.dataset.fbReply);
+    const quote = original ? original.message.slice(0, 80).replace(/\s+/g, ' ') : '';
+    openFeedbackSheet('other', quote ? `Re: “${quote}${original.message.length > 80 ? '…' : ''}” — ` : '');
+  }));
+}
+
+// ------------------------------------------------------------------ FEEDBACK
+const FEEDBACK_KINDS = {
+  bug: { emoji: '🐞', label: 'Bug', hint: 'What happened, and what did you expect instead?' },
+  idea: { emoji: '💡', label: 'Idea', hint: 'What would make Hearth more useful for you?' },
+  data: { emoji: '🔢', label: 'Wrong data', hint: 'Which number, transaction or category looks wrong — and what should it be?' },
+  other: { emoji: '💬', label: 'Other', hint: 'Anything on your mind about Hearth.' },
+};
+
+const FEEDBACK_STATUS = {
+  new: 'Received',
+  in_progress: 'Working on it',
+  needs_info: 'Question for you',
+  shipped: 'Done ✓',
+  declined: 'Not planned',
+};
+
+// Where the sender was when they wrote it — enough for Claude to reproduce, no financial data.
+function feedbackContext() {
+  return {
+    view: state.view,
+    month: iso(state.month).slice(0, 7),
+    viewport: `${window.innerWidth}x${window.innerHeight}`,
+    installed: window.matchMedia?.('(display-mode: standalone)').matches || navigator.standalone === true,
+    user_agent: navigator.userAgent,
+    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+  };
+}
+
+function openFeedbackSheet(kind = 'bug', prefill = '') {
+  closeSheet();
+  let current = kind;
+  showSheet(`
+    <h2>💬 Feedback for Hearth</h2>
+    <p class="muted" style="margin:0 0 12px">Goes to Claude, who works through it, ships improvements,
+    and replies under <strong>Settings → Feedback</strong>.</p>
+    <div class="type-choice four" id="fb-kinds">
+      ${Object.entries(FEEDBACK_KINDS).map(([k, v]) => `<button type="button" data-kind="${k}" class="${k === kind ? 'active' : ''}">
+        <span class="e">${v.emoji}</span>${v.label}</button>`).join('')}
+    </div>
+    <form id="fb-form">
+      <div class="field"><textarea id="fb-msg" rows="5" maxlength="4000" required
+        placeholder="${esc(FEEDBACK_KINDS[kind].hint)}"></textarea></div>
+      <p class="muted fb-note">Includes which screen and month you were on and your device type.
+      Your transactions aren't attached — mention specifics (date, shop, amount) if they matter.</p>
+      <div id="fb-err"></div>
+      <button class="btn" type="submit">Send feedback</button>
+    </form>`);
+
+  const msg = document.getElementById('fb-msg');
+  msg.value = prefill;
+  msg.focus();
+  document.querySelectorAll('#fb-kinds button').forEach((b) => b.addEventListener('click', () => {
+    current = b.dataset.kind;
+    document.querySelectorAll('#fb-kinds button').forEach((x) => x.classList.toggle('active', x === b));
+    msg.placeholder = FEEDBACK_KINDS[current].hint;
+  }));
+
+  document.getElementById('fb-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const text = msg.value.trim();
+    const errBox = document.getElementById('fb-err');
+    errBox.innerHTML = '';
+    if (text.length < 3) {
+      errBox.innerHTML = '<div class="error-banner">Add a few words so Claude knows what you mean.</div>';
+      return;
+    }
+    const btn = e.target.querySelector('button[type=submit]');
+    btn.disabled = true; btn.textContent = 'Sending…';
+    try {
+      await store.sendFeedback({
+        householdId: state.household.id,
+        authorName: state.membership?.display_name,
+        kind: current,
+        message: text,
+        context: feedbackContext(),
+      });
+      closeSheet();
+      toast('Sent to Claude ✓');
+      if (state.view === 'settings') viewSettings();
+    } catch (err) {
+      errBox.innerHTML = `<div class="error-banner">${esc(err.message || 'Could not send feedback')}</div>`;
+      btn.disabled = false; btn.textContent = 'Send feedback';
+    }
+  });
+}
+
+function feedbackItem(f) {
+  const k = FEEDBACK_KINDS[f.kind] || FEEDBACK_KINDS.other;
+  return `<div class="fb-item">
+    <div class="fb-head">
+      <span>${k.emoji} <strong>${esc(k.label)}</strong> · ${fmtDate(new Date(f.created_at))}${f.author_name ? ` · ${esc(f.author_name)}` : ''}</span>
+      <span class="pill fb-${esc(f.status)}">${esc(FEEDBACK_STATUS[f.status] || f.status)}</span>
+    </div>
+    <div class="fb-msg">${esc(f.message)}</div>
+    ${f.resolution_note ? `<div class="fb-reply"><span class="who">Claude</span>${esc(f.resolution_note).replace(/\n/g, '<br>')}</div>` : ''}
+    ${f.status === 'needs_info' ? `<button class="btn small secondary" data-fb-reply="${f.id}">Reply</button>` : ''}
+  </div>`;
 }
 
 // ------------------------------------------------------------------ sheet

@@ -103,7 +103,7 @@ a { color: var(--teal-600); }
   width: 100%; padding: 12px 14px; border: 1px solid var(--border);
   border-radius: var(--radius-sm); background: var(--surface-2); color: var(--text);
 }
-.field input:focus, .field select:focus { outline: 2px solid var(--teal-500); border-color: transparent; }
+.field input:focus, .field select:focus, .field textarea:focus { outline: 2px solid var(--teal-500); border-color: transparent; }
 
 .row { display: flex; gap: 10px; }
 .row > * { flex: 1; }
@@ -255,3 +255,29 @@ a { color: var(--teal-600); }
 .chat-inrow { display: flex; gap: 8px; padding: 10px 0 4px; }
 .chat-inrow input { flex: 1; padding: 12px 14px; border-radius: 14px; border: 1px solid #cbd5e1; font-size: 1rem; }
 .chat-inrow .btn { padding: 0 18px; }
+
+/* ---------- Feedback ---------- */
+.type-choice.four { grid-template-columns: repeat(4, 1fr); }
+.type-choice.four button { padding: 10px 4px; font-size: 0.74rem; }
+.fb-note { font-size: 0.8rem; margin: -2px 2px 12px; }
+.fb-list { margin-top: 14px; display: flex; flex-direction: column; }
+.fb-item { padding: 12px 2px; border-top: 1px solid var(--border); }
+.fb-head { display: flex; justify-content: space-between; align-items: center; gap: 8px;
+  font-size: 0.8rem; color: var(--text-dim); }
+.fb-msg { margin-top: 6px; font-size: 0.92rem; white-space: pre-wrap; overflow-wrap: anywhere; }
+.fb-reply { margin-top: 8px; padding: 10px 12px; border-radius: var(--radius-sm);
+  background: rgba(20, 184, 166, 0.10); font-size: 0.88rem; }
+.fb-reply .who { display: block; font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
+  letter-spacing: 0.05em; color: var(--teal-600); margin-bottom: 3px; }
+.fb-item .btn.small { margin-top: 8px; }
+.pill.fb-new { background: var(--surface-2); color: var(--text-dim); border: 1px solid var(--border); }
+.pill.fb-in_progress { background: #fef3c7; color: #92400e; }
+.pill.fb-needs_info { background: #dbeafe; color: #1e40af; }
+.pill.fb-shipped { background: #dcfce7; color: #166534; }
+.pill.fb-declined { background: #f1f5f9; color: #475569; }
+@media (prefers-color-scheme: dark) {
+  .pill.fb-in_progress { background: #3a2e0a; color: #fcd34d; }
+  .pill.fb-needs_info { background: #172554; color: #bfdbfe; }
+  .pill.fb-shipped { background: #10331f; color: #86efac; }
+  .pill.fb-declined { background: #1e293b; color: #94a3b8; }
+}

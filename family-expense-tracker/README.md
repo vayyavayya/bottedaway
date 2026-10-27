@@ -7,6 +7,8 @@ bank statements and utility bills, and see where the family's money goes each mo
 - **Upload a bank statement (PDF or photo)** → every transaction is extracted and categorized.
 - **Monthly insights** → totals, category breakdown, top merchants, and trends vs. last month.
 - **Shared** → you and your partner see the same data via a private household.
+- **Feedback to Claude** → send bugs, ideas and data corrections from the app (💬 *Feedback*);
+  Claude works through them, ships fixes, and replies in *Settings*. See [FEEDBACK_LOOP.md](./FEEDBACK_LOOP.md).
 - **Installs on both iPhones** — no App Store needed. Open in Safari → *Share* → *Add to Home Screen*.
 
 ## How it's built
