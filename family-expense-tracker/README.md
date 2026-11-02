@@ -7,6 +7,10 @@ bank statements and utility bills, and see where the family's money goes each mo
 - **Upload a bank statement (PDF or photo)** → every transaction is extracted and categorized.
 - **Monthly insights** → totals, category breakdown, top merchants, and trends vs. last month.
 - **Shared** → you and your partner see the same data via a private household.
+- **Loans wheel** → a donut of everything you owe, with monthly payments, interest still to pay and a debt-free date; tap a loan for its payoff schedule.
+- **Month outlook** → your day-to-day spending against your usual month, a projection to month end, and the days that ran above normal.
+- **Weekly burn rate** → what you can spend this week: (income − fixed costs − savings goal) × 12 ÷ 52, and how much is left.
+- **Worth a second look?** → Hearth flags purchases that stand out; tell Claude what and why, and get an honest verdict and a tip.
 - **Feedback to Claude** → send bugs, ideas and data corrections from the app (💬 *Feedback*);
   Claude works through them, ships fixes, and replies in *Settings*. See [FEEDBACK_LOOP.md](./FEEDBACK_LOOP.md).
 - **Installs on both iPhones** — no App Store needed. Open in Safari → *Share* → *Add to Home Screen*.
@@ -51,3 +55,12 @@ Your bills and statements live in **your own** Supabase project. Row Level Secur
 only members of your household can read them. The only data that leaves your project is the
 image/PDF you choose to analyze, sent to the Anthropic API for reading — and only from the
 server-side function, never broadcast from the phones.
+
+## Tests
+
+The money math behind the outlook, burn rate, loans and heads-up lives in
+`web/js/finance.js` and has unit tests (Node 18+, no install needed):
+
+```bash
+node --test tests/finance.test.mjs
+```

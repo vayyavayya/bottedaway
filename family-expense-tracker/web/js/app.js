@@ -1,6 +1,7 @@
 import { supabase, CONFIG_OK, DEFAULT_CURRENCY } from './supabaseClient.js';
 import * as store from './store.js';
-import { money, fmtDate, monthLabel, esc, donutSVG, toast, DOC_TYPES } from './ui.js';
+import { money, fmtDate, monthLabel, esc, donutSVG, outlookSVG, toast, DOC_TYPES } from './ui.js';
+import { monthOutlook, burnRate, loanSchedule, headsUpCandidates, matchesLoan } from './finance.js';
 
 const appEl = document.getElementById('app');
 
@@ -15,6 +16,9 @@ const state = {
   captureType: 'receipt',
   captureFile: null,
   chat: [],
+  span: [],       // up to 7 months of transactions behind the Home screen
+  loans: null,    // null until loaded, or when the loans table isn't deployed yet
+  reviews: null,  // purchase reviews; null when not deployed yet
 };
 
 // ------------------------------------------------------------------ boot
@@ -226,19 +230,40 @@ async function viewHome() {
   const v = document.getElementById('view');
   v.innerHTML = `<div class="processing-note"><span class="spinner dark"></span> Loading your month…</div>`;
 
-  const from = iso(startOfMonth(state.month));
+  const monthStart = startOfMonth(state.month);
+  const from = iso(monthStart);
   const to = iso(endOfMonth(state.month));
   const prev = startOfMonth(new Date(state.month.getFullYear(), state.month.getMonth() - 1, 1));
+  const prevFrom = iso(prev), prevTo = iso(endOfMonth(prev));
+  // Six months of history before the viewed month feed the outlook and burn rate.
+  const spanFrom = iso(new Date(monthStart.getFullYear(), monthStart.getMonth() - 6, 1));
 
-  let txns, prevTxns;
+  let span, loans, reviews;
   try {
-    [txns, prevTxns] = await Promise.all([
-      store.getTransactions(state.household.id, from, to),
-      store.getTransactions(state.household.id, iso(startOfMonth(prev)), iso(endOfMonth(prev))),
+    [span, loans, reviews] = await Promise.all([
+      store.getTransactionsSpan(state.household.id, spanFrom, to),
+      store.getLoans(state.household.id).catch(() => null),          // null → not deployed yet
+      store.getPurchaseReviews(state.household.id).catch(() => null),
     ]);
   } catch (e) { v.innerHTML = `<div class="error-banner">${esc(e.message)}</div>`; return; }
+  Object.assign(state, { span, loans, reviews });
+  const txns = span.filter((t) => t.txn_date >= from && t.txn_date <= to);
+  const prevTxns = span.filter((t) => t.txn_date >= prevFrom && t.txn_date <= prevTo);
 
   if (txns.length) state.currency = txns[0].currency || state.currency;
+
+  const today = new Date();
+  const isCurrentMonth = from === iso(startOfMonth(today));
+  const loanList = loans || [];
+  const burn = isCurrentMonth
+    ? burnRate({ txns: span, loans: loanList, today, savingsPct: state.household.savings_target_pct ?? 20 })
+    : null;
+  const outlook = monthStart <= today ? monthOutlook({ txns: span, loans: loanList, monthStart, today }) : null;
+  const showOutlook = outlook && outlook.lastDay > 0 && (outlook.actualCum > 0 || outlook.historyMonthCount > 0);
+  const headsUp = isCurrentMonth && reviews !== null
+    ? headsUpCandidates({ txns: span, loans: loanList, reviewedIds: new Set(reviews.map((r) => r.transaction_id)), today })
+    : [];
+  const recentVerdicts = (reviews || []).filter((r) => r.status === 'reviewed').slice(0, 2);
 
   const debits = txns.filter((t) => t.direction === 'debit');
   const credits = txns.filter((t) => t.direction === 'credit');
@@ -275,6 +300,10 @@ async function viewHome() {
       <div class="stat" data-flow="credit" style="cursor:pointer"><div class="label">Money in</div><div class="value credit">${money(totalIn, state.currency)}</div></div>
     </section>
 
+    ${burn ? burnCard(burn) : ''}
+    ${showOutlook ? outlookCard(outlook, burn) : ''}
+    ${headsUp.length || recentVerdicts.length ? headsUpCard(headsUp, recentVerdicts) : ''}
+
     ${txns.length === 0 ? emptyState('No activity yet this month', 'Tap ＋ to snap a grocery bill or upload a statement.') : `
     <section class="card">
       <div class="section-title" style="margin:0 0 12px">Where it went</div>
@@ -284,8 +313,11 @@ async function viewHome() {
       </div>
     </section>
 
-    ${bars ? `<section class="card"><div class="section-title" style="margin:0 0 6px">Top categories</div>${bars}</section>` : ''}
+    ${bars ? `<section class="card"><div class="section-title" style="margin:0 0 6px">Top categories</div>${bars}</section>` : ''}`}
 
+    ${loans !== null ? loansCard(loanList) : ''}
+
+    ${txns.length === 0 ? '' : `
     <section class="insight">
       <h3>💡 Insights — ${monthLabel(state.month)}</h3>
       <ul>${insightLines(totalSpent, prevSpent, byCat, debits).map((l) => `<li>${l}</li>`).join('')}</ul>
@@ -309,6 +341,386 @@ async function viewHome() {
     el.addEventListener('click', () => openCategorySheet(el.dataset.cat, byCat, debits)));
   v.querySelectorAll('[data-flow]').forEach((el) =>
     el.addEventListener('click', () => openFlowSheet(el.dataset.flow, el.dataset.flow === 'debit' ? debits : credits)));
+  v.querySelector('#burn-info')?.addEventListener('click', () => openBurnSheet(burn));
+  v.querySelectorAll('[data-review]').forEach((el) => el.addEventListener('click', () => {
+    openReviewSheet(el.dataset.review, headsUp.find((c) => c.txn.id === el.dataset.review)?.reason);
+  }));
+  v.querySelectorAll('[data-skip]').forEach((el) => el.addEventListener('click', async () => {
+    el.disabled = true;
+    try { await store.dismissPurchase(state.household.id, el.dataset.skip); toast('Skipped'); viewHome(); }
+    catch (e) { el.disabled = false; toast(e.message || 'Could not skip'); }
+  }));
+  v.querySelectorAll('[data-verdict]').forEach((el) =>
+    el.addEventListener('click', () => openVerdictSheet(el.dataset.verdict)));
+  v.querySelectorAll('[data-loan]').forEach((el) =>
+    el.addEventListener('click', () => openLoanSheet(el.dataset.loan)));
+  v.querySelector('#loan-add')?.addEventListener('click', () => openLoanForm());
+}
+
+// ------------------------------------------------------------------ WEEKLY BURN
+function burnCard(b) {
+  const cur = state.currency;
+  const title = '<div class="section-title" style="margin:0">🔥 Weekly burn rate</div>';
+  if (b.basis === 'none') {
+    return `<section class="card">${title}<p class="muted" style="margin:6px 0 0">Your recommended weekly budget
+      appears after your first full month in Hearth.</p></section>`;
+  }
+  const pct = b.weekly > 0 ? Math.min(100, (b.weekSpent / b.weekly) * 100) : 100;
+  const over = b.weekLeft < 0;
+  return `<section class="card">
+    <div class="burn-head">
+      <div>${title}<div class="burn-rate">${money(b.weekly, cur)}<span> a week, recommended</span></div></div>
+      <button class="btn small secondary" id="burn-info">How?</button>
+    </div>
+    <div class="meter"><div class="meter-fill ${over ? 'over' : pct > 80 ? 'warn' : ''}" style="width:${pct}%"></div></div>
+    <p class="burn-line">${over
+      ? `<strong>${money(-b.weekLeft, cur)} over</strong> this week — ${money(b.weekSpent, cur)} spent since Monday.`
+      : `${money(b.weekSpent, cur)} spent since Monday · <strong>${money(b.weekLeft, cur)} left</strong>, about
+         ${money(b.perDayLeft, cur)} a day for the ${b.daysLeft} day${b.daysLeft === 1 ? '' : 's'} left.`}</p>
+    ${b.deficit > 0 ? `<div class="warn-banner">Fixed costs plus your ${b.savingsPct}% savings goal come to
+      ${money(b.deficit, cur)} a month more than your income. Lower the savings goal, or look at your fixed costs.</div>` : ''}
+    ${b.basis === 'history' ? '<p class="muted small-note">No income in Hearth yet, so this is 90% of your usual week.</p>' : ''}
+  </section>`;
+}
+
+function openBurnSheet(b) {
+  const cur = state.currency;
+  const months = `${b.monthsUsed} full month${b.monthsUsed === 1 ? '' : 's'}`;
+  const math = b.basis === 'income' ? `
+    <p class="muted" style="margin:0 0 8px">From your last ${months}:</p>
+    <div class="kv"><span class="k">Average money in</span><span>${money(b.incomeMonthly, cur)}</span></div>
+    <div class="kv"><span class="k">Fixed costs (rent, utilities, insurance, taxes, loans)</span><span>− ${money(b.fixedMonthly, cur)}</span></div>
+    <div class="kv"><span class="k">Savings goal (${b.savingsPct}%)</span><span>− ${money(b.savingsMonthly, cur)}</span></div>
+    <div class="kv total"><span class="k">Left for day-to-day spending</span><span>${money(b.budgetMonthly, cur)} a month</span></div>
+    <div class="kv total"><span class="k">Per week (× 12 ÷ 52)</span><span>${money(b.weekly, cur)}</span></div>
+    ${b.unseenLoanPayments ? `<p class="muted small-note">Includes ${money(b.unseenLoanPayments, cur)} of loan payments that don't show up in your bank feed.</p>` : ''}`
+    : `
+    <p class="muted" style="margin:0 0 8px">No income has come into Hearth yet, so this uses your last ${months}:</p>
+    <div class="kv"><span class="k">Your usual week of day-to-day spending</span><span>${money(b.avgWeekVariable, cur)}</span></div>
+    <div class="kv total"><span class="k">Recommended: 90% of that</span><span>${money(b.weekly, cur)}</span></div>`;
+  showSheet(`
+    <h2>🔥 How your weekly burn rate is worked out</h2>
+    ${math}
+    <form id="sv-form" class="row" style="margin-top:14px;align-items:flex-end">
+      <div class="field" style="margin:0"><label>Savings goal (% of income)</label>
+        <input id="sv-pct" inputmode="decimal" value="${b.savingsPct}" /></div>
+      <button class="btn small" type="submit" style="flex:0 0 auto">Save</button>
+    </form>
+    <div id="sv-err"></div>
+    <p class="muted small-note">Day-to-day spending is everything except the fixed costs above. The week runs Monday to Sunday.</p>`);
+  document.getElementById('sv-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const pct = parseNum(document.getElementById('sv-pct').value);
+    const err = document.getElementById('sv-err');
+    if (pct == null || pct < 0 || pct > 90) { err.innerHTML = '<div class="error-banner">Enter a number from 0 to 90.</div>'; return; }
+    try {
+      await store.updateSavingsTarget(state.household.id, pct);
+      state.household.savings_target_pct = pct;
+      closeSheet(); toast('Savings goal updated'); viewHome();
+    } catch (ex) { err.innerHTML = `<div class="error-banner">${esc(ex.message || 'Could not save')}</div>`; }
+  });
+}
+
+// ------------------------------------------------------------------ MONTH OUTLOOK
+function outlookCard(o, burn) {
+  const cur = state.currency;
+  const budget = o.isCurrent && burn && burn.basis !== 'none' ? burn.budgetMonthly : null;
+  const chart = o.historyMonthCount ? o : { ...o, projected: null };
+  let summary;
+  if (o.isCurrent) {
+    const diff = o.typicalToday != null ? o.actualCum - o.typicalToday : null;
+    summary = `Day ${o.lastDay}: <strong>${money(o.actualCum, cur)}</strong> spent`
+      + (diff != null && Math.abs(diff) >= 1 ? `, ${money(Math.abs(diff), cur)} ${diff > 0 ? 'above' : 'below'} your usual pace.` : '.')
+      + (o.historyMonthCount ? ` At this pace you'll reach about <strong>${money(o.projected, cur)}</strong> by the end of the month${budget ? ` (budget ${money(budget, cur)})` : ''}.` : '');
+  } else {
+    summary = `<strong>${money(o.actualCum, cur)}</strong> of day-to-day spending`
+      + (o.typicalTotal != null ? `, against ${money(o.typicalTotal, cur)} in a usual month.` : '.');
+  }
+  const above = o.aboveDays.slice(0, 3).map((d) => `<li><strong>${fmtDate(d.date)}</strong> · ${money(d.spent, cur)}${d.topMerchant ? ` · ${esc(d.topMerchant)}` : ''}</li>`).join('');
+  return `<section class="card">
+    <div class="section-title" style="margin:0 0 8px">📈 Month outlook</div>
+    ${outlookSVG(chart, { budget })}
+    <div class="ol-legend"><span class="k-actual">This month</span>${o.historyMonthCount ? '<span class="k-typical">Usual month</span>' : ''}${chart.projected != null ? '<span class="k-proj">Projection</span>' : ''}${budget ? '<span class="k-budget">Budget</span>' : ''}${o.threshold ? '<span class="k-hi">Above a normal day</span>' : ''}</div>
+    <p class="ol-summary">${summary}</p>
+    ${above ? `<div class="section-title" style="margin:10px 0 4px">Days above normal (over ${money(o.threshold, cur)})</div><ul class="ol-days">${above}</ul>` : ''}
+    <p class="muted small-note">${o.historyMonthCount ? '' : 'Your usual month and the projection appear after your first full month. '}Day-to-day spending only: rent, utilities, insurance, taxes and loans are left out.</p>
+  </section>`;
+}
+
+// ------------------------------------------------------------------ PURCHASE HEADS-UP
+const VERDICTS = {
+  necessary: ['✅', 'Necessary'],
+  nice_to_have: ['🙂', 'Nice to have'],
+  unnecessary: ['⚠️', 'Likely unnecessary'],
+};
+function verdictChip(v) {
+  const [emoji, label] = VERDICTS[v] || ['💬', 'Reviewed'];
+  return `<span class="verdict v-${esc(v)}">${emoji} ${label}</span>`;
+}
+
+function headsUpCard(candidates, verdicts) {
+  const cur = state.currency;
+  const items = candidates.map(({ txn, reason }) => `<div class="hu-item">
+      <div class="hu-body">
+        <div class="t">${esc(txn.merchant || txn.description || 'Purchase')} · <strong>${money(txn.amount, txn.currency || cur)}</strong></div>
+        <div class="s">${fmtDate(txn.txn_date)} · ${esc(reason)}</div>
+      </div>
+      <div class="hu-actions">
+        <button class="btn small" data-review="${txn.id}">Review</button>
+        <button class="btn small ghost" data-skip="${txn.id}">Not now</button>
+      </div>
+    </div>`).join('');
+  const recent = verdicts.map((r) => `<div class="hu-verdict" data-verdict="${r.transaction_id}">
+      ${verdictChip(r.verdict)}<span>${esc(r.headline || '')}</span></div>`).join('');
+  return `<section class="card">
+    <div class="section-title" style="margin:0 0 6px">🤔 Worth a second look?</div>
+    ${items ? `<p class="muted" style="margin:0 0 4px">Tell Claude what these were and why you bought them, and get an honest take.</p>${items}` : ''}
+    ${recent ? `<div class="section-title" style="margin:${items ? 14 : 4}px 0 6px">Recent verdicts</div>${recent}` : ''}
+  </section>`;
+}
+
+function verdictBlock(r) {
+  return `<div class="verdict-block">${verdictChip(r.verdict)}
+    <h3>${esc(r.headline || '')}</h3>
+    <p>${esc(r.feedback || '')}</p>
+    ${r.tip ? `<p class="tip">💡 ${esc(r.tip)}</p>` : ''}
+    ${r.what ? `<p class="muted small-note">You said: “${esc(r.what)}”${r.why ? ` — ${esc(r.why)}` : ''}</p>` : ''}
+  </div>`;
+}
+
+function openReviewSheet(txnId, reason) {
+  const t = state.span.find((x) => x.id === txnId);
+  if (!t) return;
+  showSheet(`
+    <h2>🤔 ${esc(t.merchant || t.description || 'Purchase')} · ${money(t.amount, t.currency || state.currency)}</h2>
+    <p class="muted" style="margin:0 0 12px">${fmtDate(t.txn_date)} · ${esc(t.categories?.name || 'Uncategorized')}${reason ? ` · ${esc(reason)}` : ''}</p>
+    <form id="rv-form">
+      <div class="field"><label>What was it?</label>
+        <input id="rv-what" maxlength="500" required placeholder="e.g. Noise-cancelling headphones" /></div>
+      <div class="field"><label>Why did you buy it?</label>
+        <textarea id="rv-why" rows="3" maxlength="1000" required placeholder="e.g. My old pair broke and I'm on calls all day"></textarea></div>
+      <div id="rv-err"></div>
+      <button class="btn" type="submit">Ask Claude</button>
+    </form>
+    <div id="rv-result"></div>`);
+  document.getElementById('rv-what').focus();
+  document.getElementById('rv-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const what = document.getElementById('rv-what').value.trim();
+    const why = document.getElementById('rv-why').value.trim();
+    const err = document.getElementById('rv-err');
+    err.innerHTML = '';
+    if (what.length < 2 || why.length < 2) {
+      err.innerHTML = '<div class="error-banner">Add a few words for both, so Claude can judge it fairly.</div>';
+      return;
+    }
+    const form = e.target;
+    const btn = form.querySelector('button[type=submit]');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> Claude is thinking…';
+    try {
+      const review = await store.reviewPurchase(txnId, what, why);
+      form.remove();
+      document.getElementById('rv-result').innerHTML = `${verdictBlock(review)}
+        <button class="btn" id="rv-done" style="margin-top:14px">Done</button>`;
+      document.getElementById('rv-done').addEventListener('click', () => { closeSheet(); viewHome(); });
+    } catch (ex) {
+      err.innerHTML = `<div class="error-banner">${esc(ex.message || 'Could not get a review')}</div>`;
+      btn.disabled = false; btn.textContent = 'Ask Claude';
+    }
+  });
+}
+
+function openVerdictSheet(txnId) {
+  const r = (state.reviews || []).find((x) => x.transaction_id === txnId);
+  if (!r) return;
+  const t = state.span.find((x) => x.id === txnId);
+  const title = t ? `${esc(t.merchant || t.description || 'Purchase')} · ${money(t.amount, t.currency || state.currency)}` : esc(r.what || 'Purchase');
+  showSheet(`<h2>🤔 ${title}</h2>${t ? `<p class="muted" style="margin:0 0 12px">${fmtDate(t.txn_date)}</p>` : ''}${verdictBlock(r)}`);
+}
+
+// ------------------------------------------------------------------ LOANS
+const LOAN_COLORS = ['#0d9488', '#f59e0b', '#6366f1', '#e11d48', '#0ea5e9', '#8b5cf6', '#84cc16', '#f97316'];
+const LOAN_KINDS = {
+  mortgage: ['🏠', 'Mortgage'], car: ['🚗', 'Car loan'], personal: ['💳', 'Personal loan'],
+  credit_card: ['💳', 'Credit card'], student: ['🎓', 'Student loan'], family: ['👪', 'Family or friends'], other: ['📄', 'Other'],
+};
+
+function compactMoney(amount) {
+  try {
+    return new Intl.NumberFormat(undefined, { style: 'currency', currency: state.currency, notation: 'compact', maximumFractionDigits: 1 }).format(amount);
+  } catch { return money(amount, state.currency); }
+}
+function wholeMoney(amount) {
+  try {
+    return new Intl.NumberFormat(undefined, { style: 'currency', currency: state.currency, maximumFractionDigits: 0 }).format(amount);
+  } catch { return money(amount, state.currency); }
+}
+function monthYear(ym) {
+  const [y, m] = ym.split('-').map(Number);
+  return new Date(y, m - 1, 1).toLocaleDateString(undefined, { month: 'short', year: 'numeric' });
+}
+function ordinal(n) {
+  const suffix = n % 10 === 1 && n !== 11 ? 'st' : n % 10 === 2 && n !== 12 ? 'nd' : n % 10 === 3 && n !== 13 ? 'rd' : 'th';
+  return `${n}${suffix}`;
+}
+function parseNum(s) {
+  let t = String(s ?? '').trim().replace(/\s/g, '');
+  if (!t) return null;
+  if (t.includes(',')) t = t.replace(/\./g, '').replace(',', '.'); // German: 1.234,56
+  const n = Number(t);
+  return Number.isFinite(n) ? n : NaN;
+}
+
+function loansCard(loans) {
+  const cur = state.currency;
+  if (!loans.length) {
+    return `<section class="card">
+      <div class="section-title" style="margin:0 0 6px">🏦 Loans</div>
+      <p class="muted" style="margin:0 0 12px">Add your loans to see what you owe, what they cost each month,
+      and when each one is paid off.</p>
+      <button class="btn secondary" id="loan-add">＋ Add a loan</button>
+    </section>`;
+  }
+  const total = sum(loans.map((l) => l.balance));
+  const monthly = sum(loans.map((l) => l.monthly_payment || 0));
+  const schedules = loans.map((l) => loanSchedule(l));
+  const interest = sum(schedules.map((s) => s.interestLeft || 0));
+  const unknownInterest = schedules.some((s) => s.interestLeft == null);
+  const debtFree = schedules.every((s) => s.payoffDate) ? schedules.map((s) => s.payoffDate).sort().at(-1) : null;
+  const color = (i) => LOAN_COLORS[i % LOAN_COLORS.length];
+  const legend = loans.map((l, i) => `
+    <div class="leg" data-loan="${l.id}" style="cursor:pointer"><span class="dot" style="background:${color(i)}"></span>
+      <span>${esc(l.name)}</span>
+      <span class="pct">${total ? Math.round((l.balance / total) * 100) : 0}%</span>
+      <span class="amt">${wholeMoney(l.balance)}</span></div>`).join('');
+  return `<section class="card">
+    <div class="section-title" style="margin:0 0 12px">🏦 Loans</div>
+    <div class="donut-wrap">
+      ${donutSVG(loans.map((l, i) => ({ value: Number(l.balance), color: color(i) })), { center: { top: compactMoney(total), bottom: 'owed' } })}
+      <div class="legend">${legend}</div>
+    </div>
+    <div class="loan-stats">
+      <div><span>Monthly payments</span><strong>${money(monthly, cur)}</strong></div>
+      <div><span>Interest still to pay</span><strong>${unknownInterest ? 'at least ' : ''}${money(interest, cur)}</strong></div>
+      <div><span>Debt-free</span><strong>${debtFree ? monthYear(debtFree) : '—'}</strong></div>
+    </div>
+    ${schedules.some((s) => s.neverPaysOff) ? `<div class="warn-banner">One payment doesn't cover its loan's interest,
+      so that balance never goes down. Tap the loan for details.</div>` : ''}
+    <button class="btn secondary" id="loan-add" style="margin-top:12px">＋ Add a loan</button>
+  </section>`;
+}
+
+function openLoanSheet(id) {
+  const l = (state.loans || []).find((x) => x.id === id);
+  if (!l) return;
+  const s = loanSchedule(l);
+  const cur = state.currency;
+  const [emoji, kindLabel] = LOAN_KINDS[l.kind] || LOAN_KINDS.other;
+  const payments = l.payment_pattern
+    ? state.span.filter((t) => t.direction === 'debit' && matchesLoan(t, [l]))
+    : [];
+  const payoff = s.neverPaysOff ? 'Never, at this payment'
+    : s.monthsLeft != null ? `${monthYear(s.payoffDate)} · ${s.monthsLeft} month${s.monthsLeft === 1 ? '' : 's'}`
+    : l.end_date ? fmtDate(l.end_date) : '—';
+  const row = (k, val) => `<div class="kv"><span class="k">${k}</span><span>${val}</span></div>`;
+  showSheet(`
+    <h2>${emoji} ${esc(l.name)}</h2>
+    <p class="muted" style="margin:0 0 10px">${esc(kindLabel)}${l.lender ? ` · ${esc(l.lender)}` : ''}</p>
+    ${s.paidPct != null ? `<div class="meter"><div class="meter-fill" style="width:${s.paidPct}%"></div></div>
+      <p class="muted small-note" style="margin:6px 0 10px">${Math.round(s.paidPct)}% paid off of ${money(l.original_amount, cur)}</p>` : ''}
+    ${row('Still owed', `<strong>${money(l.balance, cur)}</strong>`)}
+    ${row('Interest rate', `${Number(l.interest_rate || 0).toLocaleString(undefined, { maximumFractionDigits: 3 })}% a year`)}
+    ${row('Monthly payment', l.monthly_payment ? money(l.monthly_payment, cur) : '—')}
+    ${row('Paid off', payoff)}
+    ${row('Interest still to pay', s.interestLeft != null ? money(s.interestLeft, cur) : '—')}
+    ${l.payment_day ? row('Payment day', `${ordinal(l.payment_day)} of the month`) : ''}
+    ${l.payment_pattern ? row('Last payment seen', payments[0]
+      ? `${fmtDate(payments[0].txn_date)} · ${money(payments[0].amount, payments[0].currency || cur)}`
+      : 'None in the last 7 months') : ''}
+    ${l.notes ? `<p class="muted small-note" style="margin-top:8px">${esc(l.notes)}</p>` : ''}
+    ${s.neverPaysOff ? `<div class="warn-banner">${money(l.monthly_payment, cur)} a month doesn't cover the
+      ${money((l.balance * l.interest_rate) / 1200, cur)} of monthly interest, so the balance grows. Talk to
+      ${esc(l.lender || 'the lender')} about the payment.</div>` : ''}
+    <div class="row" style="margin-top:16px">
+      <button class="btn secondary" id="loan-edit">Edit</button>
+      <button class="btn danger" id="loan-del">Delete</button>
+    </div>`);
+  document.getElementById('loan-edit').addEventListener('click', () => openLoanForm(l));
+  document.getElementById('loan-del').addEventListener('click', async () => {
+    if (!confirm(`Delete “${l.name}”?`)) return;
+    try { await store.deleteLoan(l.id); closeSheet(); toast('Loan deleted'); viewHome(); }
+    catch (e) { toast(e.message || 'Could not delete'); }
+  });
+}
+
+function openLoanForm(l = null) {
+  closeSheet();
+  const val = (v) => (v == null ? '' : esc(String(v)));
+  const field = (label, html) => `<div class="field"><label>${label}</label>${html}</div>`;
+  const num = (id, v, ph) => `<input id="${id}" inputmode="decimal" autocomplete="off" value="${val(v)}" placeholder="${ph}" />`;
+  showSheet(`
+    <h2>${l ? 'Edit loan' : '🏦 Add a loan'}</h2>
+    <form id="loan-form">
+      ${field('Name', `<input id="ln-name" maxlength="80" required value="${val(l?.name)}" placeholder="e.g. Car loan" />`)}
+      <div class="row">
+        ${field('Type', `<select id="ln-kind">${Object.entries(LOAN_KINDS).map(([k, [e, t]]) =>
+          `<option value="${k}" ${(l?.kind || 'other') === k ? 'selected' : ''}>${e} ${t}</option>`).join('')}</select>`)}
+        ${field('Lender', `<input id="ln-lender" maxlength="80" value="${val(l?.lender)}" placeholder="e.g. Santander" />`)}
+      </div>
+      <div class="row">
+        ${field('Still owed', num('ln-balance', l?.balance, '12500'))}
+        ${field('Original amount', num('ln-orig', l?.original_amount, '20000'))}
+      </div>
+      <div class="row">
+        ${field('Interest rate (% a year)', num('ln-rate', l?.interest_rate, '4.9'))}
+        ${field('Monthly payment', num('ln-pay', l?.monthly_payment, '350'))}
+      </div>
+      <div class="row">
+        ${field('Payment day', `<input id="ln-day" inputmode="numeric" value="${val(l?.payment_day)}" placeholder="1–31" />`)}
+        ${field('Ends (optional)', `<input id="ln-end" type="date" value="${val(l?.end_date)}" />`)}
+      </div>
+      ${field('Text on your bank statement', `<input id="ln-pattern" maxlength="60" value="${val(l?.payment_pattern)}" placeholder="e.g. SANTANDER" />`)}
+      <p class="muted small-note" style="margin:-6px 2px 12px">Lets Hearth find this loan's payments in your bank feed.</p>
+      ${field('Notes', `<textarea id="ln-notes" rows="2" maxlength="500">${val(l?.notes)}</textarea>`)}
+      <div id="ln-err"></div>
+      <button class="btn" type="submit">Save loan</button>
+    </form>`);
+  document.getElementById('loan-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const get = (id) => document.getElementById(id).value;
+    const err = document.getElementById('ln-err');
+    const loan = {
+      id: l?.id,
+      name: get('ln-name').trim(),
+      kind: get('ln-kind'),
+      lender: get('ln-lender').trim() || null,
+      balance: parseNum(get('ln-balance')),
+      original_amount: parseNum(get('ln-orig')),
+      interest_rate: parseNum(get('ln-rate')) ?? 0,
+      monthly_payment: parseNum(get('ln-pay')),
+      payment_day: parseNum(get('ln-day')),
+      end_date: get('ln-end') || null,
+      payment_pattern: get('ln-pattern').trim() || null,
+      notes: get('ln-notes').trim() || null,
+    };
+    const problem = !loan.name ? 'Give the loan a name.'
+      : loan.balance == null || Number.isNaN(loan.balance) || loan.balance < 0 ? 'Enter how much is still owed.'
+      : [loan.original_amount, loan.monthly_payment].some((n) => Number.isNaN(n) || n < 0) ? 'Amounts must be numbers of 0 or more.'
+      : Number.isNaN(loan.interest_rate) || loan.interest_rate < 0 || loan.interest_rate > 100 ? 'The interest rate must be between 0 and 100.'
+      : loan.payment_day != null && (!Number.isInteger(loan.payment_day) || loan.payment_day < 1 || loan.payment_day > 31) ? 'The payment day must be 1 to 31.'
+      : null;
+    if (problem) { err.innerHTML = `<div class="error-banner">${problem}</div>`; return; }
+    const btn = e.target.querySelector('button[type=submit]');
+    btn.disabled = true; btn.textContent = 'Saving…';
+    try {
+      await store.saveLoan(state.household.id, loan);
+      closeSheet(); toast('Loan saved'); viewHome();
+    } catch (ex) {
+      err.innerHTML = `<div class="error-banner">${esc(ex.message || 'Could not save the loan')}</div>`;
+      btn.disabled = false; btn.textContent = 'Save loan';
+    }
+  });
 }
 
 function openFlowSheet(direction, rows) {

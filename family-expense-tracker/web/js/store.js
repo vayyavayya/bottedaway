@@ -187,10 +187,99 @@ export async function getTransactions(householdId, fromDate, toDate) {
   return data || [];
 }
 
+// Same rows as getTransactions over a longer span, paged past PostgREST's
+// 1000-row cap so months of bank feed history come back complete.
+export async function getTransactionsSpan(householdId, fromDate, toDate) {
+  const PAGE = 1000;
+  const all = [];
+  for (let from = 0; ; from += PAGE) {
+    const { data, error } = await supabase
+      .from('transactions')
+      .select('id, txn_date, merchant, description, amount, direction, currency, category_id, source, categories(name, icon, color)')
+      .eq('household_id', householdId)
+      .eq('excluded', false)
+      .gte('txn_date', fromDate)
+      .lte('txn_date', toDate)
+      .order('txn_date', { ascending: false })
+      .order('id', { ascending: true })
+      .range(from, from + PAGE - 1);
+    if (error) throw error;
+    all.push(...(data || []));
+    if (!data || data.length < PAGE) return all;
+  }
+}
+
 export async function updateTransactionCategory(txnId, categoryId) {
   const { error } = await supabase.from('transactions')
     .update({ category_id: categoryId }).eq('id', txnId);
   if (error) throw error;
+}
+
+// ---------- Loans ----------
+export async function getLoans(householdId) {
+  const { data, error } = await supabase
+    .from('loans').select('*').eq('household_id', householdId).order('balance', { ascending: false });
+  if (error) throw error;
+  return data || [];
+}
+
+export async function saveLoan(householdId, loan) {
+  const row = { ...loan, household_id: householdId };
+  delete row.id;
+  const q = loan.id
+    ? supabase.from('loans').update(row).eq('id', loan.id)
+    : supabase.from('loans').insert({ ...row, created_by: await auth.userId() });
+  const { error } = await q;
+  if (error) throw error;
+}
+
+export async function deleteLoan(id) {
+  const { error } = await supabase.from('loans').delete().eq('id', id);
+  if (error) throw error;
+}
+
+export async function updateSavingsTarget(householdId, pct) {
+  const { error } = await supabase.from('households')
+    .update({ savings_target_pct: pct }).eq('id', householdId);
+  if (error) throw error;
+}
+
+// ---------- Purchase reviews ----------
+export async function getPurchaseReviews(householdId) {
+  const { data, error } = await supabase
+    .from('purchase_reviews')
+    .select('transaction_id, status, what, why, verdict, headline, feedback, tip, updated_at')
+    .eq('household_id', householdId)
+    .order('updated_at', { ascending: false })
+    .limit(200);
+  if (error) throw error;
+  return data || [];
+}
+
+export async function dismissPurchase(householdId, transactionId) {
+  const { error } = await supabase.from('purchase_reviews').insert({
+    household_id: householdId,
+    transaction_id: transactionId,
+    user_id: await auth.userId(),
+    status: 'dismissed',
+  });
+  if (error) throw error;
+}
+
+export async function reviewPurchase(transactionId, what, why) {
+  const { data, error } = await supabase.functions.invoke('purchase-review', {
+    body: { transaction_id: transactionId, what, why },
+  });
+  if (error) {
+    let msg = error.message || 'Review unavailable';
+    try {
+      const body = await error.context?.json?.();
+      if (body?.error) msg = body.error;
+    } catch { /* ignore */ }
+    throw new Error(msg);
+  }
+  if (data?.error) throw new Error(data.error);
+  return data.review;
 }
 
 // ---------- Feedback ----------
