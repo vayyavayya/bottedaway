@@ -1,0 +1,94 @@
+# Medical/radiology vocabulary and compound parts not reliably in general German word frequency lists.
+# Lowercase, whitespace separated. Used for "known word" checks and compound splitting. No names here.
+pleura pleural pleuraerguss erguss ergüsse ergussbildung pneumothorax pneumonie pneumonisch infiltrat infiltrate
+infiltration konsolidierung konsolidierungen dystelektase dystelektasen atelektase atelektasen belüftung minderbelüftung
+lungenembolie embolie embolien thrombus thromben thrombose phlebothrombose füllungsdefekt füllungsdefekte
+lungenarterie lungenarterien pulmonalarterie pulmonalarterien pulmonal pulmonale pulmonalen segmentarterie
+segmentarterien subsegmental subsegmentale lappenarterie hauptstamm truncus rechtsherzbelastung septumdeviation
+rundherd rundherde nodulus noduli knoten milchglas milchglasartig milchglastrübung retikulär retikuläre
+interstitium interstitiell interstitielle kerley stauung stauungszeichen kardiomegalie herzsilhouette herzschatten
+mediastinum mediastinal mediastinale hilus hili hilär hiläre zwerchfell zwerchfellkuppe zwerchfellkuppen recessus
+sinus phrenicocostalis randwinkel randwinkels rippe rippen rippenfraktur rippenserienfraktur klavikula clavicula
+skapula scapula sternum brustwirbelkörper thorax thoraxwand thorakal thorakale emphysem emphysematös bulla bullae
+bronchiektasen bronchial bronchiale bronchus bronchien trachea tracheal kardial kardiale perikard perikarderguss
+aorta aortal aortenbogen aortenaneurysma aneurysma aneurysmatisch dissektion dissekat intimaflap intima lumen
+falsches wahres stenose stenosen stenosierung verschluss verschlüsse okklusion rekanalisation kollaterale
+kollateralen plaque plaques verkalkung verkalkungen kalzifikation kalzifikationen sklerose arteriosklerose
+atherosklerose arteriosklerotisch atherosklerotisch arteria arteriae vena venae femoralis poplitea iliaca
+iliacae carotis interna externa communis renalis mesenterica superior inferior subclavia vertebralis basilaris
+cerebri media anterior posterior profunda superficialis tibialis fibularis peronea dorsalis pedis brachialis
+schädel kalotte kalottenfraktur hirn hirnparenchym parenchym parenchymatös zerebral zerebrale cerebral intrakraniell
+intrakranielle ventrikel ventrikelsystem liquor liquorräume sulci sulkus gyri mittellinie mittellinienverlagerung
+stammganglien kleinhirn hirnstamm pons medulla thalamus kapsel interna marklager mikroangiopathie leukenzephalopathie
+ischämie ischämisch ischämische infarkt infarkte infarktdemarkierung demarkierung demarkiert diffusionsrestriktion
+diffusionsstörung blutung blutungen einblutung hämatom hämatome subdural subdurales epidural epidurales subarachnoidal
+subarachnoidalblutung intrazerebral intrazerebrale hydrozephalus ödem ödeme hirnödem raumforderung raumforderungen
+abdomen abdominal abdominelle abdominell leber leberparenchym hepatisch hepatomegalie steatosis milz splenomegalie
+pankreas pankreatitis peripankreatisch gallenblase cholezystitis cholezystolithiasis cholelithiasis gallenwege
+choledochus ductus hepaticus niere nieren renal renale nierenbecken kelch kelche nierenbeckenkelchsystem harnstau
+harnstauung hydronephrose ureter harnleiter harnleiterstein harnblase blase nephrolithiasis urolithiasis konkrement
+konkremente prostata uterus ovar ovarien adnexe darm dünndarm dickdarm kolon colon sigma rektum zökum appendix
+appendizitis appendicitis divertikel divertikulose divertikulitis ileus subileus spiegelbildung spiegel kalibersprung
+darmschlingen darmwand wandverdickung perforation pneumoperitoneum freie luft aszites flüssigkeit flüssigkeitsverhalt
+abszess abszesse fettgewebsimbibierung imbibierung lymphknoten lymphadenopathie mesenterial mesenteriale retroperitoneal
+retroperitoneum peritoneal peritoneum netz omentum hernie hernien leistenhernie narbenhernie magen ösophagus duodenum
+wirbelsäule halswirbelsäule brustwirbelsäule lendenwirbelsäule wirbelkörper wirbelkörperfraktur deckplatte deckplatten
+grundplatte grundplatten impression impressionsfraktur sinterung sinterungsfraktur spinalkanal spinalkanalstenose
+neuroforamen neuroforamina bandscheibe bandscheiben bandscheibenvorfall bandscheibenprotrusion protrusion prolaps
+sequester extrusion osteochondrose spondylose spondylarthrose facettengelenk facettengelenke facettengelenksarthrose
+myelon myelopathie kauda conus sakrum os sacrum steißbein iliosakralgelenk spondylolisthesis listhese retrolisthese
+skoliose kyphose lordose streckhaltung fehlhaltung schulter schultergelenk humerus humeruskopf glenoid glenohumeral
+rotatorenmanschette supraspinatus infraspinatus subscapularis teres bizeps bizepssehne labrum akromion acromion
+akromioklavikulargelenk impingement luxation luxationen subluxation reposition knie kniegelenk meniskus menisken
+innenmeniskus außenmeniskus hinterhorn vorderhorn korbhenkelriss riss risse ruptur rupturen kreuzband kreuzbänder
+vorderes hinteres innenband außenband kollateralband patella patellar retropatellar knorpel knorpelschaden
+chondropathie gonarthrose coxarthrose arthrose arthrosen omarthrose rhizarthrose hüfte hüftgelenk schenkelhals
+schenkelhalsfraktur femur femurkopf femurfraktur pertrochantär subtrochantär acetabulum azetabulum becken beckenring
+beckenfraktur schambein schambeinast sitzbein symphyse sprunggelenk sprunggelenks malleolus malleolar außenknöchel
+innenknöchel syndesmose talus kalkaneus calcaneus fuß mittelfuß metatarsale metatarsalia achillessehne plantarfaszie
+hand handgelenk handwurzel skaphoid scaphoid kahnbein lunatum radius radiusfraktur distale distalen ulna ulnar
+metakarpale metakarpalia phalanx phalangen finger daumen ellenbogen olekranon olecranon radiusköpfchen fraktur
+frakturen frakturlinie frakturspalt fragment fragmente fragmentdislokation dislokation disloziert dislozierte
+achsengerecht achsfehlstellung stufenbildung kortikalis kortikal kortikale spongiosa markraum ödem knochenmarködem
+osteolyse osteolysen osteolytisch osteoblastisch sklerosierung metastase metastasen metastasierung filiae
+tumor tumoren neoplasie neoplasma malignom karzinom karzinome lymphom sarkom zyste zysten zystisch hämangiom
+hämangiome läsion läsionen herd herde herdbefund kontrastmittel kontrastmittelaufnahme kontrastierung anreicherung
+enhancement washout signal signalanhebung signalminderung hyperintens hypointens isointens hyperdens hypodens
+isodens dichte dichteanhebung dichteminderung verdichtung verdichtungen transparenzminderung transparenzerhöhung
+verschattung verschattungen aufhellung voruntersuchung voraufnahme voraufnahmen verlauf verlaufskontrolle
+größenprogredient größenregredient progredient regredient konstant unverändert stationär befundkonstanz
+regelrecht regelrechte regelrechter regelrechten unauffällig unauffällige unauffälliger altersentsprechend
+normalbefund nebenbefund nebenbefunde zufallsbefund beurteilung befund fragestellung technik vergleich
+nativ native nativaufnahme kontrastmittelgestützt kontrastmittelgabe portalvenös arteriell venös spätphase
+axial axiale koronar koronare sagittal sagittale rekonstruktion rekonstruktionen schichtung schichten schichtdicke
+ebene ebenen projektion aufnahme aufnahmen liegend stehend seitlich p.a. a.p. thorax-übersicht übersicht
+dosis strahlendosis dlp ctdi mittelgesicht orbita orbitaboden nasennebenhöhlen sinusitis mastoid felsenbein
+schilddrüse struma lymphknotenvergrößerung vergrößert vergrößerte vergrößerung verplumpt verplumpte
+hypertrophie atrophie atroph atrophe dilatation dilatiert dilatierte ektasie ektatisch kaliber kalibrig
+normkalibrig engstelle weite weitgestellt erweitert erweiterte schmal verschmälert verschmälerung
+zustand z.n. postoperativ postoperative postinterventionell osteosynthese osteosynthesematerial platte schrauben
+prothese endoprothese tep stent stents katheter drainage drainagen sonde zvk port portkatheter schrittmacher
+schrittmachersonde sternalcerclagen cerclagen clip clips coil coils embolisat embolisation
+v.a. dd differentialdiagnose differentialdiagnostisch differenzialdiagnostisch differenzialdiagnose verdacht
+vereinbar am ehesten fraglich fragliche möglicherweise wahrscheinlich nachweis anhalt hinweis hinweise
+ausschluss ausgeschlossen empfehlung empfohlen kontrolle kontrollen korrelation klinisch klinische
+beidseits bds rechts links rechtsseitig linksseitig rechtsseitige linksseitige ventral dorsal kranial kaudal medial
+lateral proximal distal apikal basal zentral peripher subpleural parenchymal segmental lobär
+oberlappen mittellappen unterlappen lingula oberfeld mittelfeld unterfeld lungenoberfeld lungenunterfeld
+hounsfield millimeter zentimeter milliliter
+monteggia galeazzi bankart hill-sachs crohn weber
+d-dimere dimere fissur fissura sylvische sylvischen sylvii tabatière druckschmerz schleuse y-view gd-haltig gd-haltigem
+gadolinium claudicatio spinalis intermittens kerley-b-linien linien hemiparese hemiplegie aphasie vigilanzminderung
+vigilanz synkope lumboischialgie ischialgie hochrasanztrauma rasanztrauma distorsion distorsionstrauma exspiration
+inspiration retraktion abkippung konkrement konkremente skaphoids sigmas divertikeln außenknöchels femurkondylus
+kondylus kondylen malperfusion präoperativ postoperativ transmural transmurale größenkonstant infrarenal suprarenal
+juxtarenal iliosakralgelenk iliosakralgelenke bone bruise goutallier fs pd syndesmose stanford wurzelkontakt
+nervenwurzel mediolateral mediolateraler foraminal intraforaminal extraforaminal recessal rezessal
+hyperdens hyperdenses hypodens hypodenses abduktion abduktionsschwäche adduktion
+ileum jejunum zökum caecum coecum kolon rektum anus duodenum pylorus antrum fundus kardia corpus cauda caput collum
+hepar ren lien pulmo cor aorta vena arteria nervus musculus os ossa tibia fibula femur humerus ulna radius patella
+talus atlas axis dens sternum costa costae scapula clavicula pelvis sacrum coccyx ilium ischium pubis acetabulum
+trochanter tuberculum tuberositas epikondylus epicondylus kondylus condylus malleolus meniskus labrum bursa tendo
+fascia ligamentum lig septum sinus foramen canalis fossa sulcus gyrus cortex medulla pons cerebellum thalamus
+hypophyse sella orbita bulbus nervus opticus chiasma ventriculus plexus choroideus falx tentorium
+uterus ovar zervix cervix vagina prostata vesica testis skrotum mamma axilla thymus thyreoidea parotis

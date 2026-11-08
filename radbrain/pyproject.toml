@@ -1,0 +1,17 @@
+[project]
+name = "radbrain"
+version = "0.1.0"
+description = "Local Oberarzt style brains for Befund correction (B1/B2/B3). Code only; data lives in the data dir."
+requires-python = ">=3.11"
+dependencies = ["httpx>=0.27", "wordfreq>=3.1", "pillow>=10", "pytesseract>=0.3.10", "mss>=9", "pyperclip>=1.8",
+                "rapidfuzz>=3"]
+
+[tool.setuptools]
+packages = ["radbrain", "radbrain.capture"]
+
+[tool.setuptools.package-data]
+radbrain = ["static/*", "lexicon_med.txt"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

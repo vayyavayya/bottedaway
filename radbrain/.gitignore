@@ -1,0 +1,18 @@
+# RadBrain: code only. Nothing derived from reports may ever be committed.
+.venv/
+__pycache__/
+*.pyc
+*.sqlite
+*.sqlite-*
+*.db
+signers.json
+settings.json
+calibration.json
+allowlist.txt
+quarantine/
+rulebooks/
+logs/
+data/
+*.png
+*.jpg
+*.bmp

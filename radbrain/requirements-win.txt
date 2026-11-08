@@ -1,0 +1,12 @@
+# RadBrain capture side on the Windows PC (install.ps1 installs these into C:\RadBrain\venv)
+httpx>=0.27
+pillow>=10.1
+pytesseract>=0.3.10    # not used for OCR itself (capture pipes images to tesseract.exe via stdin, no temp files); kept for diagnostics
+mss>=9.0
+pyperclip>=1.8
+pystray>=0.19
+winotify>=1.1
+rapidfuzz>=3.0
+wordfreq>=3.0
+# optional, installed separately by install.ps1 so a missing wheel never breaks the install:
+#   windows-capture   (Windows Graphics Capture backend for grab.grab_window(..., "wgc"))
