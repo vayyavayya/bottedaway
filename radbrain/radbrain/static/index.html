@@ -7,7 +7,7 @@
  <button data-tab="overview" class="on">Übersicht</button><button data-tab="entities">Entitäten</button>
  <button data-tab="rate">Meine Änderungsrate</button><button data-tab="rules">Regeln</button>
  <button data-tab="correct">Correct</button><button data-tab="predict">Predict</button><button data-tab="ask">Ask</button>
- <button data-tab="quarantine">Quarantäne <b id="qn"></b></button><button data-tab="library">Library</button>
+ <button data-tab="signers">Unterzeichner <b id="sn"></b></button><button data-tab="quarantine">Quarantäne <b id="qn"></b></button><button data-tab="library">Library</button>
 </nav></header>
 <main>
 <section id="overview" class="tab on"><div id="ov-warn"></div><div class="grid3" id="ov-brains"></div>
@@ -26,6 +26,7 @@
 <section id="predict" class="tab"><div class="row"><select id="p-signer"><option>B1</option><option>B2</option><option>B3</option></select><button id="p-go">Vorhersagen</button></div>
  <textarea id="p-draft" placeholder="Entwurf einfügen"></textarea><div id="p-out"></div></section>
 <section id="ask" class="tab"><div class="row"><input id="a-q" placeholder="Wie formuliert B1 eine Lungenembolie?"><label><input type="checkbox" id="a-llm"> Zusammenfassung (LLM)</label><button id="a-go">Fragen</button></div><div id="a-out"></div></section>
+<section id="signers" class="tab"><p class="hint">Namen aus den Signaturzeilen deiner Erfassungen — nur hier auf diesem PC sichtbar. Chefarzt → B1 und Leitende(r) OA → B2 werden automatisch zugeordnet, wenn eindeutig. Ein Klick ordnet zu und korrigiert auch alle bisherigen Erfassungen.</p><div id="s-list"></div></section>
 <section id="quarantine" class="tab"><p class="hint">Erfassungen, die der Anonymisierer nicht sicher bereinigen konnte. Nichts davon ist in der Library. Prüfen → freigeben (die markierten Wörter werden als bekannt gelernt) oder verwerfen.</p><div id="q-list"></div><div id="q-detail"></div></section>
 <section id="library" class="tab"><div class="row"><select id="l-signer"><option value="">alle</option><option>B1</option><option>B2</option><option>B3</option></select><select id="l-kind"><option value="">alle</option><option value="pair">Paare</option><option value="final">Endbefunde</option></select><button id="l-go">Laden</button></div><div id="l-list"></div><div id="l-detail"></div></section>
 </main><script src="/app.js"></script></body></html>

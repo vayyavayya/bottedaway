@@ -501,6 +501,7 @@ class Result:
     author_is_me: bool
     reasons: list[str]
     counts: Counter
+    signature: list[str] = field(default_factory=list)     # raw lines, memory only (signers_auto) — never stored
 
     @property
     def text(self) -> str:
@@ -531,4 +532,4 @@ def anonymise(raw: str, sig: config.Signers | None = None) -> Result:
         reasons += residual(v)
     reasons = list(dict.fromkeys(reasons))
     return Result(ok=not reasons, sections=sections, exam=exam, signer=signer, author_is_me=mine, reasons=reasons,
-                  counts=counts)
+                  counts=counts, signature=list(p.signature))

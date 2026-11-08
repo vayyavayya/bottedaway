@@ -9,7 +9,7 @@ const pct = (x) => (x == null ? "–" : Math.round(x * 100) + " %");
 document.querySelectorAll("nav button").forEach((b) => b.onclick = () => {
   document.querySelectorAll("nav button").forEach((x) => x.classList.toggle("on", x === b));
   document.querySelectorAll(".tab").forEach((t) => t.classList.toggle("on", t.id === b.dataset.tab));
-  ({overview: loadOverview, entities: loadEntities, rate: loadRate, rules: loadRules, quarantine: loadQuarantine}[b.dataset.tab] || (() => {}))();
+  ({overview: loadOverview, entities: loadEntities, rate: loadRate, rules: loadRules, quarantine: loadQuarantine, signers: loadSigners}[b.dataset.tab] || (() => {}))();
 });
 
 function bar(v, max, color, label) {
@@ -173,6 +173,13 @@ async function showQ(id) {
     alert(r.status === "saved" ? "gespeichert #" + r.id : r.status + " " + (r.reason || "")); loadQuarantine();
   };
   $("#q-dis").onclick = async () => { await post(`/api/quarantine/${encodeURIComponent(id)}/discard`); loadQuarantine(); };
+}
+async function loadSigners() {
+  const rows = await get("/api/signers");
+  const open = rows.filter((r) => !r.assigned).length;
+  $("#sn").textContent = open ? `(${open})` : "";
+  $("#s-list").innerHTML = rows.length ? `<table class="grid"><tr><th>Name</th><th>Rolle (Signatur)</th><th>signiert</th><th>Entwürfe</th><th>Zuordnung</th></tr>${rows.map((r) => `<tr><td class="l"><b>${esc(r.name)}</b></td><td class="l small">${esc(Object.entries(r.roles).map(([k, v]) => k + " ×" + v).join(", "))}</td><td>${r.final}</td><td>${r.draft}</td><td class="l">${["B1", "B2", "B3", "me", "staff"].map((c) => `<button data-k="${r.key}" data-c="${c}" class="${r.assigned === c ? "primary" : ""}">${c === "me" ? "Ich" : c === "staff" ? "Andere" : c}</button>`).join(" ")}</td></tr>`).join("")}</table>` : '<p class="hint">Noch keine Signaturen gesehen — erste Erfassung machen.</p>';
+  $("#s-list").querySelectorAll("button[data-k]").forEach((b) => b.onclick = async () => { const r = await post("/api/signers/assign", {key: b.dataset.k, code: b.dataset.c}); if (r.error) alert(r.error); loadSigners(); });
 }
 $("#l-go").onclick = () => showList("#l-list", {signer: $("#l-signer").value, kind: $("#l-kind").value});
 loadOverview();

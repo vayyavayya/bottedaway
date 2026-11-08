@@ -57,10 +57,9 @@ def main() -> int:
         g = json.loads(geo.read_text(encoding="utf-8"))
         rects = {k: g["rects"][k] for k in ("draft", "final")}
         result["steps"]["dummy_window"] = {"rects": rects}
-        from radbrain.capture import calibrate, grab
-        dpi = grab.set_dpi_awareness()
-        calibrate.save_regions("pair", rects, virtual_screen=grab.virtual_screen(), monitors=grab.monitors(),
-                               dpi_awareness=dpi)
+        from radbrain.capture import calibrate
+        calibrate.calibration_path().unlink(missing_ok=True)      # no calibration: the tool must find the panels
+        time.sleep(1.5)
         n0 = con.execute("SELECT COUNT(*) FROM captures").fetchone()[0]
         app = subprocess.Popen([py, "-m", "radbrain.capture.hotkey_app"], env=env)
         time.sleep(6)
@@ -91,6 +90,8 @@ def main() -> int:
             caps = json.loads(urllib.request.urlopen(f"http://127.0.0.1:{port}/api/captures").read())
             result["steps"]["dashboard"] = {"capture_listed": any(c["id"] == row["id"] for c in caps)}
             srv.shutdown()
+        cal = calibrate.load_calibration().get("pair") or {}
+        result["steps"]["autodetected"] = {k: cal.get(k) for k in ("draft", "final")}
         log = d / "logs" / "capture.log"
         if log.exists():
             result["capture_log_tail"] = log.read_text(encoding="utf-8", errors="replace").splitlines()[-5:]

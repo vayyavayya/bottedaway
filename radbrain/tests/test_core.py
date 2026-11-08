@@ -286,3 +286,25 @@ def test_ocr_punctuation_noise_is_not_a_rule():
     assert miner.canonical({"op": "sub", "before": "re .", "after": "re ,"}) is None
     assert miner.canonical({"op": "sub", "before": "V.a .", "after": "V.a ,"}) is None
     assert miner.canonical({"op": "sub", "before": "eher", "after": "am ehesten"})["op"] == "sub"
+
+
+def test_signer_discovery_auto_assigns_b1_b2_and_click_b3(tmp_path, monkeypatch):
+    import json as _j
+    from radbrain import signers_auto
+    monkeypatch.setenv("RADBRAIN_DATA", str(tmp_path))
+    monkeypatch.setenv("RADBRAIN_OLLAMA", "http://127.0.0.1:9")
+    (tmp_path / "signers.json").write_text(_j.dumps({"signers": {}, "me": ["Kerber"], "staff": []}))
+    con = library.connect()
+    for d in synth.corpus(60, seed=3, kind_mix=1.0):
+        pipeline.ingest(d.kind, d.draft, d.final, synthetic=True, con=con, remine=False)
+    sig = _j.loads((tmp_path / "signers.json").read_text())
+    assert sig["signers"]["B1"] == ["Oberhauser"] and sig["signers"]["B2"] == ["Lindqvist"]
+    assert not sig["signers"].get("B3")
+    assert con.execute("SELECT COUNT(*) FROM captures WHERE signer='B1'").fetchone()[0] >= 15
+    cand = [r for r in signers_auto.listing() if r["name"] == "Okonkwo"][0]
+    r = signers_auto.assign(cand["key"], "B3", con)
+    assert r["captures_updated"] >= 15
+    assert con.execute("SELECT COUNT(*) FROM captures WHERE signer IS NULL").fetchone()[0] == 0
+    assert con.execute("SELECT COUNT(*) FROM captures WHERE author_is_me=1").fetchone()[0] > 0
+    log = (tmp_path / "logs" / "pipeline.log").read_text()
+    assert "Oberhauser" not in log and "Okonkwo" not in log

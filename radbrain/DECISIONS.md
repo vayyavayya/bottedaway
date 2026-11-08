@@ -52,3 +52,14 @@
 16. **PC lifeline (08.11.2026):** the OpenSSH service had vanished (package still registered in winget); reinstalled,
     sshd Automatic + restart-on-failure, firewall rule for LAN + tailnet on all profiles, profiles forced Private,
     Tailscale unattended, SYSTEM watchdog every 5 min (`C:\ProgramData\RadLifeline`), Fast Startup off, WoL armed.
+17. **No manual calibration (08.11.2026, Ajit: "do these all yourself"):** every capture re-detects the report
+    panels on the current screen (`capture/autocal.py`: Tesseract TSV word boxes of the Citrix window → columns of
+    section headings → panel = heading column's text block; pair = two columns, equal width = their spacing). A source
+    on which a panel runs off the edge is skipped in favour of the next (monitor). Falls back to the last good
+    rectangles. Verified on the PC with NO calibration file: panels within ~20 px of truth, full text, 7 s/capture.
+18. **No typing of names (signers_auto.py):** surnames + role words are read from the signature lines on the PC,
+    stored only in `signer_candidates.json` (mode 600, never logged); captures keep a salted hash key. Exactly one
+    "Chefarzt" signer (≥ 2 finals) → B1, exactly one "Leitende(r) Oberarzt" → B2 automatically; B3/me/staff = one
+    click in the dashboard tab "Unterzeichner", which also re-labels earlier captures. "me" = Jose (set 08.11.2026).
+19. **OCR preprocessing can never cost a capture:** UI-line stripping is guarded; any preprocessing error falls back
+    to plain grayscale OCR (a narrow panel crashed it once on the PC).

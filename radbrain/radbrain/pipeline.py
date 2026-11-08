@@ -13,7 +13,7 @@ import os
 import time
 from pathlib import Path
 
-from . import anonymise, config, diff, library, taxonomy
+from . import anonymise, config, diff, library, signers_auto, taxonomy
 
 log = logging.getLogger("radbrain.pipeline")
 
@@ -65,7 +65,18 @@ def ingest(kind: str, draft_text: str | None, final_text: str, source: str = "ho
                 "region": None, "pathologies": [], "reason": "; ".join(reasons)}
     mod, reg, paths = tag(rf.sections, rf.exam)
     dsec = rd.sections if rd else None
-    row = dict(kind=kind, signer=rf.signer, author_is_me=int(bool(rd and rd.author_is_me)), modality=mod, region=reg,
+    pf = signers_auto.from_lines(rf.signature)
+    pdr = signers_auto.from_lines(rd.signature) if rd else []
+    fmain = next((x for x in pf if x["kind"] == "final"), pf[0] if pf else None)
+    dmain = next((x for x in pdr if x["kind"] == "draft"), pdr[0] if pdr else None)
+    signer_key = signers_auto.key(fmain["surname"]) if fmain else None
+    author_key = signers_auto.key(dmain["surname"]) if dmain else None
+    known_codes = signers_auto.assigned()
+    signer = rf.signer or (known_codes.get(signer_key) if known_codes.get(signer_key) in config.CODES else None)
+    rf.signer = signer
+    row = dict(kind=kind, signer=signer, signer_key=signer_key, author_key=author_key,
+               author_is_me=int(bool(rd and (rd.author_is_me or known_codes.get(author_key) == "me"))),
+               modality=mod, region=reg,
                exam=rf.exam, pathologies=paths, fragestellung=rf.sections.get("fragestellung"),
                technik=rf.sections.get("technik"), final_befund=rf.sections.get("befund"),
                final_beurteilung=rf.sections.get("beurteilung"), source=source, synthetic=int(synthetic),
@@ -84,6 +95,13 @@ def ingest(kind: str, draft_text: str | None, final_text: str, source: str = "ho
             _log(f"duplicate kind={kind} signer={rf.signer}")
             return {"status": "duplicate", "id": None, "signer": rf.signer, "modality": mod, "region": reg,
                     "pathologies": paths, "reason": "identische Erfassung"}
+        signers_auto.observe(pf, "final")
+        if pdr:
+            signers_auto.observe(pdr, "draft")
+        auto = signers_auto.auto_assign(con)
+        if auto:
+            _log(f"auto-assigned {','.join(auto)}")
+            rf.signer = rf.signer or con.execute("SELECT signer FROM captures WHERE id=?", (cid,)).fetchone()[0]
         _log(f"saved {cid} kind={kind} signer={rf.signer} mod={mod} reg={reg} path={','.join(paths)}")
         if remine and kind == "pair":
             maybe_remine(con, synthetic=synthetic)

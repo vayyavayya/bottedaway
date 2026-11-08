@@ -70,6 +70,8 @@ def _long_run_lines(mask: Image.Image, k: int, vertical: bool) -> list[int]:
     w, h = mask.size
     hits: set[int] = set()
     for off in (0, k // 2):
+        if off >= (h if vertical else w):          # panel smaller than the offset: nothing to scan
+            continue
         if vertical:
             m = mask.crop((0, off, w, h))
             if m.height < k:
@@ -116,7 +118,10 @@ def preprocess_for_tesseract(image: Image.Image, *, target_line_px: int = 32, ma
     g = ImageOps.autocontrast(g, cutoff=1)
     lh = estimate_line_height(g)
     if strip_ui:
-        g = remove_ui_lines(g, lh)
+        try:
+            g = remove_ui_lines(g, lh)
+        except Exception:  # noqa: BLE001  (a cosmetic step must never cost a capture)
+            pass
     scale = 1.0
     if lh is not None and lh < target_line_px:
         scale = min(max_scale, max(2.0, target_line_px / lh)) if lh < target_line_px * 0.75 else 1.5
@@ -139,7 +144,10 @@ def ocr_tesseract(image: Image.Image, *, lang: str = "deu", psm: int = 4, prepro
     cmd = tesseract_cmd()
     if not cmd:
         raise OCRUnavailable("tesseract binary not found")
-    img = preprocess_for_tesseract(image) if preprocess else image.convert("L")
+    try:
+        img = preprocess_for_tesseract(image) if preprocess else image.convert("L")
+    except Exception:  # noqa: BLE001
+        img = image.convert("L")
     buf = io.BytesIO()
     img.save(buf, format="BMP")            # in memory; leptonica parses BMP straight from the buffer
     if img is not image:

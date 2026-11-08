@@ -18,7 +18,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
-from . import config, diff, engine, evaluate, library, llm, miner, pipeline, taxonomy
+from . import config, diff, engine, evaluate, library, llm, miner, pipeline, signers_auto, taxonomy
 
 STATIC = Path(__file__).with_name("static")
 _lock = threading.Lock()
@@ -155,6 +155,8 @@ class Handler(BaseHTTPRequestHandler):
             if m:
                 c = capture(con, int(m.group(1)))
                 return self._send(200 if c else 404, c or {"error": "not found"})
+            if path == "/api/signers":
+                return self._send(200, signers_auto.listing())
             if path == "/api/quarantine":
                 return self._send(200, pipeline.quarantine_list())
             m = re.fullmatch(r"/api/quarantine/([\w-]+)", path)
@@ -195,6 +197,11 @@ class Handler(BaseHTTPRequestHandler):
             if path == "/api/mine":
                 with _lock:
                     return self._send(200, miner.mine(con))
+            if path == "/api/signers/assign":
+                r = signers_auto.assign(str(body.get("key", "")), str(body.get("code", "")), con)
+                with _lock:
+                    miner.mine(con)
+                return self._send(200, r)
             if path == "/api/assign":
                 s = body.get("signer")
                 if s not in config.CODES:

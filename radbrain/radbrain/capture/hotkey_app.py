@@ -107,6 +107,19 @@ def _default_copy(regions):
     return copy_regions(regions)
 
 
+def _default_detect(kind):
+    """Find the panels on the current screen (autocal); None → use the saved calibration."""
+    from radbrain.capture import autocal
+    from radbrain.capture.settings import load_json, settings_path
+    if load_json(settings_path()).get("autodetect", True) is False:
+        return None
+    try:
+        return autocal.auto(kind, save=True)
+    except Exception as e:  # noqa: BLE001
+        log_exception("autodetect", e)
+        return None
+
+
 def _default_blank(img):
     from radbrain.capture.grab import is_black
     return is_black(img)
@@ -132,7 +145,8 @@ def _ocr_regions(regions, grab, ocr, blank) -> tuple[dict, str | None]:
 
 def capture(kind: str, *, route: str | None = None, regions: dict | None = None,
             grab: Callable | None = None, ocr: Callable | None = None, ingest: Callable | None = None,
-            copy: Callable | None = None, blank: Callable | None = None, fallback: bool = True) -> dict:
+            copy: Callable | None = None, blank: Callable | None = None, fallback: bool = True,
+            detect: Callable | None = None) -> dict:
     """One capture. Every side-effecting dependency is injectable (tests run this on the Mac).
     Returns pipeline.ingest's dict, or {"status": "error", "reason": ...} when nothing usable was captured."""
     from radbrain.capture import calibrate
@@ -143,6 +157,8 @@ def capture(kind: str, *, route: str | None = None, regions: dict | None = None,
     copy, blank = copy or _default_copy, blank or _default_blank
     route = route or current_route()
     t0 = time.perf_counter()
+    if regions is None and route != "clipboard":
+        regions = (detect or _default_detect)(kind)      # panels found on screen right now (autocal)
     regions = regions or calibrate.get_regions(kind)
     if not regions:
         log.info("capture kind=%s route=%s status=error reason=not_calibrated", kind, route)

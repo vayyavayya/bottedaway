@@ -31,11 +31,9 @@ Start-ScheduledTask -TaskPath \RadBrain\ -TaskName "RadBrain Dashboard"   (or "R
 Stop-ScheduledTask  -TaskPath \RadBrain\ -TaskName "RadBrain Capture"
 Redeploy from the Mac: `~/RadBrain/radbrain/deploy-pc.sh`; remove: `install.ps1 -Uninstall` (data dir kept).
 
-## Needs Ajit
-1. Fill `%LOCALAPPDATA%\RadBrain\signers.json` on the PC (Notepad): surnames for B1/B2/B3 as on the signature line,
-   your own name under "me", other doctors' names under "staff". Never send these names to anyone, me included.
-2. Tray icon → **Recalibrate (pair)**: open a real comparison view, drag the left (draft) then the right (final) text
-   panel. Same for **Recalibrate (final)** on a single report.
-3. Capture the first 10 real pairs (Ctrl+Shift+B; if nothing happens inside Citrix, use the tray menu) and check them
-   in the dashboard (Library) plus the Quarantäne tab.
+## Needs Ajit (updated 08.11.2026 23:20 — signers and calibration are now automatic)
+1. Open comparison views in PACS and press Ctrl+Shift+B (single final: Ctrl+Shift+F). If nothing happens while Citrix
+   has focus, use the RadBrain tray menu → Capture pair. Only Ajit opens patient cases — never automated.
+2. Dashboard tab "Unterzeichner": one click to mark which Oberarzt is B3 (B1/B2 assign themselves when unambiguous).
+3. Glance at the Quarantäne tab after the first ~10 captures.
 4. BIOS at the next reboot: Wake-on-LAN / "Power On by PCI-E" on, ErP off, "Restore on AC Power Loss" = Power On.

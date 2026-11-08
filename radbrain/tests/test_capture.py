@@ -17,6 +17,13 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 HAS_TESSERACT = shutil.which("tesseract") is not None
 
+@pytest.fixture(autouse=True)
+def _no_live_autodetect(monkeypatch):
+    """Unit tests must not pick up whatever is on this screen; autocal has its own live test."""
+    from radbrain.capture import hotkey_app
+    monkeypatch.setattr(hotkey_app, "_default_detect", lambda kind: None)
+
+
 
 @pytest.fixture()
 def data_dir(tmp_path, monkeypatch):

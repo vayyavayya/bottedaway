@@ -52,6 +52,10 @@ def connect(path=None) -> sqlite3.Connection:
     con.row_factory = sqlite3.Row
     con.execute("PRAGMA journal_mode=WAL")
     con.executescript(SCHEMA)
+    cols = {r[1] for r in con.execute("PRAGMA table_info(captures)")}
+    for c in ("signer_key", "author_key"):          # hashed name keys (signers_auto), added 08.11.2026
+        if c not in cols:
+            con.execute(f"ALTER TABLE captures ADD COLUMN {c} TEXT")
     return con
 
 
