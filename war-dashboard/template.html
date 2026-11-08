@@ -174,6 +174,8 @@ function deltaClass(delta, goodDir){
 // small sparkline for tiles
 function sparkline(series, colorVar){
   const W=220,H=34,pad=3;
+  series=(series||[]).filter(p=>p&&p.value!=null&&!Number.isNaN(+p.value));
+  if(!series.length) return `<div class="muted" style="height:34px;display:flex;align-items:center;font-size:11.5px">no sourced data this period</div>`;
   const xs=series.map((_,i)=>i), ys=series.map(p=>p.value);
   const minY=Math.min(...ys), maxY=Math.max(...ys), rng=(maxY-minY)||1;
   const X=i=> pad + i*(W-2*pad)/Math.max(1,xs.length-1);
@@ -417,12 +419,16 @@ function render(D){
   // data table (accessibility / non-color path)
   const tbl=$('div','hidden');
   let rows='';
-  const periods=D.metrics.launches.series.map(p=>p.period);
-  periods.forEach((per,i)=>{
-    const g=k=>D.metrics[k].series[i]?.value;
+  // rows keyed by period (metrics can have different coverage), not by array index
+  const periods=[...new Set(['launches','interference','transits','vlcc']
+    .flatMap(k=>D.metrics[k].series.map(p=>p.period))
+    .concat((bw.history||[]).map(h=>h.period)))].sort();
+  periods.forEach(per=>{
+    const g=k=>D.metrics[k].series.find(p=>p.period===per)?.value;
+    const b=(bw.history||[]).find(h=>h.period===per);
     rows+=`<tr><td>${per}</td><td>${fmt(g('launches'))}</td><td>${fmt(g('interference'))}</td>
-      <td>${fmt(g('transits'))}</td><td>${fmt(g('vlcc'))}</td>
-      <td>${bw.history[i]?fmt(bw.history[i].m1_m3,1):'–'}</td></tr>`;
+      <td>${fmt(g('transits'),1)}</td><td>${fmt(g('vlcc'))}</td>
+      <td>${b?fmt(b.m1_m3,2):'–'}</td></tr>`;
   });
   tbl.innerHTML=`<div class="card"><table><thead><tr><th>Week</th><th>Launches</th>
     <th>Interference</th><th>Transits/d</th><th>VLCC</th><th>Backw. M1-M3</th></tr></thead>
@@ -434,7 +440,7 @@ function render(D){
 
   // footer
   const f=$('footer');
-  f.innerHTML=`<b>Data model.</b> Market series (Brent, US 10Y) pull live from Stooq via <code>build.py</code>.
+  f.innerHTML=`<b>Data model.</b> Market series (Brent, US 10Y) pull live via <code>build.py</code> (Stooq, falling back to Yahoo Finance).
     The four conflict metrics + Brent curve are OSINT-fed in <code>data/*.json</code> — no free real-time API exists for them; refresh each period from the sources listed in those files (UKMTO, Lloyd's List, Kpler/Vortexa, ACLED, ISW, ICE settlements).
     ${isSeed?'<b style="color:var(--yellow)"> Current conflict numbers are illustrative seed data</b> — replace before relying on them.':''}
     Correlations are Pearson r on weekly-aligned points; not causation. Built for situational awareness, not trading advice.`;

@@ -43,7 +43,7 @@ open `http://localhost:8000/template.html`.
 ## Where the data comes from
 
 **Market data is live and automatic.** Brent (`cb.f`) and US 10Y yield (`10usy.b`)
-are pulled from Stooq's free daily CSV — no API key.
+are pulled from Stooq's free daily CSV, falling back to Yahoo Finance (`BZ=F`, `^TNX`) when Stooq fails — no API key.
 
 **The conflict data is OSINT-fed — there is no free real-time API for it.** The four
 conflict metrics and the Brent forward curve live in `data/*.json`. Each block lists

@@ -1,93 +1,147 @@
 {
-  "_README": "The four conflict metrics. There is NO free real-time API for these — they are OSINT-fed. Claude Cowork (or you) should refresh 'value' each period from sources listed in each block's 'sources'. Append a new {period,value} object to keep history; do not rewrite old points. 'provenance' should be 'confirmed' once sourced; seed rows below are illustrative placeholders so the dashboard renders end-to-end.",
-  "provenance": "seed-placeholder",
-  "cadence_note": "launches/interference/vlcc are weekly (period = Monday of that ISO week). transits is a daily average within the week.",
-
+  "_README": "The four conflict metrics. There is NO free real-time API for these — they are OSINT-fed. Refresh each period from the sources listed in each block. Append a new {period,value,source,note} object per metric per week; do not rewrite old points. The illustrative seed rows were replaced with sourced values on 2026-11-08; history starts where a consistent weekly source exists (late Sep 2026). A metric with no sourced value for a week gets no row for that week.",
+  "provenance": "sourced",
+  "sourced_at": "2026-11-08",
+  "cadence_note": "period = Monday of the ISO week that holds most of the source's 7-day window. UKMTO weekly overviews (published Fridays) cover Thu–Wed, so e.g. the overview for the week ending 6 Nov (window 29 Oct–4 Nov) is filed under 2026-10-26. JINSA launch counts are Monday→Monday differences of its cumulative tally, filed under the starting Monday. Latest complete week as of 2026-11-08: week of 2026-10-26.",
   "launches": {
     "label": "Iranian launches",
     "unit": "/week",
-    "meaning": "Rockets/missiles/drones fired per week. Near-zero = ability-to-hurt is gone.",
+    "meaning": "Iranian missiles + drones launched per week (JINSA tally since 7 Jul, weekly difference). Excludes Houthi fire and IRGC strikes on ships. Near-zero = ability-to-hurt is gone.",
     "direction_good": "down",
-    "sources": ["ACLED", "ISW daily updates", "IDF/CENTCOM releases", "UKMTO advisories"],
+    "sources": [
+      "JINSA Iran War Updates (cumulative 'launched since July 7')",
+      "CENTCOM releases",
+      "ISW/CTP Iran Update"
+    ],
     "series": [
-      {"period": "2026-05-11", "value": 5},
-      {"period": "2026-05-18", "value": 22},
-      {"period": "2026-05-25", "value": 48},
-      {"period": "2026-06-01", "value": 61},
-      {"period": "2026-06-08", "value": 55},
-      {"period": "2026-06-15", "value": 43},
-      {"period": "2026-06-22", "value": 30},
-      {"period": "2026-06-29", "value": 18},
-      {"period": "2026-07-06", "value": 9},
-      {"period": "2026-07-13", "value": 4},
-      {"period": "2026-07-20", "value": 2},
-      {"period": "2026-07-27", "value": 1}
+      {
+        "period": "2026-09-28",
+        "value": 16,
+        "source": "JINSA 28 Sep (555) → 5 Oct (571, inferred from 7 Oct update: 571, 0 on 6–7 Oct)",
+        "note": "derived from cumulative"
+      },
+      {
+        "period": "2026-10-05",
+        "value": 9,
+        "source": "JINSA 5 Oct (571) → 12 Oct (580)",
+        "note": "derived from cumulative"
+      },
+      {
+        "period": "2026-10-12",
+        "value": 15,
+        "source": "JINSA 12 Oct (580) → 19 Oct (595)",
+        "note": "derived from cumulative"
+      },
+      {
+        "period": "2026-10-19",
+        "value": 9,
+        "source": "JINSA 19 Oct (595) → 26 Oct (604)",
+        "note": "derived from cumulative"
+      },
+      {
+        "period": "2026-10-26",
+        "value": 5,
+        "source": "JINSA 26 Oct (604) → 2 Nov (609)",
+        "note": "derived from cumulative"
+      }
     ]
   },
-
   "interference": {
-    "label": "Tanker-interference incidents",
+    "label": "Ship attacks (UKMTO-verified)",
     "unit": "/week",
-    "meaning": "Seizures, harassment, GPS-spoofing, boarding attempts on merchant tankers. The true endgame gauge — this falling is the war actually ending.",
+    "meaning": "Attacks on merchant ships in Hormuz, the Gulf and Gulf of Oman verified by UKMTO in its weekly overview. UKMTO says most attacked ships no longer report, so this is a floor (Lloyd's List / Washington Institute counts run higher). The true endgame gauge — this falling is the war actually ending.",
     "direction_good": "down",
-    "sources": ["UKMTO", "Ambrey / Dryad Global", "Lloyd's List Intelligence", "IMB Piracy Reporting Centre"],
+    "sources": [
+      "UKMTO Voluntary Reporting Area Weekly Overview",
+      "JMIC advisories",
+      "Lloyd's List Intelligence",
+      "Washington Institute shipping-incident map"
+    ],
     "series": [
-      {"period": "2026-05-11", "value": 1},
-      {"period": "2026-05-18", "value": 4},
-      {"period": "2026-05-25", "value": 9},
-      {"period": "2026-06-01", "value": 14},
-      {"period": "2026-06-08", "value": 16},
-      {"period": "2026-06-15", "value": 13},
-      {"period": "2026-06-22", "value": 11},
-      {"period": "2026-06-29", "value": 8},
-      {"period": "2026-07-06", "value": 5},
-      {"period": "2026-07-13", "value": 3},
-      {"period": "2026-07-20", "value": 2},
-      {"period": "2026-07-27", "value": 1}
+      {
+        "period": "2026-09-28",
+        "value": 11,
+        "source": "UKMTO weekly overview w/e 9 Oct (window to 7 Oct): 10 in Hormuz, 1 Arabian Gulf"
+      },
+      {
+        "period": "2026-10-05",
+        "value": 12,
+        "source": "UKMTO weekly overview w/e 16 Oct (window to 14 Oct): 10 Hormuz, 1 Gulf, 1 Gulf of Oman"
+      },
+      {
+        "period": "2026-10-12",
+        "value": 5,
+        "source": "UKMTO weekly report 23 Oct (via IndustryWeek)"
+      },
+      {
+        "period": "2026-10-19",
+        "value": 3,
+        "source": "UKMTO weekly overview w/e 30 Oct (window to 28 Oct), via Al Jazeera/Benzinga; excludes 4 IRGC-claimed tanker hits"
+      },
+      {
+        "period": "2026-10-26",
+        "value": 11,
+        "source": "UKMTO weekly overview w/e 6 Nov (window 29 Oct–4 Nov), via Middle East Eye: 8 Hormuz, 3 Arabian Gulf; 3 vessels sunk"
+      }
     ]
   },
-
   "transits": {
     "label": "Hormuz transits",
     "unit": "/day",
-    "meaning": "Laden tanker transits through the Strait of Hormuz, daily average. Sustained >30-40 under escort = the strait functionally reopening.",
+    "meaning": "All vessel transits of the Strait (in + out), UKMTO weekly total ÷ 7: AIS-observed plus US-reported facilitated transits (the US share, ~80% of the total, can't be independently verified). UKMTO's own '65–75% below pre-conflict' implies a pre-war rate of roughly 120–135/day on this count.",
     "direction_good": "up",
-    "sources": ["MarineTraffic / Kpler AIS", "TankerTrackers.com", "Vortexa", "EIA Hormuz flow notes"],
+    "sources": [
+      "UKMTO Voluntary Reporting Area Weekly Overview",
+      "Lloyd's List Intelligence Strait of Hormuz Brief",
+      "Kpler",
+      "Windward",
+      "IMF PortWatch"
+    ],
     "series": [
-      {"period": "2026-05-11", "value": 34},
-      {"period": "2026-05-18", "value": 22},
-      {"period": "2026-05-25", "value": 11},
-      {"period": "2026-06-01", "value": 6},
-      {"period": "2026-06-08", "value": 5},
-      {"period": "2026-06-15", "value": 8},
-      {"period": "2026-06-22", "value": 12},
-      {"period": "2026-06-29", "value": 17},
-      {"period": "2026-07-06", "value": 22},
-      {"period": "2026-07-13", "value": 28},
-      {"period": "2026-07-20", "value": 33},
-      {"period": "2026-07-27", "value": 38}
+      {
+        "period": "2026-09-21",
+        "value": 35.3,
+        "source": "UKMTO w/e 2 Oct (window to 30 Sep): 124 out + 123 in = 247"
+      },
+      {
+        "period": "2026-09-28",
+        "value": 39.3,
+        "source": "UKMTO w/e 9 Oct (window to 7 Oct): 129 out + 146 in = 275"
+      },
+      {
+        "period": "2026-10-05",
+        "value": 36.3,
+        "source": "UKMTO w/e 16 Oct (window to 14 Oct): 125 out + 129 in = 254; only 42 AIS-observed"
+      },
+      {
+        "period": "2026-10-12",
+        "value": 34.4,
+        "source": "UKMTO w/e 23 Oct: 114 out + 127 in = 241; 47 AIS-observed"
+      },
+      {
+        "period": "2026-10-19",
+        "value": 39.6,
+        "source": "UKMTO w/e 30 Oct (window to 28 Oct): 122 out + 155 in = 277; 64 AIS-observed"
+      },
+      {
+        "period": "2026-10-26",
+        "value": 46.4,
+        "source": "UKMTO w/e 6 Nov (window to 4 Nov): 170 out + 155 in = 325; 71 AIS-observed; ~65% below pre-war"
+      }
     ]
   },
-
   "vlcc": {
     "label": "VLCC completions",
     "unit": "/week",
-    "meaning": "Very Large Crude Carriers that completed a full loaded Hormuz transit. Each one is the corridor being proven.",
+    "meaning": "Very Large Crude Carriers completing a loaded Hormuz exit. No free weekly count is published (Kpler/Vortexa paywalled); left empty rather than estimated. S&P Global Commodities at Sea says VLCC transits fell sharply in October; the IMO lists 11 VLCCs damaged in October.",
     "direction_good": "up",
-    "sources": ["Kpler", "Vortexa", "TankerTrackers.com", "ship-broker fixture reports"],
-    "series": [
-      {"period": "2026-05-11", "value": 0},
-      {"period": "2026-05-18", "value": 0},
-      {"period": "2026-05-25", "value": 0},
-      {"period": "2026-06-01", "value": 0},
-      {"period": "2026-06-08", "value": 0},
-      {"period": "2026-06-15", "value": 1},
-      {"period": "2026-06-22", "value": 1},
-      {"period": "2026-06-29", "value": 2},
-      {"period": "2026-07-06", "value": 3},
-      {"period": "2026-07-13", "value": 4},
-      {"period": "2026-07-20", "value": 5},
-      {"period": "2026-07-27", "value": 6}
-    ]
+    "sources": [
+      "Kpler",
+      "Vortexa",
+      "TankerTrackers.com",
+      "S&P Global Commodities at Sea (monthly)",
+      "ship-broker fixture reports"
+    ],
+    "series": []
   }
 }

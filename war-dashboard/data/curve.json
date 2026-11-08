@@ -1,27 +1,21 @@
 {
-  "_README": "Brent term structure snapshot, taken Monday when markets reopen. Backwardation (M1 > deferred) = physical tightness. Backwardation EASING (spread shrinking toward 0 / flipping to contango) = tightness relaxing before any headline says so. Update 'curve' each Monday with front-month settlement out to M6, and append the M1-M3 spread to 'spread_history'. No free tidy API for the futures curve — pull from ICE Brent settlements, Barchart, or Investing.com.",
-  "provenance": "seed-placeholder",
-  "as_of": "2026-07-27",
+  "_README": "Brent term structure snapshot, taken Monday when markets reopen. Backwardation (M1 > deferred) = physical tightness. Backwardation EASING (spread shrinking toward 0 / flipping to contango) = tightness relaxing before any headline says so. Update 'curve' each Monday with front-month settlement out to M6, and append the M1-M3 spread to 'spread_history'. Source used: NYMEX Brent Last Day Financial (BZ) contract closes via Yahoo Finance (tickers BZF27.NYM … BZM27.NYM), which track ICE Brent settlements; cross-check with ICE / Barchart. Seed history replaced 2026-11-08. Earlier Mondays could not be reconstructed: the Dec-26 contract that was M1 until 30 Oct has expired and its history is no longer served.",
+  "provenance": "sourced",
+  "as_of": "2026-11-02",
+  "contracts": ["Jan-27 (F27)", "Feb-27 (G27)", "Mar-27 (H27)", "Apr-27 (J27)", "May-27 (K27)", "Jun-27 (M27)"],
   "curve": [
-    {"month": "M1", "price": 71.2},
-    {"month": "M2", "price": 70.5},
-    {"month": "M3", "price": 69.9},
-    {"month": "M4", "price": 69.4},
-    {"month": "M5", "price": 69.0},
-    {"month": "M6", "price": 68.7}
+    {"month": "M1", "price": 104.77},
+    {"month": "M2", "price": 101.70},
+    {"month": "M3", "price": 99.04},
+    {"month": "M4", "price": 96.80},
+    {"month": "M5", "price": 94.86},
+    {"month": "M6", "price": 93.06}
   ],
   "spread_history": [
-    {"period": "2026-05-11", "m1_m3": 0.9},
-    {"period": "2026-05-18", "m1_m3": 2.1},
-    {"period": "2026-05-25", "m1_m3": 4.8},
-    {"period": "2026-06-01", "m1_m3": 6.9},
-    {"period": "2026-06-08", "m1_m3": 7.4},
-    {"period": "2026-06-15", "m1_m3": 6.1},
-    {"period": "2026-06-22", "m1_m3": 5.0},
-    {"period": "2026-06-29", "m1_m3": 3.8},
-    {"period": "2026-07-06", "m1_m3": 2.7},
-    {"period": "2026-07-13", "m1_m3": 1.9},
-    {"period": "2026-07-20", "m1_m3": 1.5},
-    {"period": "2026-07-27", "m1_m3": 1.3}
+    {"period": "2026-11-02", "m1_m3": 5.73, "source": "BZF27 104.77 − BZH27 99.04, Monday 2 Nov close (Yahoo Finance)"}
+  ],
+  "context": [
+    {"date": "2026-10-30", "m1_m3": 7.24, "note": "Fri 30 Oct (not a Monday): F27 113.43 − H27 106.19"},
+    {"date": "2026-11-06", "m1_m3": 5.02, "note": "Fri 6 Nov (not a Monday): F27 98.32 − H27 93.30"}
   ]
 }

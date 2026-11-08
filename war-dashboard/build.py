@@ -35,10 +35,13 @@ DATA = os.path.join(HERE, "data")
 
 # Stooq free daily CSV endpoints — no key, server-side (no browser CORS issue).
 MARKET_SYMBOLS = {
-    "brent": {"symbol": "cb.f",    "label": "Brent crude", "unit": "$/bbl"},
-    "us10y": {"symbol": "10usy.b", "label": "US 10Y yield", "unit": "%"},
+    "brent": {"symbol": "cb.f",    "yahoo": "BZ=F", "label": "Brent crude", "unit": "$/bbl"},
+    "us10y": {"symbol": "10usy.b", "yahoo": "^TNX", "label": "US 10Y yield", "unit": "%"},
 }
 STOOQ_URL = "https://stooq.com/q/d/l/?s={symbol}&i=d"
+# Fallback: Stooq's CSV endpoint started returning 404 (Nov 2026). Yahoo's public
+# chart API serves the same daily closes without a key.
+YAHOO_URL = "https://query1.finance.yahoo.com/v8/finance/chart/{symbol}?range=1y&interval=1d"
 LOOKBACK_DAYS = 180  # keep charts readable
 
 
@@ -80,6 +83,31 @@ def fetch_stooq(symbol):
     return rows[-LOOKBACK_DAYS:] if rows else None
 
 
+def fetch_yahoo(symbol):
+    """Daily closes from Yahoo's chart API -> list[{date, close}] or None."""
+    if requests is None:
+        return None
+    try:
+        r = requests.get(YAHOO_URL.format(symbol=requests.utils.quote(symbol, safe="")),
+                         timeout=20, headers={"User-Agent": "Mozilla/5.0 (war-dashboard)"})
+        r.raise_for_status()
+        res = r.json()["chart"]["result"][0]
+    except Exception as e:  # noqa: BLE001
+        print(f"  ! yahoo fetch failed for {symbol}: {e}")
+        return None
+    off = res.get("meta", {}).get("gmtoffset", 0) or 0
+    ts = res.get("timestamp") or []
+    closes = (res.get("indicators", {}).get("quote") or [{}])[0].get("close") or []
+    rows = {}
+    for t, c in zip(ts, closes):
+        if c is None:
+            continue
+        d = datetime.fromtimestamp(t + off, timezone.utc).strftime("%Y-%m-%d")
+        rows[d] = round(float(c), 4)
+    out = [{"date": d, "close": c} for d, c in sorted(rows.items())]
+    return out[-LOOKBACK_DAYS:] if out else None
+
+
 def load_sample_market():
     p = os.path.join(DATA, "sample_market.json")
     if os.path.exists(p):
@@ -99,6 +127,9 @@ def get_market(offline, prior):
         if not offline:
             print(f"  fetching {meta['label']} ({meta['symbol']}) …")
             series = fetch_stooq(meta["symbol"])
+            if not series and meta.get("yahoo"):
+                print(f"  · Stooq unavailable — trying Yahoo ({meta['yahoo']}) …")
+                series = fetch_yahoo(meta["yahoo"])
             if series:
                 source = "live"
         if not series and prior:

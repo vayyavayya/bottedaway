@@ -1,22 +1,31 @@
 {
-  "_README": "The 'arc of the war': named phases plus a dated timeline of discrete events. 'type' drives colour: escalation (red), deescalation (aqua), neutral (grey). Events are overlaid as markers on the Brent and US10Y charts so you can see the market react to the war in real time. Cowork should append events as they happen and advance 'current_phase' index.",
-  "provenance": "seed-placeholder",
-  "current_phase": 3,
+  "_README": "The 'arc of the war': named phases plus a dated timeline of discrete events. 'type' drives colour: escalation (red), deescalation (aqua), neutral (grey). Events are overlaid as markers on the Brent and US10Y charts. Append events as they happen and advance 'current_phase' index. Seed events replaced with sourced ones on 2026-11-08; each note names its source.",
+  "provenance": "sourced",
+  "current_phase": 2,
   "phases": [
-    {"name": "Latent",        "blurb": "Rhetoric and posturing; no direct fire."},
-    {"name": "Kinetic onset", "blurb": "First exchanges; launches ramp, strait contested."},
-    {"name": "Peak intensity","blurb": "Blockade dynamics; transits collapse, interference peaks."},
-    {"name": "De-escalation", "blurb": "Launches fade, corridor reopens under escort, VLCCs prove it."},
-    {"name": "Cessation",     "blurb": "Interference near-zero, transits normalised, ceasefire holds."}
+    {"name": "Opening war",        "blurb": "28 Feb – 7 Apr: US–Israeli strikes, Iranian missile waves on Israel and Gulf hosts, Hormuz effectively closed."},
+    {"name": "Ceasefire & MoU",    "blurb": "8 Apr – 7 Jul: Pakistan-brokered truce, 17 Jun MoU, partial reopening clears the stranded-tanker backlog."},
+    {"name": "Maritime war",       "blurb": "8 Jul – now: MoU collapses, US blockade reimposed, IRGC ship attacks hit a record in October, limited US strikes on the strait islands."},
+    {"name": "Settlement",         "blurb": "Talks produce a text; attacks fall while transits climb under an agreed regime."},
+    {"name": "Cessation",          "blurb": "Ship attacks near zero, transits normalised, blockade lifted."}
   ],
   "timeline": [
-    {"date": "2026-05-12", "type": "escalation",   "title": "First direct exchange", "note": "Opening strikes; launch count breaks from baseline."},
-    {"date": "2026-05-26", "type": "escalation",   "title": "Tanker seizures begin",  "note": "Interference incidents cross into double digits."},
-    {"date": "2026-06-02", "type": "escalation",   "title": "Hormuz effectively closed", "note": "Laden transits collapse below 10/day."},
-    {"date": "2026-06-09", "type": "neutral",      "title": "Peak launch week",       "note": "Iranian launches top out; ability-to-hurt at maximum."},
-    {"date": "2026-06-18", "type": "deescalation", "title": "Escort convoys announced", "note": "Naval escort of merchant traffic begins."},
-    {"date": "2026-06-30", "type": "deescalation", "title": "First VLCC transit since onset", "note": "Corridor proven for the largest hulls."},
-    {"date": "2026-07-14", "type": "deescalation", "title": "Ceasefire framework",    "note": "Launches into single digits; interference fading."},
-    {"date": "2026-07-27", "type": "deescalation", "title": "Transits back above 35/day", "note": "Strait functionally reopening; capacity failure confirmed in the data."}
+    {"date": "2026-02-28", "type": "escalation",   "title": "War begins", "note": "Coordinated US–Israeli strikes on Iran; Iran retaliates across the Gulf and Hormuz traffic collapses. (Wikipedia: 2026 Iran war / Strait of Hormuz crisis)"},
+    {"date": "2026-04-08", "type": "deescalation", "title": "Two-week ceasefire", "note": "Pakistan-mediated US–Iran ceasefire; it holds in some form until 8 Jul. (Wikipedia: 2026 Iran war ceasefire)"},
+    {"date": "2026-04-13", "type": "escalation",   "title": "US blockade of Iranian ports", "note": "Runs 13 Apr – 29 May. (Wikipedia: Strait of Hormuz crisis)"},
+    {"date": "2026-05-07", "type": "escalation",   "title": "US–Iran exchange fire under truce", "note": "US strikes Iranian sites after clashes in Hormuz. (CNN, NYT via Wikipedia)"},
+    {"date": "2026-06-17", "type": "deescalation", "title": "Trump–Pezeshkian MoU", "note": "60-day memorandum to end the war and reopen Hormuz. (JINSA)"},
+    {"date": "2026-07-08", "type": "escalation",   "title": "MoU declared over", "note": "Iran strikes commercial ships; Trump calls the MoU 'over' and fire resumes. (JINSA; Wikipedia)"},
+    {"date": "2026-07-14", "type": "escalation",   "title": "US blockade reimposed", "note": "CENTCOM resumes blockade of Iranian ports. (JINSA citing CENTCOM)"},
+    {"date": "2026-07-22", "type": "escalation",   "title": "Houthis declare blockade on Saudi Arabia", "note": "Opens the Saudi front. (UKMTO weekly overview)"},
+    {"date": "2026-09-01", "type": "escalation",   "title": "US strikes; Iran's biggest salvo since July", "note": "70 Iranian missiles/drones on 31 Aug – 2 Sep at Jordan, Bahrain, Iraq, Kuwait. (JINSA 2 Sep)"},
+    {"date": "2026-10-05", "type": "escalation",   "title": "Record week of ship attacks", "note": "12 vessels hit 5–11 Oct, six on 11 Oct alone; October becomes the worst month of the war. (UKMTO via BBC Verify; Washington Institute)"},
+    {"date": "2026-10-23", "type": "escalation",   "title": "Brent hits $115", "note": "First time since May. (JINSA 23 Oct)"},
+    {"date": "2026-10-29", "type": "escalation",   "title": "First limpet-mine attack", "note": "Small boat attaches two charges to tanker Louise 1 off Khasab. (UKMTO via Reuters/Iran International)"},
+    {"date": "2026-11-02", "type": "escalation",   "title": "US strikes Qeshm, Hengam, Bandar Abbas", "note": "Unannounced 'defensive' strikes on SAM sites; same day Iran floats a two-day Hormuz reopening. (AP via PBS/Washington Post; JINSA)"},
+    {"date": "2026-11-03", "type": "neutral",      "title": "US midterms", "note": "Democrats take the House; Tehran reads it as a Republican defeat. (AP; Maritime Executive)"},
+    {"date": "2026-11-06", "type": "escalation",   "title": "US hits Qeshm air defences again", "note": "Trump confirms 'minor strikes'; Iran weighs Qatari proposals. (AP via Washington Post; RFE/RL)"},
+    {"date": "2026-11-07", "type": "escalation",   "title": "IRGC lifts 2,000 km missile-range cap", "note": "Announced by IRGC spokesman Mohebbi. (RFE/RL citing Iranian media)"},
+    {"date": "2026-11-08", "type": "escalation",   "title": "Houthi missiles at Riyadh", "note": "Intercepted; falling debris damages the Aramco tower. Tanker struck outbound in Hormuz the night before. (Saudi Energy Ministry via ABC News / Iran International; UKMTO)"}
   ]
 }
