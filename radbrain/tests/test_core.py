@@ -280,3 +280,9 @@ def test_entwurf_signature_line(data):
     (data / "signers.json").write_text(_j.dumps({"signers": {"B1": ["Probe"]}, "me": ["Muster"], "staff": []}))
     r = A.anonymise("Befund:\nKein Erguss.\n\nBeurteilung:\nUnauffällig.\n\nEntwurf: Dr. med. Muster")
     assert r.author_is_me and "Muster" not in r.text and "Entwurf" not in r.text
+
+
+def test_ocr_punctuation_noise_is_not_a_rule():
+    assert miner.canonical({"op": "sub", "before": "re .", "after": "re ,"}) is None
+    assert miner.canonical({"op": "sub", "before": "V.a .", "after": "V.a ,"}) is None
+    assert miner.canonical({"op": "sub", "before": "eher", "after": "am ehesten"})["op"] == "sub"

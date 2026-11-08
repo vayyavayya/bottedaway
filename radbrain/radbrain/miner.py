@@ -31,7 +31,18 @@ def _cf(toks: list[str]) -> list[str]:
     return [t.casefold() for t in toks]
 
 
+_PUNCT_NOISE = str.maketrans("", "", ".,:;")
+
+
+def ocr_noise(before: str, after: str) -> bool:
+    """`re.` vs `re,` / `V.a.` vs `V.a,`: Tesseract punctuation noise between the two panels, not a correction."""
+    a, b = before.replace(" ", "").casefold(), after.replace(" ", "").casefold()
+    return a != b and a.translate(_PUNCT_NOISE) == b.translate(_PUNCT_NOISE)
+
+
 def canonical(op: dict) -> dict | None:
+    if ocr_noise(op["before"], op["after"]):
+        return None
     a, b = diff.tokens(op["before"]), diff.tokens(op["after"])
     ca, cb = _cf(a), _cf(b)
     if op["op"] == "sub":
@@ -45,6 +56,8 @@ def canonical(op: dict) -> dict | None:
         ca, cb = ca[i:len(ca) - j], cb[i:len(cb) - j]
         if not ca and not cb:
             return None                                    # only capitalisation changed
+        if all(t in ".,:;" for t in ca + cb):
+            return None                                    # punctuation-only (OCR noise)
         if not cb:
             return {"op": "del", "before": " ".join(_rotate(ca)), "after": ""}
         if not ca:
