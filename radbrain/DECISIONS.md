@@ -36,3 +36,19 @@
     that contains real captures. The hotkey end-to-end test on the PC runs against the demo dir.
 12. **Eval on synthetic data (08.11.2026, Mac, rules only):** chrF draft→engine B1 96.7→97.9, B2 89.7→96.4,
     B3 97.4→97.7; predict recall 52/73/67 %. Synthetic — proves the pipeline, says nothing about real performance.
+13. **Phase 1 result (VERIFIED on the PC, 08.11.2026 22:56–22:58, real Citrix session open):** the Citrix window
+    (`wfica32.exe`, class "Transparent Windows Client", 3840×2088) is NOT black. `mss` screen grab + Tesseract deu
+    read 335 words (260 German) in 5.4 s. PrintWindow and Windows Graphics Capture return blank frames. **Clipboard
+    route is blocked**: Ctrl+A/Ctrl+C sent into the focused Citrix panel never changed the local clipboard (Citrix
+    clipboard redirection off). → Route = **mss + OCR** (`recommended_route: ocr`).
+14. **OCR backend = Tesseract (deu, tessdata_best) with preprocessing**, measured on 30 synthetic panels (11–20 px,
+    dark/light, JPEG q35–55 + blur): CER 0.67 % (median 0), abbreviations 95 %, umlauts/ß 100 %, 0.16 s/image.
+    qwen3-vl:8b (Mac): 0.24 % CER when it answers but 2/22 empty (thinking runs out of tokens), ~50 s/image →
+    not used; qwen3.6:27b as a second pass only after checking it honours think:false. Preprocessing was tuned on
+    the same set (optimistic). Tesseract runs via stdin/stdout — pytesseract wrote temp PNGs, which would break the
+    no-image-on-disk rule.
+15. **OCR punctuation noise is not a correction:** `re.`↔`re,`, `V.a.`↔`V.a,` between the two panels are dropped by
+    the miner (`miner.ocr_noise`).
+16. **PC lifeline (08.11.2026):** the OpenSSH service had vanished (package still registered in winget); reinstalled,
+    sshd Automatic + restart-on-failure, firewall rule for LAN + tailnet on all profiles, profiles forced Private,
+    Tailscale unattended, SYSTEM watchdog every 5 min (`C:\ProgramData\RadLifeline`), Fast Startup off, WoL armed.
