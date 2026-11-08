@@ -103,6 +103,11 @@ def probe_clipboard(countdown: int = 5) -> dict:
             fg_info = {"cls": d["cls"], "exe": d["exe"], "citrix": bool(grab.citrix_match(d))}
         except Exception:
             pass
+    if fg_info.get("exe", "").lower() in ("python.exe", "pythonw.exe", "conhost.exe", "windowsterminal.exe",
+                                          "openconsole.exe", "cmd.exe", "powershell.exe"):
+        print("  the probe's own console is in front - no keys sent. Click INTO the Citrix report panel next time.",
+              flush=True)
+        return {"foreground": fg_info, "clipboard_changed": False, "error": "foreground was the probe console"}
     clip._wait_modifiers_released(be)
     before = be.seq()
     be.ctrl(clip.VK_A)
@@ -148,8 +153,12 @@ def main(argv=None) -> int:
     if sys.platform != "win32":
         print("probe_citrix is a Windows-only test (run it on the PC inside the logged-on desktop).")
         return 2
+    import signal
+    signal.signal(signal.SIGINT, signal.SIG_IGN)      # our own Ctrl+C must never kill the probe
     capture = probe_capture(args.ocr)
     print(json.dumps({"capture": capture}, indent=2, ensure_ascii=False))
+    save_json(probe_path(), {"probed_at": time.strftime("%Y-%m-%dT%H:%M:%S"), "capture": capture, "clipboard": None,
+                             "recommended_route": recommend(capture, None), "partial": True})
     clipboard = None
     if not args.no_clipboard:
         try:

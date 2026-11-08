@@ -40,7 +40,9 @@ _HEADING = re.compile(r"^\s*(" + "|".join(sorted((re.escape(a) for a in _ALIAS),
 EXAM_LINE = re.compile(r"^\s*(untersuchung|leistung|exam|untersuchungsart|anforderung|modalität)\s*[:]\s*(.+)$", re.I)
 SIGNATURE = re.compile(r"(signiert|freigegeben|unterschrieben|vidiert|validiert|befundet\s+(von|durch)|befunder|"
                        r"diktiert|geschrieben\s+(von|durch)|erstellt\s+(von|durch)|vorläufiger befund|"
-                       r"mit freundlichen|mit kollegialen|\bmfg\b|\bgez\.|\bi\.\s?a\.)", re.I)
+                       r"mit freundlichen|mit kollegialen|\bmfg\b|\bgez\.|\bi\.\s?a\.|^\s*entwurf\s*(von|durch)?\s*:|"
+                       r"^\s*(befundender|befundende|assistenzarzt|assistenzärztin|oberarzt|oberärztin|chefarzt|"
+                       r"chefärztin)\s*:)", re.I)
 ROLE_ONLY = re.compile(r"^\s*(Prof\.?|Dr\.?|med\.?|PD|\s)*\s*[\wÄÖÜäöüß.\- ]{0,60}\s*[,(]?\s*"
                        r"(Chefarzt|Chefärztin|Oberarzt|Oberärztin|Leitender Oberarzt|Leitende Oberärztin|"
                        r"Facharzt|Fachärztin|Assistenzarzt|Assistenzärztin|Arzt|Ärztin)\)?\s*$", re.I)

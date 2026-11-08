@@ -273,3 +273,10 @@ def test_web_localhost_guards(data):
             web.serve("0.0.0.0", 0)
     finally:
         srv.shutdown()
+
+
+def test_entwurf_signature_line(data):
+    import json as _j
+    (data / "signers.json").write_text(_j.dumps({"signers": {"B1": ["Probe"]}, "me": ["Muster"], "staff": []}))
+    r = A.anonymise("Befund:\nKein Erguss.\n\nBeurteilung:\nUnauffällig.\n\nEntwurf: Dr. med. Muster")
+    assert r.author_is_me and "Muster" not in r.text and "Entwurf" not in r.text
