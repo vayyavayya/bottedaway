@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-08T11:19:56Z",
+  "generated_at": "2026-11-09T22:09:43Z",
   "offline": false,
   "provenance": "sourced",
   "arc": {
@@ -113,6 +113,12 @@
       "note": "Democrats take the House; Tehran reads it as a Republican defeat. (AP; Maritime Executive)"
     },
     {
+      "date": "2026-11-04",
+      "type": "escalation",
+      "title": "IRGC claims four tankers mined, two ships seized",
+      "note": "Claimed mine strikes south of the strait plus two seizures; unverified. (JINSA 4 Nov)"
+    },
+    {
       "date": "2026-11-06",
       "type": "escalation",
       "title": "US hits Qeshm air defences again",
@@ -125,10 +131,34 @@
       "note": "Announced by IRGC spokesman Mohebbi. (RFE/RL citing Iranian media)"
     },
     {
+      "date": "2026-11-07",
+      "type": "escalation",
+      "title": "US disables blockade-runner M/V Huda",
+      "note": "St Kitts-flagged tanker disabled after leaving an Iranian port. (ISW/CTP Iran Update, 8 Nov)"
+    },
+    {
       "date": "2026-11-08",
       "type": "escalation",
       "title": "Houthi missiles at Riyadh",
       "note": "Intercepted; falling debris damages the Aramco tower. Tanker struck outbound in Hormuz the night before. (Saudi Energy Ministry via ABC News / Iran International; UKMTO)"
+    },
+    {
+      "date": "2026-11-08",
+      "type": "neutral",
+      "title": "Trump: new strikes 'highly unlikely'; Rubio: no breakthrough",
+      "note": "Trump tells CNN strikes are unlikely while talks progress; Rubio calls Iran's terms unrealistic before the G7 in Paris. (ISW/CTP; Fox News citing Reuters)"
+    },
+    {
+      "date": "2026-11-09",
+      "type": "escalation",
+      "title": "IRGC says southern-lane navigation aids destroyed",
+      "note": "IRGC Navy official tells state media no unauthorised vessels transited overnight. (Reuters via Arab News)"
+    },
+    {
+      "date": "2026-11-09",
+      "type": "deescalation",
+      "title": "Qatar PM brings Iran's interim Hormuz terms to Trump",
+      "note": "White House meeting; reported terms (Israel Hayom, unconfirmed): reopen Hormuz and halt tanker attacks for lifting the blockade and releasing $8bn. Brent Jan falls ~6% to the low $92s. (Fox News; OK Energy Today)"
     }
   ],
   "metrics": {
@@ -290,42 +320,48 @@
     "label": "Brent backwardation (M1-M3)",
     "unit": "$",
     "meaning": "Brent term structure snapshot, taken Monday when markets reopen. Backwardation (M1 > deferred) = physical tightness. Backwardation EASING (spread shrinking toward 0 / flipping to contango) = tightness relaxing before any headline says so. Update 'curve' each Monday with front-month settlement out to M6, and append the M1-M3 spread to 'spread_history'. Source used: NYMEX Brent Last Day Financial (BZ) contract closes via Yahoo Finance (tickers BZF27.NYM \u2026 BZM27.NYM), which track ICE Brent settlements; cross-check with ICE / Barchart. Seed history replaced 2026-11-08. Earlier Mondays could not be reconstructed: the Dec-26 contract that was M1 until 30 Oct has expired and its history is no longer served.",
-    "as_of": "2026-11-02",
+    "as_of": "2026-11-09",
     "curve": [
       {
         "month": "M1",
-        "price": 104.77
+        "price": 92.2
       },
       {
         "month": "M2",
-        "price": 101.7
+        "price": 90.13
       },
       {
         "month": "M3",
-        "price": 99.04
+        "price": 88.67
       },
       {
         "month": "M4",
-        "price": 96.8
+        "price": 86.26
       },
       {
         "month": "M5",
-        "price": 94.86
+        "price": 88.21,
+        "note": "Stale print: BZK27's last Yahoo trade was 08:18 UTC on 9 Nov, before the day's ~6% sell-off, so it sits above M4"
       },
       {
         "month": "M6",
-        "price": 93.06
+        "price": 85.81
       }
     ],
-    "m1_minus_last": 11.709999999999994,
-    "latest": 5.73,
-    "prev": null,
-    "delta": null,
+    "m1_minus_last": 6.390000000000001,
+    "latest": 3.53,
+    "prev": 5.73,
+    "delta": -2.2000000000000006,
     "history": [
       {
         "period": "2026-11-02",
         "m1_m3": 5.73,
         "source": "BZF27 104.77 \u2212 BZH27 99.04, Monday 2 Nov close (Yahoo Finance)"
+      },
+      {
+        "period": "2026-11-09",
+        "m1_m3": 3.53,
+        "source": "BZF27 92.20 \u2212 BZH27 88.67, Monday 9 Nov close (Yahoo Finance); ICE Brent Jan settled 92.57"
       }
     ],
     "direction_good": "down"
@@ -335,10 +371,6 @@
       "label": "Brent crude",
       "unit": "$/bbl",
       "series": [
-        {
-          "date": "2026-02-23",
-          "close": 71.49
-        },
         {
           "date": "2026-02-24",
           "close": 70.77
@@ -1054,10 +1086,14 @@
         {
           "date": "2026-11-06",
           "close": 98.32
+        },
+        {
+          "date": "2026-11-09",
+          "close": 92.17
         }
       ],
-      "latest": 98.32,
-      "prev": 98.29,
+      "latest": 92.17,
+      "prev": 98.32,
       "source": "live",
       "stale": false
     },
@@ -1065,10 +1101,6 @@
       "label": "US 10Y yield",
       "unit": "%",
       "series": [
-        {
-          "date": "2026-02-23",
-          "close": 4.029
-        },
         {
           "date": "2026-02-24",
           "close": 4.033
@@ -1784,10 +1816,14 @@
         {
           "date": "2026-11-06",
           "close": 4.859
+        },
+        {
+          "date": "2026-11-09",
+          "close": 4.864
         }
       ],
-      "latest": 4.859,
-      "prev": 4.837,
+      "latest": 4.864,
+      "prev": 4.859,
       "source": "live",
       "stale": false
     }
@@ -1810,7 +1846,7 @@
       "n": 0
     },
     "brent_vs_us10y": {
-      "r": 0.12879510006731407,
+      "r": 0.12802552944561874,
       "n": 145
     }
   }

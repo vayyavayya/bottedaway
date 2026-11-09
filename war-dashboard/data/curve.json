@@ -1,18 +1,19 @@
 {
   "_README": "Brent term structure snapshot, taken Monday when markets reopen. Backwardation (M1 > deferred) = physical tightness. Backwardation EASING (spread shrinking toward 0 / flipping to contango) = tightness relaxing before any headline says so. Update 'curve' each Monday with front-month settlement out to M6, and append the M1-M3 spread to 'spread_history'. Source used: NYMEX Brent Last Day Financial (BZ) contract closes via Yahoo Finance (tickers BZF27.NYM … BZM27.NYM), which track ICE Brent settlements; cross-check with ICE / Barchart. Seed history replaced 2026-11-08. Earlier Mondays could not be reconstructed: the Dec-26 contract that was M1 until 30 Oct has expired and its history is no longer served.",
   "provenance": "sourced",
-  "as_of": "2026-11-02",
+  "as_of": "2026-11-09",
   "contracts": ["Jan-27 (F27)", "Feb-27 (G27)", "Mar-27 (H27)", "Apr-27 (J27)", "May-27 (K27)", "Jun-27 (M27)"],
   "curve": [
-    {"month": "M1", "price": 104.77},
-    {"month": "M2", "price": 101.70},
-    {"month": "M3", "price": 99.04},
-    {"month": "M4", "price": 96.80},
-    {"month": "M5", "price": 94.86},
-    {"month": "M6", "price": 93.06}
+    {"month": "M1", "price": 92.20},
+    {"month": "M2", "price": 90.13},
+    {"month": "M3", "price": 88.67},
+    {"month": "M4", "price": 86.26},
+    {"month": "M5", "price": 88.21, "note": "Stale print: BZK27's last Yahoo trade was 08:18 UTC on 9 Nov, before the day's ~6% sell-off, so it sits above M4"},
+    {"month": "M6", "price": 85.81}
   ],
   "spread_history": [
-    {"period": "2026-11-02", "m1_m3": 5.73, "source": "BZF27 104.77 − BZH27 99.04, Monday 2 Nov close (Yahoo Finance)"}
+    {"period": "2026-11-02", "m1_m3": 5.73, "source": "BZF27 104.77 − BZH27 99.04, Monday 2 Nov close (Yahoo Finance)"},
+    {"period": "2026-11-09", "m1_m3": 3.53, "source": "BZF27 92.20 − BZH27 88.67, Monday 9 Nov close (Yahoo Finance); ICE Brent Jan settled 92.57"}
   ],
   "context": [
     {"date": "2026-10-30", "m1_m3": 7.24, "note": "Fri 30 Oct (not a Monday): F27 113.43 − H27 106.19"},

@@ -24,8 +24,13 @@
     {"date": "2026-10-29", "type": "escalation",   "title": "First limpet-mine attack", "note": "Small boat attaches two charges to tanker Louise 1 off Khasab. (UKMTO via Reuters/Iran International)"},
     {"date": "2026-11-02", "type": "escalation",   "title": "US strikes Qeshm, Hengam, Bandar Abbas", "note": "Unannounced 'defensive' strikes on SAM sites; same day Iran floats a two-day Hormuz reopening. (AP via PBS/Washington Post; JINSA)"},
     {"date": "2026-11-03", "type": "neutral",      "title": "US midterms", "note": "Democrats take the House; Tehran reads it as a Republican defeat. (AP; Maritime Executive)"},
+    {"date": "2026-11-04", "type": "escalation",   "title": "IRGC claims four tankers mined, two ships seized", "note": "Claimed mine strikes south of the strait plus two seizures; unverified. (JINSA 4 Nov)"},
     {"date": "2026-11-06", "type": "escalation",   "title": "US hits Qeshm air defences again", "note": "Trump confirms 'minor strikes'; Iran weighs Qatari proposals. (AP via Washington Post; RFE/RL)"},
     {"date": "2026-11-07", "type": "escalation",   "title": "IRGC lifts 2,000 km missile-range cap", "note": "Announced by IRGC spokesman Mohebbi. (RFE/RL citing Iranian media)"},
-    {"date": "2026-11-08", "type": "escalation",   "title": "Houthi missiles at Riyadh", "note": "Intercepted; falling debris damages the Aramco tower. Tanker struck outbound in Hormuz the night before. (Saudi Energy Ministry via ABC News / Iran International; UKMTO)"}
+    {"date": "2026-11-07", "type": "escalation",   "title": "US disables blockade-runner M/V Huda", "note": "St Kitts-flagged tanker disabled after leaving an Iranian port. (ISW/CTP Iran Update, 8 Nov)"},
+    {"date": "2026-11-08", "type": "escalation",   "title": "Houthi missiles at Riyadh", "note": "Intercepted; falling debris damages the Aramco tower. Tanker struck outbound in Hormuz the night before. (Saudi Energy Ministry via ABC News / Iran International; UKMTO)"},
+    {"date": "2026-11-08", "type": "neutral",      "title": "Trump: new strikes 'highly unlikely'; Rubio: no breakthrough", "note": "Trump tells CNN strikes are unlikely while talks progress; Rubio calls Iran's terms unrealistic before the G7 in Paris. (ISW/CTP; Fox News citing Reuters)"},
+    {"date": "2026-11-09", "type": "escalation",   "title": "IRGC says southern-lane navigation aids destroyed", "note": "IRGC Navy official tells state media no unauthorised vessels transited overnight. (Reuters via Arab News)"},
+    {"date": "2026-11-09", "type": "deescalation", "title": "Qatar PM brings Iran's interim Hormuz terms to Trump", "note": "White House meeting; reported terms (Israel Hayom, unconfirmed): reopen Hormuz and halt tanker attacks for lifting the blockade and releasing $8bn. Brent Jan falls ~6% to the low $92s. (Fox News; OK Energy Today)"}
   ]
 }
