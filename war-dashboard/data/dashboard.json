@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-09T22:09:43Z",
+  "generated_at": "2026-11-16T21:58:06Z",
   "offline": false,
   "provenance": "sourced",
   "arc": {
@@ -159,6 +159,54 @@
       "type": "deescalation",
       "title": "Qatar PM brings Iran's interim Hormuz terms to Trump",
       "note": "White House meeting; reported terms (Israel Hayom, unconfirmed): reopen Hormuz and halt tanker attacks for lifting the blockade and releasing $8bn. Brent Jan falls ~6% to the low $92s. (Fox News; OK Energy Today)"
+    },
+    {
+      "date": "2026-11-10",
+      "type": "escalation",
+      "title": "Houthis fire at Riyadh, Abqaiq and East-West Pipeline",
+      "note": "Saudi Arabia says it intercepted two ballistic and cruise missiles near Riyadh, one ballistic missile in the Eastern Province and a drone; Saudi jets hit the Houthi-held Yemen Petroleum Company HQ in Sanaa. Same day a projectile hits an Emirati-operated tanker. (ISW/CTP Iran Update, 10 Nov)"
+    },
+    {
+      "date": "2026-11-10",
+      "type": "deescalation",
+      "title": "Brent below $90 for first time since August",
+      "note": "Follows Trump's 9 Nov remarks that renewed strikes are 'quite unlikely' and Iran 'militarily is effectively over'; Qatar says mediated talks are making progress. (JINSA Iran War Update, 12\u201313 Nov)"
+    },
+    {
+      "date": "2026-11-11",
+      "type": "escalation",
+      "title": "Tanker engine room hit off Ras al-Khaimah",
+      "note": "Strike ~14 nm NW of Ras al-Khaimah, crew evacuated; UKMTO's weekly overview counts 7 tanker attacks in the week to 11 Nov. (UKMTO via Middle East Eye)"
+    },
+    {
+      "date": "2026-11-12",
+      "type": "escalation",
+      "title": "Trump pulls Vance off Iran: 'we don't need a deal'",
+      "note": "Truth Social post says the US already has 'their money' and 'their Strait'; Iran's Rezaei demands acceptance of Iran's seven conditions. (JINSA Iran War Update, 11\u201312 Nov)"
+    },
+    {
+      "date": "2026-11-13",
+      "type": "escalation",
+      "title": "IRGC strikes US radar in Bahrain",
+      "note": "Retaliation for a 12 Nov strike on a telecom tower in Sirik; first Iranian strike on US equipment in a Gulf state since September. CENTCOM rejects the IRGC's damage claims. IRGC repeats with six drones at Al-Riffa on 15 Nov. (JINSA Iran War Update, 13 and 16 Nov)"
+    },
+    {
+      "date": "2026-11-14",
+      "type": "escalation",
+      "title": "Third US carrier arrives in region",
+      "note": "USS Roosevelt brings the count to three carrier strike groups; Reuters reports Trump may hold off on new strikes if Iran and the Houthis don't provoke. (Axios and Reuters via JINSA, 16 Nov)"
+    },
+    {
+      "date": "2026-11-15",
+      "type": "escalation",
+      "title": "Houthis push toward Aden after IRG pullback",
+      "note": "Yemeni government forces withdraw from the Bab el-Mandeb coast; Houthis advance to within ~37 miles of Aden. (JINSA Iran War Update, 16 Nov)"
+    },
+    {
+      "date": "2026-11-16",
+      "type": "escalation",
+      "title": "Outbound tanker hit by projectile in Hormuz",
+      "note": "Engine-room fire, no casualties; Tehran separately bars IAEA access to damaged nuclear sites until the war ends. (UKMTO via Iran International; JINSA, 16 Nov)"
     }
   ],
   "metrics": {
@@ -202,11 +250,23 @@
           "value": 5,
           "source": "JINSA 26 Oct (604) \u2192 2 Nov (609)",
           "note": "derived from cumulative"
+        },
+        {
+          "period": "2026-11-02",
+          "value": 11,
+          "source": "JINSA 2 Nov (609) \u2192 9 Nov (620)",
+          "note": "derived from cumulative"
+        },
+        {
+          "period": "2026-11-09",
+          "value": 28,
+          "source": "JINSA 9 Nov (620) \u2192 16 Nov (648)",
+          "note": "derived from cumulative; JINSA's dated increments for 10\u201316 Nov sum to only 17 (2+2+13), so the 16 Nov cumulative carries an unexplained upward revision of ~11"
         }
       ],
-      "latest": 5,
-      "prev": 9,
-      "delta": -4
+      "latest": 28,
+      "prev": 11,
+      "delta": 17
     },
     "interference": {
       "label": "Ship attacks (UKMTO-verified)",
@@ -244,11 +304,17 @@
           "period": "2026-10-26",
           "value": 11,
           "source": "UKMTO weekly overview w/e 6 Nov (window 29 Oct\u20134 Nov), via Middle East Eye: 8 Hormuz, 3 Arabian Gulf; 3 vessels sunk"
+        },
+        {
+          "period": "2026-11-02",
+          "value": 7,
+          "source": "UKMTO weekly overview w/e 13 Nov (window to 11 Nov), via Middle East Eye / gCaptain: 8 incidents incl. 7 tanker attacks (5 Hormuz, 2 Arabian Gulf, 1 Gulf of Oman); none sunk",
+          "note": "8th incident not counted as an attack on shipping"
         }
       ],
-      "latest": 11,
-      "prev": 3,
-      "delta": 8
+      "latest": 7,
+      "prev": 11,
+      "delta": -4
     },
     "transits": {
       "label": "Hormuz transits",
@@ -292,11 +358,16 @@
           "period": "2026-10-26",
           "value": 46.4,
           "source": "UKMTO w/e 6 Nov (window to 4 Nov): 170 out + 155 in = 325; 71 AIS-observed; ~65% below pre-war"
+        },
+        {
+          "period": "2026-11-02",
+          "value": 44.0,
+          "source": "UKMTO w/e 13 Nov (window to 11 Nov): 139 out + 169 in = 308; AIS-observed count not given in relays (Middle East Eye, gCaptain, Khaama/Al Jazeera); ~65% below pre-war"
         }
       ],
-      "latest": 46.4,
-      "prev": 39.6,
-      "delta": 6.799999999999997
+      "latest": 44.0,
+      "prev": 46.4,
+      "delta": -2.3999999999999986
     },
     "vlcc": {
       "label": "VLCC completions",
@@ -320,38 +391,37 @@
     "label": "Brent backwardation (M1-M3)",
     "unit": "$",
     "meaning": "Brent term structure snapshot, taken Monday when markets reopen. Backwardation (M1 > deferred) = physical tightness. Backwardation EASING (spread shrinking toward 0 / flipping to contango) = tightness relaxing before any headline says so. Update 'curve' each Monday with front-month settlement out to M6, and append the M1-M3 spread to 'spread_history'. Source used: NYMEX Brent Last Day Financial (BZ) contract closes via Yahoo Finance (tickers BZF27.NYM \u2026 BZM27.NYM), which track ICE Brent settlements; cross-check with ICE / Barchart. Seed history replaced 2026-11-08. Earlier Mondays could not be reconstructed: the Dec-26 contract that was M1 until 30 Oct has expired and its history is no longer served.",
-    "as_of": "2026-11-09",
+    "as_of": "2026-11-16",
     "curve": [
       {
         "month": "M1",
-        "price": 92.2
+        "price": 91.77
       },
       {
         "month": "M2",
-        "price": 90.13
+        "price": 89.36
       },
       {
         "month": "M3",
-        "price": 88.67
+        "price": 87.7
       },
       {
         "month": "M4",
-        "price": 86.26
+        "price": 86.02
       },
       {
         "month": "M5",
-        "price": 88.21,
-        "note": "Stale print: BZK27's last Yahoo trade was 08:18 UTC on 9 Nov, before the day's ~6% sell-off, so it sits above M4"
+        "price": 84.55
       },
       {
         "month": "M6",
-        "price": 85.81
+        "price": 83.28
       }
     ],
-    "m1_minus_last": 6.390000000000001,
-    "latest": 3.53,
-    "prev": 5.73,
-    "delta": -2.2000000000000006,
+    "m1_minus_last": 8.489999999999995,
+    "latest": 4.07,
+    "prev": 3.53,
+    "delta": 0.5400000000000005,
     "history": [
       {
         "period": "2026-11-02",
@@ -362,6 +432,11 @@
         "period": "2026-11-09",
         "m1_m3": 3.53,
         "source": "BZF27 92.20 \u2212 BZH27 88.67, Monday 9 Nov close (Yahoo Finance); ICE Brent Jan settled 92.57"
+      },
+      {
+        "period": "2026-11-16",
+        "m1_m3": 4.07,
+        "source": "BZF27 91.77 \u2212 BZH27 87.70, Monday 16 Nov close (Yahoo Finance)"
       }
     ],
     "direction_good": "down"
@@ -371,26 +446,6 @@
       "label": "Brent crude",
       "unit": "$/bbl",
       "series": [
-        {
-          "date": "2026-02-24",
-          "close": 70.77
-        },
-        {
-          "date": "2026-02-25",
-          "close": 70.85
-        },
-        {
-          "date": "2026-02-26",
-          "close": 70.75
-        },
-        {
-          "date": "2026-02-27",
-          "close": 72.48
-        },
-        {
-          "date": "2026-03-02",
-          "close": 77.74
-        },
         {
           "date": "2026-03-03",
           "close": 81.4
@@ -1089,11 +1144,31 @@
         },
         {
           "date": "2026-11-09",
-          "close": 92.17
+          "close": 92.57
+        },
+        {
+          "date": "2026-11-10",
+          "close": 91.49
+        },
+        {
+          "date": "2026-11-11",
+          "close": 92.76
+        },
+        {
+          "date": "2026-11-12",
+          "close": 95.82
+        },
+        {
+          "date": "2026-11-13",
+          "close": 95.84
+        },
+        {
+          "date": "2026-11-16",
+          "close": 91.83
         }
       ],
-      "latest": 92.17,
-      "prev": 98.32,
+      "latest": 91.83,
+      "prev": 95.84,
       "source": "live",
       "stale": false
     },
@@ -1101,26 +1176,6 @@
       "label": "US 10Y yield",
       "unit": "%",
       "series": [
-        {
-          "date": "2026-02-24",
-          "close": 4.033
-        },
-        {
-          "date": "2026-02-25",
-          "close": 4.048
-        },
-        {
-          "date": "2026-02-26",
-          "close": 4.017
-        },
-        {
-          "date": "2026-02-27",
-          "close": 3.962
-        },
-        {
-          "date": "2026-03-02",
-          "close": 4.048
-        },
         {
           "date": "2026-03-03",
           "close": 4.056
@@ -1820,33 +1875,53 @@
         {
           "date": "2026-11-09",
           "close": 4.864
+        },
+        {
+          "date": "2026-11-10",
+          "close": 4.983
+        },
+        {
+          "date": "2026-11-11",
+          "close": 4.998
+        },
+        {
+          "date": "2026-11-12",
+          "close": 5.103
+        },
+        {
+          "date": "2026-11-13",
+          "close": 5.154
+        },
+        {
+          "date": "2026-11-16",
+          "close": 5.121
         }
       ],
-      "latest": 4.864,
-      "prev": 4.859,
+      "latest": 5.121,
+      "prev": 5.154,
       "source": "live",
       "stale": false
     }
   },
   "correlations": {
     "launches_vs_brent": {
-      "r": -0.7806664301365015,
-      "n": 5
+      "r": -0.7344821701316692,
+      "n": 7
     },
     "interference_vs_brent": {
-      "r": -0.41003340967466617,
-      "n": 5
+      "r": -0.22963259810290226,
+      "n": 6
     },
     "transits_vs_brent": {
-      "r": 0.5801742456504942,
-      "n": 6
+      "r": 0.16643076035007703,
+      "n": 7
     },
     "vlcc_vs_brent": {
       "r": null,
       "n": 0
     },
     "brent_vs_us10y": {
-      "r": 0.12802552944561874,
+      "r": 0.12605957881040142,
       "n": 145
     }
   }

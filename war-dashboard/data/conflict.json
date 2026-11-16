@@ -43,6 +43,18 @@
         "value": 5,
         "source": "JINSA 26 Oct (604) → 2 Nov (609)",
         "note": "derived from cumulative"
+      },
+      {
+        "period": "2026-11-02",
+        "value": 11,
+        "source": "JINSA 2 Nov (609) → 9 Nov (620)",
+        "note": "derived from cumulative"
+      },
+      {
+        "period": "2026-11-09",
+        "value": 28,
+        "source": "JINSA 9 Nov (620) → 16 Nov (648)",
+        "note": "derived from cumulative; JINSA's dated increments for 10–16 Nov sum to only 17 (2+2+13), so the 16 Nov cumulative carries an unexplained upward revision of ~11"
       }
     ]
   },
@@ -82,6 +94,12 @@
         "period": "2026-10-26",
         "value": 11,
         "source": "UKMTO weekly overview w/e 6 Nov (window 29 Oct–4 Nov), via Middle East Eye: 8 Hormuz, 3 Arabian Gulf; 3 vessels sunk"
+      },
+      {
+        "period": "2026-11-02",
+        "value": 7,
+        "source": "UKMTO weekly overview w/e 13 Nov (window to 11 Nov), via Middle East Eye / gCaptain: 8 incidents incl. 7 tanker attacks (5 Hormuz, 2 Arabian Gulf, 1 Gulf of Oman); none sunk",
+        "note": "8th incident not counted as an attack on shipping"
       }
     ]
   },
@@ -127,6 +145,11 @@
         "period": "2026-10-26",
         "value": 46.4,
         "source": "UKMTO w/e 6 Nov (window to 4 Nov): 170 out + 155 in = 325; 71 AIS-observed; ~65% below pre-war"
+      },
+      {
+        "period": "2026-11-02",
+        "value": 44.0,
+        "source": "UKMTO w/e 13 Nov (window to 11 Nov): 139 out + 169 in = 308; AIS-observed count not given in relays (Middle East Eye, gCaptain, Khaama/Al Jazeera); ~65% below pre-war"
       }
     ]
   },
