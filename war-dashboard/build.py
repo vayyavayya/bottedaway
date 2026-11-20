@@ -232,6 +232,45 @@ def metric_block(raw):
     }
 
 
+def phase_stats(phases, current_idx, market, conflict, timeline):
+    """Attach per-phase numbers computed from the series already on the dashboard.
+
+    Brent: average and peak daily close inside [start, end]. Ship attacks and
+    transits: mean of the weekly points whose period (a Monday) falls in the phase;
+    only reported when at least two weeks are covered. Events: count by type.
+    An ongoing phase (end null) runs to today; future phases get no stats.
+    """
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    brent = market.get("brent", {}).get("series", []) or []
+    out = []
+    for i, ph in enumerate(phases):
+        p = dict(ph)
+        start, end = ph.get("start"), ph.get("end")
+        if start and not end and i == current_idx:
+            end = today
+        stats = {}
+        if start and end:
+            d0, d1 = datetime.fromisoformat(start), datetime.fromisoformat(end)
+            stats["days"] = (d1 - d0).days + 1
+            closes = [pt["close"] for pt in brent if start <= pt["date"] <= end and pt.get("close") is not None]
+            if closes:
+                stats["brent_avg"] = round(sum(closes) / len(closes), 1)
+                stats["brent_peak"] = round(max(closes), 1)
+            for key in ("interference", "transits"):
+                vals = [pt["value"] for pt in conflict[key]["series"]
+                        if start <= pt["period"] <= end and pt.get("value") is not None]
+                if len(vals) >= 2:
+                    stats[f"{key}_avg"] = round(sum(vals) / len(vals), 1)
+                    stats[f"{key}_weeks"] = len(vals)
+            evs = [ev for ev in timeline if start <= ev["date"] <= end]
+            stats["events"] = {t: sum(1 for ev in evs if ev["type"] == t)
+                               for t in ("escalation", "deescalation", "neutral")}
+        p["stats"] = stats
+        p["status"] = "current" if i == current_idx else ("past" if i < current_idx else "future")
+        out.append(p)
+    return out
+
+
 def build(offline=False):
     print("Building Iran-US war dashboard …")
     conflict = load("conflict.json")
@@ -273,7 +312,9 @@ def build(offline=False):
         "provenance": conflict.get("provenance", "unknown"),
         "arc": {
             "current_phase": events["current_phase"],
-            "phases": events["phases"],
+            "phases": phase_stats(events["phases"], events["current_phase"], market,
+                                  conflict, events["timeline"]),
+            "as_of": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
         },
         "events": events["timeline"],
         "metrics": metrics,

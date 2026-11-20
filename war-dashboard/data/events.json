@@ -1,27 +1,63 @@
 {
-  "_README": "The 'arc of the war': named phases plus a dated timeline of discrete events. 'type' drives colour: escalation (red), deescalation (aqua), neutral (grey). Events are overlaid as markers on the Brent and US10Y charts. Append events as they happen and advance 'current_phase' index. Seed events replaced with sourced ones on 2026-11-08; each note names its source.",
+  "_README": "The 'arc of the war': dated phases plus a dated timeline of discrete events. Each phase has start/end (ISO dates; end null = ongoing; both null = not yet reached), a tone (war | truce | future) and a source. build.py adds per-phase stats (Brent average/peak, ship attacks/wk, transits/day) from the market and conflict series. 'type' on timeline events drives colour: escalation (red), deescalation (aqua), neutral (grey). Events are overlaid on the arc band and on the Brent and US10Y charts. Append events as they happen; advance 'current_phase' only when the arc genuinely moves. Seed events replaced with sourced ones on 2026-11-08; phases rebuilt from sources on 2026-11-20 (Maritime war split into Blockade war and Tanker war; Ceasefire and MoU separated; first-blockade end and Houthi-blockade dates corrected).",
   "provenance": "sourced",
-  "current_phase": 2,
+  "current_phase": 4,
   "phases": [
     {
       "name": "Opening war",
-      "blurb": "28 Feb – 7 Apr: US–Israeli strikes, Iranian missile waves on Israel and Gulf hosts, Hormuz effectively closed."
+      "start": "2026-02-28",
+      "end": "2026-04-07",
+      "tone": "war",
+      "blurb": "US–Israeli strikes on Iran; Iranian missile waves on Israel and Gulf hosts; Hormuz traffic collapses by roughly 70%.",
+      "source": "Wikipedia: 2026 Iran war; Al Jazeera, 8 Apr"
     },
     {
-      "name": "Ceasefire & MoU",
-      "blurb": "8 Apr – 7 Jul: Pakistan-brokered truce, 17 Jun MoU, partial reopening clears the stranded-tanker backlog."
+      "name": "Ceasefire & first blockade",
+      "start": "2026-04-08",
+      "end": "2026-06-16",
+      "tone": "truce",
+      "blurb": "Pakistan-brokered truce from 8 Apr, broken by clashes. US blockades Iranian ports from 13 Apr after the Islamabad talks fail; Trump says on 29 May it will lift, but it stays until the MoU.",
+      "source": "Al Jazeera, 8 Apr; TWZ, 29 May; USNI, 18 Jun"
     },
     {
-      "name": "Maritime war",
-      "blurb": "8 Jul – now: MoU collapses, US blockade reimposed, IRGC ship attacks hit a record in October, limited US strikes on the strait islands."
+      "name": "MoU interlude",
+      "start": "2026-06-17",
+      "end": "2026-07-07",
+      "tone": "truce",
+      "blurb": "17 Jun Trump–Pezeshkian MoU promises 60 days of free transit; CENTCOM lifts the blockade on 18 Jun. Reopening stays partial and clashes resume within weeks.",
+      "source": "JINSA; USNI, 18 Jun; Wikipedia: 2026 Strait of Hormuz crisis"
+    },
+    {
+      "name": "Blockade war",
+      "start": "2026-07-08",
+      "end": "2026-09-28",
+      "tone": "war",
+      "blurb": "Trump declares the MoU over on 8 Jul; US blockade reimposed 14 Jul; Houthis declare a blockade of Saudi Arabia 20 Jul; Iran's biggest salvo since April (≥70 missiles and drones, 31 Aug–2 Sep).",
+      "source": "Korea JoongAng Daily, 9 Jul; USNI / NPR, 13–14 Jul; Al Jazeera, 20 Jul; JINSA, 2 Sep"
+    },
+    {
+      "name": "Tanker war",
+      "start": "2026-09-29",
+      "end": null,
+      "tone": "war",
+      "blurb": "Near-daily IRGC attacks on merchant ships since 29 Sep; October the worst month of the war; limpet mines and US strikes on Qeshm; mid-Nov Iran resumes fire at US bases in Bahrain and Kuwait.",
+      "source": "ISW/CTP, 5 Oct; Reuters via Gulf Times, 24 Oct; UKMTO; JINSA, 18 Nov"
     },
     {
       "name": "Settlement",
-      "blurb": "Talks produce a text; attacks fall while transits climb under an agreed regime."
+      "start": null,
+      "end": null,
+      "tone": "future",
+      "blurb": "Talks produce a text; ship attacks fall while transits climb under an agreed regime. The dashboard's end-signal is the tell.",
+      "source": ""
     },
     {
       "name": "Cessation",
-      "blurb": "Ship attacks near zero, transits normalised, blockade lifted."
+      "start": null,
+      "end": null,
+      "tone": "future",
+      "blurb": "Ship attacks near zero, transits back toward the pre-war ~120–135 a day, blockade lifted.",
+      "source": ""
     }
   ],
   "timeline": [
@@ -41,7 +77,7 @@
       "date": "2026-04-13",
       "type": "escalation",
       "title": "US blockade of Iranian ports",
-      "note": "Runs 13 Apr – 29 May. (Wikipedia: Strait of Hormuz crisis)"
+      "note": "Ordered after the Islamabad talks fail. Trump says on 29 May it will lift, but NAVCENT keeps it in force; CENTCOM ends it on 18 Jun under the MoU. (USNI, 18 Jun; TWZ, 29 May) [corrected 20 Nov: earlier note said it ran to 29 May]"
     },
     {
       "date": "2026-05-07",
@@ -56,6 +92,12 @@
       "note": "60-day memorandum to end the war and reopen Hormuz. (JINSA)"
     },
     {
+      "date": "2026-06-18",
+      "type": "deescalation",
+      "title": "US lifts first blockade",
+      "note": "CENTCOM ends the blockade of Iranian ports under the 17 Jun MoU. (USNI, 18 Jun)"
+    },
+    {
       "date": "2026-07-08",
       "type": "escalation",
       "title": "MoU declared over",
@@ -68,16 +110,22 @@
       "note": "CENTCOM resumes blockade of Iranian ports. (JINSA citing CENTCOM)"
     },
     {
-      "date": "2026-07-22",
+      "date": "2026-07-20",
       "type": "escalation",
       "title": "Houthis declare blockade on Saudi Arabia",
-      "note": "Opens the Saudi front. (UKMTO weekly overview)"
+      "note": "Effective immediately; opens the Saudi front. (Al Jazeera, 20 Jul; UKMTO weekly overview) [date corrected 20 Nov from 22 Jul]"
     },
     {
       "date": "2026-09-01",
       "type": "escalation",
       "title": "US strikes; Iran's biggest salvo since July",
       "note": "70 Iranian missiles/drones on 31 Aug – 2 Sep at Jordan, Bahrain, Iraq, Kuwait. (JINSA 2 Sep)"
+    },
+    {
+      "date": "2026-09-29",
+      "type": "escalation",
+      "title": "Near-daily ship attacks begin",
+      "note": "ISW/CTP dates the start of near-daily Iranian attacks on merchant shipping to 29 Sep; Kpler counts 10 tankers hit 28 Sep–4 Oct. (ISW/CTP Iran Update, 5 Oct)"
     },
     {
       "date": "2026-10-05",
@@ -204,6 +252,36 @@
       "type": "escalation",
       "title": "Outbound tanker hit by projectile in Hormuz",
       "note": "Engine-room fire, no casualties; Tehran separately bars IAEA access to damaged nuclear sites until the war ends. (UKMTO via Iran International; JINSA, 16 Nov)"
+    },
+    {
+      "date": "2026-11-17",
+      "type": "escalation",
+      "title": "US hits Qeshm launch site; Iran fires at Bahrain and Kuwait",
+      "note": "US strike on an IRGC missile site after drones were fired at a US asset; Iran launches three attacks on Bahrain and one on Kuwait on 17–18 Nov, its first fire at Kuwait since early September. (JINSA Iran War Update, 18 Nov)"
+    },
+    {
+      "date": "2026-11-18",
+      "type": "escalation",
+      "title": "Outbound tanker hit off Khasab",
+      "note": "Projectile strikes the engine room ~6 nm north of Khasab; crew safe. Third tanker hit near Khasab in three days. (UKMTO via JINSA, 20 Nov)"
+    },
+    {
+      "date": "2026-11-19",
+      "type": "neutral",
+      "title": "Senate rejects war-powers limit; Trump 'not rushing'",
+      "note": "48–51 vote; Trump tells Axios he will 'see what happens after the beginning of the year'. Pentagon puts the war's cost at $48bn. (JINSA Iran War Update, 20 Nov)"
+    },
+    {
+      "date": "2026-11-19",
+      "type": "escalation",
+      "title": "IRGC claims two supertankers mined",
+      "note": "IRGC says two VLCCs hit mines and exploded in the strait; unverified. Same day a US official claims a war-time high of ~28m barrels through Hormuz. (Iran International; i24 via JINSA, 20 Nov)"
+    },
+    {
+      "date": "2026-11-20",
+      "type": "escalation",
+      "title": "Tanker on fire after projectile strike near Hormuz",
+      "note": "Outbound tanker struck ~8 nm north of Khasab and catches fire, no casualties; the IRGC says it hit a mine. CBS reports the US and Israel are weighing new military action. (UKMTO via Reuters, 20 Nov; CBS via JINSA, 20 Nov)"
     }
   ]
 }

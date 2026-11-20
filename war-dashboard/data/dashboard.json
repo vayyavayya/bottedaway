@@ -1,31 +1,133 @@
 {
-  "generated_at": "2026-11-16T21:58:06Z",
+  "generated_at": "2026-11-20T17:32:07Z",
   "offline": false,
   "provenance": "sourced",
   "arc": {
-    "current_phase": 2,
+    "current_phase": 4,
     "phases": [
       {
         "name": "Opening war",
-        "blurb": "28 Feb \u2013 7 Apr: US\u2013Israeli strikes, Iranian missile waves on Israel and Gulf hosts, Hormuz effectively closed."
+        "start": "2026-02-28",
+        "end": "2026-04-07",
+        "tone": "war",
+        "blurb": "US\u2013Israeli strikes on Iran; Iranian missile waves on Israel and Gulf hosts; Hormuz traffic collapses by roughly 70%.",
+        "source": "Wikipedia: 2026 Iran war; Al Jazeera, 8 Apr",
+        "stats": {
+          "days": 39,
+          "brent_avg": 104.4,
+          "brent_peak": 118.3,
+          "events": {
+            "escalation": 1,
+            "deescalation": 0,
+            "neutral": 0
+          }
+        },
+        "status": "past"
       },
       {
-        "name": "Ceasefire & MoU",
-        "blurb": "8 Apr \u2013 7 Jul: Pakistan-brokered truce, 17 Jun MoU, partial reopening clears the stranded-tanker backlog."
+        "name": "Ceasefire & first blockade",
+        "start": "2026-04-08",
+        "end": "2026-06-16",
+        "tone": "truce",
+        "blurb": "Pakistan-brokered truce from 8 Apr, broken by clashes. US blockades Iranian ports from 13 Apr after the Islamabad talks fail; Trump says on 29 May it will lift, but it stays until the MoU.",
+        "source": "Al Jazeera, 8 Apr; TWZ, 29 May; USNI, 18 Jun",
+        "stats": {
+          "days": 70,
+          "brent_avg": 99.7,
+          "brent_peak": 118.0,
+          "events": {
+            "escalation": 2,
+            "deescalation": 1,
+            "neutral": 0
+          }
+        },
+        "status": "past"
       },
       {
-        "name": "Maritime war",
-        "blurb": "8 Jul \u2013 now: MoU collapses, US blockade reimposed, IRGC ship attacks hit a record in October, limited US strikes on the strait islands."
+        "name": "MoU interlude",
+        "start": "2026-06-17",
+        "end": "2026-07-07",
+        "tone": "truce",
+        "blurb": "17 Jun Trump\u2013Pezeshkian MoU promises 60 days of free transit; CENTCOM lifts the blockade on 18 Jun. Reopening stays partial and clashes resume within weeks.",
+        "source": "JINSA; USNI, 18 Jun; Wikipedia: 2026 Strait of Hormuz crisis",
+        "stats": {
+          "days": 21,
+          "brent_avg": 74.6,
+          "brent_peak": 79.8,
+          "events": {
+            "escalation": 0,
+            "deescalation": 2,
+            "neutral": 0
+          }
+        },
+        "status": "past"
+      },
+      {
+        "name": "Blockade war",
+        "start": "2026-07-08",
+        "end": "2026-09-28",
+        "tone": "war",
+        "blurb": "Trump declares the MoU over on 8 Jul; US blockade reimposed 14 Jul; Houthis declare a blockade of Saudi Arabia 20 Jul; Iran's biggest salvo since April (\u226570 missiles and drones, 31 Aug\u20132 Sep).",
+        "source": "Korea JoongAng Daily, 9 Jul; USNI / NPR, 13\u201314 Jul; Al Jazeera, 20 Jul; JINSA, 2 Sep",
+        "stats": {
+          "days": 83,
+          "brent_avg": 92.8,
+          "brent_peak": 108.8,
+          "transits_avg": 37.3,
+          "transits_weeks": 2,
+          "events": {
+            "escalation": 4,
+            "deescalation": 0,
+            "neutral": 0
+          }
+        },
+        "status": "past"
+      },
+      {
+        "name": "Tanker war",
+        "start": "2026-09-29",
+        "end": null,
+        "tone": "war",
+        "blurb": "Near-daily IRGC attacks on merchant ships since 29 Sep; October the worst month of the war; limpet mines and US strikes on Qeshm; mid-Nov Iran resumes fire at US bases in Bahrain and Kuwait.",
+        "source": "ISW/CTP, 5 Oct; Reuters via Gulf Times, 24 Oct; UKMTO; JINSA, 18 Nov",
+        "stats": {
+          "days": 53,
+          "brent_avg": 103.0,
+          "brent_peak": 117.6,
+          "interference_avg": 7.6,
+          "interference_weeks": 5,
+          "transits_avg": 40.1,
+          "transits_weeks": 5,
+          "events": {
+            "escalation": 22,
+            "deescalation": 2,
+            "neutral": 3
+          }
+        },
+        "status": "current"
       },
       {
         "name": "Settlement",
-        "blurb": "Talks produce a text; attacks fall while transits climb under an agreed regime."
+        "start": null,
+        "end": null,
+        "tone": "future",
+        "blurb": "Talks produce a text; ship attacks fall while transits climb under an agreed regime. The dashboard's end-signal is the tell.",
+        "source": "",
+        "stats": {},
+        "status": "future"
       },
       {
         "name": "Cessation",
-        "blurb": "Ship attacks near zero, transits normalised, blockade lifted."
+        "start": null,
+        "end": null,
+        "tone": "future",
+        "blurb": "Ship attacks near zero, transits back toward the pre-war ~120\u2013135 a day, blockade lifted.",
+        "source": "",
+        "stats": {},
+        "status": "future"
       }
-    ]
+    ],
+    "as_of": "2026-11-20"
   },
   "events": [
     {
@@ -44,7 +146,7 @@
       "date": "2026-04-13",
       "type": "escalation",
       "title": "US blockade of Iranian ports",
-      "note": "Runs 13 Apr \u2013 29 May. (Wikipedia: Strait of Hormuz crisis)"
+      "note": "Ordered after the Islamabad talks fail. Trump says on 29 May it will lift, but NAVCENT keeps it in force; CENTCOM ends it on 18 Jun under the MoU. (USNI, 18 Jun; TWZ, 29 May) [corrected 20 Nov: earlier note said it ran to 29 May]"
     },
     {
       "date": "2026-05-07",
@@ -59,6 +161,12 @@
       "note": "60-day memorandum to end the war and reopen Hormuz. (JINSA)"
     },
     {
+      "date": "2026-06-18",
+      "type": "deescalation",
+      "title": "US lifts first blockade",
+      "note": "CENTCOM ends the blockade of Iranian ports under the 17 Jun MoU. (USNI, 18 Jun)"
+    },
+    {
       "date": "2026-07-08",
       "type": "escalation",
       "title": "MoU declared over",
@@ -71,16 +179,22 @@
       "note": "CENTCOM resumes blockade of Iranian ports. (JINSA citing CENTCOM)"
     },
     {
-      "date": "2026-07-22",
+      "date": "2026-07-20",
       "type": "escalation",
       "title": "Houthis declare blockade on Saudi Arabia",
-      "note": "Opens the Saudi front. (UKMTO weekly overview)"
+      "note": "Effective immediately; opens the Saudi front. (Al Jazeera, 20 Jul; UKMTO weekly overview) [date corrected 20 Nov from 22 Jul]"
     },
     {
       "date": "2026-09-01",
       "type": "escalation",
       "title": "US strikes; Iran's biggest salvo since July",
       "note": "70 Iranian missiles/drones on 31 Aug \u2013 2 Sep at Jordan, Bahrain, Iraq, Kuwait. (JINSA 2 Sep)"
+    },
+    {
+      "date": "2026-09-29",
+      "type": "escalation",
+      "title": "Near-daily ship attacks begin",
+      "note": "ISW/CTP dates the start of near-daily Iranian attacks on merchant shipping to 29 Sep; Kpler counts 10 tankers hit 28 Sep\u20134 Oct. (ISW/CTP Iran Update, 5 Oct)"
     },
     {
       "date": "2026-10-05",
@@ -207,6 +321,36 @@
       "type": "escalation",
       "title": "Outbound tanker hit by projectile in Hormuz",
       "note": "Engine-room fire, no casualties; Tehran separately bars IAEA access to damaged nuclear sites until the war ends. (UKMTO via Iran International; JINSA, 16 Nov)"
+    },
+    {
+      "date": "2026-11-17",
+      "type": "escalation",
+      "title": "US hits Qeshm launch site; Iran fires at Bahrain and Kuwait",
+      "note": "US strike on an IRGC missile site after drones were fired at a US asset; Iran launches three attacks on Bahrain and one on Kuwait on 17\u201318 Nov, its first fire at Kuwait since early September. (JINSA Iran War Update, 18 Nov)"
+    },
+    {
+      "date": "2026-11-18",
+      "type": "escalation",
+      "title": "Outbound tanker hit off Khasab",
+      "note": "Projectile strikes the engine room ~6 nm north of Khasab; crew safe. Third tanker hit near Khasab in three days. (UKMTO via JINSA, 20 Nov)"
+    },
+    {
+      "date": "2026-11-19",
+      "type": "neutral",
+      "title": "Senate rejects war-powers limit; Trump 'not rushing'",
+      "note": "48\u201351 vote; Trump tells Axios he will 'see what happens after the beginning of the year'. Pentagon puts the war's cost at $48bn. (JINSA Iran War Update, 20 Nov)"
+    },
+    {
+      "date": "2026-11-19",
+      "type": "escalation",
+      "title": "IRGC claims two supertankers mined",
+      "note": "IRGC says two VLCCs hit mines and exploded in the strait; unverified. Same day a US official claims a war-time high of ~28m barrels through Hormuz. (Iran International; i24 via JINSA, 20 Nov)"
+    },
+    {
+      "date": "2026-11-20",
+      "type": "escalation",
+      "title": "Tanker on fire after projectile strike near Hormuz",
+      "note": "Outbound tanker struck ~8 nm north of Khasab and catches fire, no casualties; the IRGC says it hit a mine. CBS reports the US and Israel are weighing new military action. (UKMTO via Reuters, 20 Nov; CBS via JINSA, 20 Nov)"
     }
   ],
   "metrics": {
@@ -446,22 +590,6 @@
       "label": "Brent crude",
       "unit": "$/bbl",
       "series": [
-        {
-          "date": "2026-03-03",
-          "close": 81.4
-        },
-        {
-          "date": "2026-03-04",
-          "close": 81.4
-        },
-        {
-          "date": "2026-03-05",
-          "close": 85.41
-        },
-        {
-          "date": "2026-03-06",
-          "close": 92.69
-        },
         {
           "date": "2026-03-08",
           "close": 98.96
@@ -1164,11 +1292,27 @@
         },
         {
           "date": "2026-11-16",
-          "close": 91.83
+          "close": 92.44
+        },
+        {
+          "date": "2026-11-17",
+          "close": 93.14
+        },
+        {
+          "date": "2026-11-18",
+          "close": 91.95
+        },
+        {
+          "date": "2026-11-19",
+          "close": 91.98
+        },
+        {
+          "date": "2026-11-20",
+          "close": 89.13
         }
       ],
-      "latest": 91.83,
-      "prev": 95.84,
+      "latest": 89.13,
+      "prev": 91.98,
       "source": "live",
       "stale": false
     },
@@ -1176,22 +1320,6 @@
       "label": "US 10Y yield",
       "unit": "%",
       "series": [
-        {
-          "date": "2026-03-03",
-          "close": 4.056
-        },
-        {
-          "date": "2026-03-04",
-          "close": 4.08
-        },
-        {
-          "date": "2026-03-05",
-          "close": 4.146
-        },
-        {
-          "date": "2026-03-06",
-          "close": 4.133
-        },
         {
           "date": "2026-03-09",
           "close": 4.136
@@ -1895,10 +2023,26 @@
         {
           "date": "2026-11-16",
           "close": 5.121
+        },
+        {
+          "date": "2026-11-17",
+          "close": 5.103
+        },
+        {
+          "date": "2026-11-18",
+          "close": 5.066
+        },
+        {
+          "date": "2026-11-19",
+          "close": 5.052
+        },
+        {
+          "date": "2026-11-20",
+          "close": 4.944
         }
       ],
-      "latest": 5.121,
-      "prev": 5.154,
+      "latest": 4.944,
+      "prev": 5.052,
       "source": "live",
       "stale": false
     }
@@ -1921,7 +2065,7 @@
       "n": 0
     },
     "brent_vs_us10y": {
-      "r": 0.12605957881040142,
+      "r": 0.13303197305318246,
       "n": 145
     }
   }

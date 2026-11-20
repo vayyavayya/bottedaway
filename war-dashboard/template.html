@@ -50,17 +50,57 @@
     color:var(--ink-3);margin:0 0 10px}
 
   /* ---- arc ---- */
-  .arc{display:flex;gap:4px;background:var(--panel);border:1px solid var(--line);
-    border-radius:12px;padding:6px}
-  .arc .ph{flex:1;padding:9px 10px;border-radius:8px;min-width:0}
-  .arc .ph .n{font-size:13px;font-weight:600}
-  .arc .ph .b{font-size:11.5px;color:var(--ink-3);margin-top:2px;line-height:1.35}
-  .arc .ph.active{background:color-mix(in srgb,var(--red) 16%,transparent);
-    box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--red) 45%,transparent)}
-  .arc .ph.active.deesc{background:color-mix(in srgb,var(--aqua) 16%,transparent);
-    box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--aqua) 45%,transparent)}
-  .arc .ph.done{opacity:.55}
-  .arc .ph.active .n{color:var(--ink)}
+  .arc{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px 16px}
+  .arc-top{display:flex;justify-content:space-between;align-items:baseline;gap:10px 18px;flex-wrap:wrap;margin-bottom:12px}
+  .arc-now{font-size:14px}
+  .arc-now b{font-weight:650}
+  .arc-now .mono{color:var(--ink-3);font-size:12.5px}
+  .band-wrap{position:relative;padding-top:30px}
+  .ev-row{position:absolute;left:0;right:0;top:0;height:28px;z-index:2}
+  .ev-dot{position:absolute;width:7px;height:7px;margin-left:-3.5px;border-radius:50%;
+    background:var(--neutral);box-shadow:0 0 0 2px var(--panel);cursor:default}
+  .ev-dot.escalation{background:var(--red)} .ev-dot.deescalation{background:var(--aqua)}
+  .ev-dot:hover{transform:scale(1.5)}
+  .band{position:relative;height:38px}
+  .seg{position:absolute;top:0;bottom:0;border-radius:6px;display:flex;align-items:center;
+    padding:0 8px;overflow:hidden;font-size:12px;font-weight:600;color:var(--ink);white-space:nowrap;
+    cursor:default;transition:box-shadow .12s}
+  .seg .sn{overflow:hidden;text-overflow:ellipsis}
+  .seg.war{background:color-mix(in srgb,var(--red) 22%,transparent)}
+  .seg.truce{background:color-mix(in srgb,var(--aqua) 22%,transparent)}
+  .seg.future{background:transparent;border:1.5px dashed var(--line);color:var(--ink-3);font-weight:500}
+  .seg.current.war{background:color-mix(in srgb,var(--red) 42%,transparent);box-shadow:inset 0 0 0 1.5px var(--red)}
+  .seg.current.truce{background:color-mix(in srgb,var(--aqua) 42%,transparent);box-shadow:inset 0 0 0 1.5px var(--aqua)}
+  .seg.hl{box-shadow:inset 0 0 0 1.5px var(--ink-2)}
+  .today{position:absolute;top:-4px;bottom:-6px;pointer-events:none;z-index:1;width:2px;margin-left:-1px;background:var(--ink);border-radius:1px}
+  .today span{position:absolute;bottom:-18px;left:50%;transform:translateX(-50%);font-size:10.5px;
+    font-family:var(--mono);color:var(--ink);font-weight:600;white-space:nowrap}
+  .months{position:relative;height:22px;margin-top:4px}
+  .months span{position:absolute;top:4px;font-size:10.5px;font-family:var(--mono);color:var(--ink-3);
+    transform:translateX(-50%)}
+  .months i{position:absolute;top:0;width:1px;height:4px;background:var(--line)}
+  .arc .tooltip{transform:translate(-50%,-100%);white-space:normal;width:max-content;max-width:260px;line-height:1.35}
+  .pcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:14px}
+  .pc{border:1px solid var(--line);border-radius:10px;padding:10px 11px 11px;position:relative;
+    display:flex;flex-direction:column;gap:5px;transition:border-color .12s,box-shadow .12s}
+  .pc::before{content:"";position:absolute;left:10px;right:10px;top:0;height:3px;border-radius:0 0 3px 3px;background:var(--line)}
+  .pc.war::before{background:var(--red)} .pc.truce::before{background:var(--aqua)}
+  .pc.future{border-style:dashed;background:transparent}
+  .pc.past{opacity:.82}
+  .pc.current{border-color:color-mix(in srgb,var(--red) 60%,transparent);
+    background:color-mix(in srgb,var(--red) 7%,transparent)}
+  .pc.hl{border-color:var(--ink-3)}
+  .pc .pn{font-size:12.5px;font-weight:650;display:flex;justify-content:space-between;gap:6px;align-items:baseline}
+  .pc .pd{font-family:var(--mono);font-size:11px;color:var(--ink-3)}
+  .pc .pb{font-size:11.5px;color:var(--ink-2);line-height:1.38}
+  .pc .chips{display:flex;flex-wrap:wrap;gap:4px;margin-top:2px}
+  .pc .chip{font-family:var(--mono);font-size:10.5px;padding:1px 6px;border-radius:5px;background:var(--panel-2);color:var(--ink-2)}
+  .pc .ps{font-size:10.5px;color:var(--ink-3);line-height:1.3;margin-top:auto;padding-top:3px}
+  .tag{font-size:9.5px;font-weight:700;letter-spacing:.06em;padding:1px 5px;border-radius:4px;flex:none}
+  .tag.now{background:var(--red);color:#fff}
+  .tag.ahead{border:1px solid var(--line);color:var(--ink-3)}
+  @media(max-width:700px){.seg .sn{display:none}.seg{justify-content:center;padding:0}}
+  @media(min-width:1000px){.pcards{grid-template-columns:repeat(7,minmax(0,1fr));gap:8px}.pc .pb{font-size:11px}}
 
   /* ---- stat tiles ---- */
   .tiles{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
@@ -273,6 +313,117 @@ function curveChart(host, curve){
     <path d="${line}" fill="none" stroke="${c}" stroke-width="2"/>${pts}${lab}</svg>`;
 }
 
+// ------------------------------------------------------------------ arc
+// Proportional, dated band: past + current phases sized by duration up to today,
+// future phases as fixed dashed slots after the "today" marker. Timeline events
+// sit above the band; phase cards below carry dates, blurb, stats and source.
+const MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const fmtD = s => { const d=parseDate(s); return d.getUTCDate()+' '+MON[d.getUTCMonth()]; };
+const esc = s => String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function renderArc(D){
+  const A=D.arc, phases=A.phases, cur=A.current_phase;
+  const wrap=$('div','arc');
+  const dated=phases.filter(p=>p.start);
+  if(!dated.length){ wrap.innerHTML='<div class="muted">no dated phases</div>'; return wrap; }
+  const DAY=864e5;
+  const t0=parseDate(dated[0].start).getTime();
+  const tNow=parseDate(A.as_of || D.generated_at.slice(0,10)).getTime();
+  const nFuture=phases.filter(p=>!p.start).length;
+  const futShare=Math.min(24, nFuture*9), pastShare=100-futShare;
+  const X=t=> Math.max(0,Math.min(pastShare,(t-t0)/((tNow-t0)||1)*pastShare));
+  const warDay=Math.round((tNow-t0)/DAY)+1;
+  const cp=phases[cur]||{}, cpDay=cp.start?Math.round((tNow-parseDate(cp.start).getTime())/DAY)+1:null;
+
+  // headline + legend
+  const top=$('div','arc-top');
+  top.innerHTML=`<div class="arc-now">Day <b class="mono" style="color:var(--ink);font-size:14px">${warDay}</b> of the war · phase ${cur+1} of ${phases.length}: <b>${esc(cp.name)}</b>${cpDay?` <span class="mono">(day ${cpDay})</span>`:''}</div>
+    <div class="legend">
+      <span class="li"><span class="sw" style="background:color-mix(in srgb,var(--red) 40%,transparent);height:8px"></span>fighting</span>
+      <span class="li"><span class="sw" style="background:color-mix(in srgb,var(--aqua) 40%,transparent);height:8px"></span>truce</span>
+      <span class="li"><span class="sw" style="border:1px dashed var(--ink-3);height:8px"></span>ahead</span>
+      <span class="li"><span class="sw dot" style="background:var(--red)"></span>escalation</span>
+      <span class="li"><span class="sw dot" style="background:var(--aqua)"></span>de-escalation</span>
+    </div>`;
+  wrap.appendChild(top);
+
+  const bw=$('div','band-wrap'), evRow=$('div','ev-row'), band=$('div','band'), tip=$('div','tooltip');
+  // events, stacked into up to 3 rows when they crowd
+  const lastX=[-99,-99,-99];
+  (D.events||[]).slice().sort((a,b)=>a.date<b.date?-1:1).forEach(e=>{
+    const t=parseDate(e.date).getTime(); if(t<t0||t>tNow) return;
+    const x=X(t); let r=lastX.findIndex(v=>x-v>=0.9); if(r<0) r=lastX.indexOf(Math.min(...lastX));
+    lastX[r]=x;
+    const dot=$('span','ev-dot '+e.type); dot.style.left=x+'%'; dot.style.top=(20-r*8)+'px';
+    dot.dataset.tip=`<div class="tt-t">${fmtD(e.date)}</div>${esc(e.title)}`;
+    evRow.appendChild(dot);
+  });
+  // segments
+  let fi=0; const segs=[];
+  phases.forEach((p,i)=>{
+    let left,width;
+    if(p.start){
+      const s=parseDate(p.start).getTime();
+      const next=phases[i+1]&&phases[i+1].start?parseDate(phases[i+1].start).getTime():null;
+      const e=p.end?parseDate(p.end).getTime()+DAY:(next||tNow);
+      left=X(s); width=Math.max(.6,X(Math.min(e,tNow))-left);
+    } else { left=pastShare+fi*(futShare/nFuture)+.4; width=futShare/nFuture-.4; fi++; }
+    const seg=$('div',`seg ${p.tone||'war'} ${p.status||''}`);
+    seg.style.left=`calc(${left}% + 1px)`; seg.style.width=`calc(${width}% - 2px)`;
+    seg.innerHTML=`<span class="mono" style="opacity:.75;margin-right:5px">${i+1}</span><span class="sn">${width>9?esc(p.name):''}</span>`;
+    const span=p.start?`${fmtD(p.start)} – ${p.end?fmtD(p.end):'now'}`:'not yet';
+    seg.dataset.tip=`<div class="tt-t">${span}</div>${i+1}. ${esc(p.name)}`;
+    seg.dataset.i=i; band.appendChild(seg); segs.push(seg);
+  });
+  const today=$('div','today'); today.style.left=pastShare+'%'; today.innerHTML='<span>today</span>';
+  band.appendChild(today);
+  // month ticks
+  const months=$('div','months');
+  const d0=new Date(t0); let m=new Date(Date.UTC(d0.getUTCFullYear(),d0.getUTCMonth()+1,1));
+  while(m.getTime()<=tNow){ const x=X(m.getTime());
+    if(x<pastShare-6) months.insertAdjacentHTML('beforeend',`<i style="left:${x}%"></i><span style="left:${x}%">${MON[m.getUTCMonth()]}</span>`);
+    m=new Date(Date.UTC(m.getUTCFullYear(),m.getUTCMonth()+1,1)); }
+  bw.append(evRow,band,months,tip); wrap.appendChild(bw);
+
+  // tooltip for dots + segments
+  bw.addEventListener('mouseover',ev=>{
+    const el=ev.target.closest('[data-tip]'); if(!el){tip.style.opacity='0';return;}
+    const r=el.getBoundingClientRect(), br=bw.getBoundingClientRect();
+    tip.innerHTML=el.dataset.tip; tip.style.opacity='1';
+    let x=r.left+r.width/2-br.left; x=Math.max(80,Math.min(br.width-80,x));
+    tip.style.left=x+'px'; tip.style.top=(r.top-br.top-6)+'px';
+  });
+  bw.addEventListener('mouseleave',()=>{tip.style.opacity='0';});
+
+  // phase cards
+  const cards=$('div','pcards'); const cardEls=[];
+  const iD=D.metrics.interference.delta, tD=D.metrics.transits.delta;
+  const endSig=(iD!=null&&iD<0)&&(tD!=null&&tD>0);
+  phases.forEach((p,i)=>{
+    const s=p.stats||{}, st=p.status||'';
+    const c=$('div',`pc ${p.tone||'war'} ${st}`); c.dataset.i=i;
+    const dates=p.start?`${fmtD(p.start)} – ${p.end?fmtD(p.end):'now'}${s.days?` · ${s.days}d`:''}`:'not reached';
+    const chips=[];
+    if(s.brent_avg!=null) chips.push(`Brent avg $${fmt(s.brent_avg,0)} · peak $${fmt(s.brent_peak,0)}`);
+    if(s.interference_avg!=null) chips.push(`${fmt(s.interference_avg,1)} attacks/wk`);
+    if(s.transits_avg!=null) chips.push(`${fmt(s.transits_avg,0)} transits/day`);
+    if(s.events) chips.push(`<span style="color:var(--red)">▲${s.events.escalation}</span> <span style="color:var(--aqua)">▼${s.events.deescalation}</span> events`);
+    if(p.tone==='future' && i===cur+1) chips.push(`end-signal: ${endSig?'<b style="color:var(--aqua)">fired</b>':'not fired'}`);
+    const tag=st==='current'?'<span class="tag now">NOW</span>':(st==='future'?'<span class="tag ahead">AHEAD</span>':'');
+    c.innerHTML=`<div class="pn"><span>${i+1} · ${esc(p.name)}</span>${tag}</div>
+      <div class="pd">${dates}</div>
+      <div class="pb">${esc(p.blurb)}</div>
+      ${chips.length?`<div class="chips">${chips.map(x=>`<span class="chip">${x}</span>`).join('')}</div>`:''}
+      ${p.source?`<div class="ps">${esc(p.source)}</div>`:''}`;
+    cards.appendChild(c); cardEls.push(c);
+  });
+  wrap.appendChild(cards);
+  // hover sync between band segments and cards
+  const hl=(i,on)=>{ segs[i]&&segs[i].classList.toggle('hl',on); cardEls[i]&&cardEls[i].classList.toggle('hl',on); };
+  [...segs,...cardEls].forEach(el=>{ const i=+el.dataset.i;
+    el.addEventListener('mouseenter',()=>hl(i,true)); el.addEventListener('mouseleave',()=>hl(i,false)); });
+  return wrap;
+}
+
 // ------------------------------------------------------------------ render
 function render(D){
   const root=document.getElementById('root'); root.innerHTML='';
@@ -296,14 +447,7 @@ function render(D){
 
   // arc
   const arcSec=$('section'); arcSec.appendChild($('div','h','Arc of the war'));
-  const arc=$('div','arc'); const cur=D.arc.current_phase;
-  D.arc.phases.forEach((p,i)=>{
-    const active=i===cur, deesc=cur>=3;
-    const el=$('div','ph'+(active?' active'+(deesc?' deesc':''):'')+(i<cur?' done':''));
-    el.innerHTML=`<div class="n">${i+1}. ${p.name}</div><div class="b">${p.blurb}</div>`;
-    arc.appendChild(el);
-  });
-  arcSec.appendChild(arc); root.appendChild(arcSec);
+  arcSec.appendChild(renderArc(D)); root.appendChild(arcSec);
 
   // tiles (the five numbers)
   const tSec=$('section'); tSec.appendChild($('div','h','The five numbers'));
