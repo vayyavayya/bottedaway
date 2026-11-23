@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-20T17:32:07Z",
+  "generated_at": "2026-11-23T22:05:02Z",
   "offline": false,
   "provenance": "sourced",
   "arc": {
@@ -14,7 +14,7 @@
         "source": "Wikipedia: 2026 Iran war; Al Jazeera, 8 Apr",
         "stats": {
           "days": 39,
-          "brent_avg": 104.4,
+          "brent_avg": 104.6,
           "brent_peak": 118.3,
           "events": {
             "escalation": 1,
@@ -91,17 +91,17 @@
         "blurb": "Near-daily IRGC attacks on merchant ships since 29 Sep; October the worst month of the war; limpet mines and US strikes on Qeshm; mid-Nov Iran resumes fire at US bases in Bahrain and Kuwait.",
         "source": "ISW/CTP, 5 Oct; Reuters via Gulf Times, 24 Oct; UKMTO; JINSA, 18 Nov",
         "stats": {
-          "days": 53,
-          "brent_avg": 103.0,
+          "days": 56,
+          "brent_avg": 102.7,
           "brent_peak": 117.6,
-          "interference_avg": 7.6,
-          "interference_weeks": 5,
-          "transits_avg": 40.1,
-          "transits_weeks": 5,
+          "interference_avg": 7.3,
+          "interference_weeks": 6,
+          "transits_avg": 39.7,
+          "transits_weeks": 6,
           "events": {
-            "escalation": 22,
-            "deescalation": 2,
-            "neutral": 3
+            "escalation": 26,
+            "deescalation": 3,
+            "neutral": 4
           }
         },
         "status": "current"
@@ -127,7 +127,7 @@
         "status": "future"
       }
     ],
-    "as_of": "2026-11-20"
+    "as_of": "2026-11-23"
   },
   "events": [
     {
@@ -347,10 +347,46 @@
       "note": "IRGC says two VLCCs hit mines and exploded in the strait; unverified. Same day a US official claims a war-time high of ~28m barrels through Hormuz. (Iran International; i24 via JINSA, 20 Nov)"
     },
     {
+      "date": "2026-11-19",
+      "type": "neutral",
+      "title": "USS George Washington leaves the Middle East",
+      "note": "Two carrier strike groups remain in the region. (JINSA Iran War Update, 20 Nov)"
+    },
+    {
       "date": "2026-11-20",
       "type": "escalation",
       "title": "Tanker on fire after projectile strike near Hormuz",
       "note": "Outbound tanker struck ~8 nm north of Khasab and catches fire, no casualties; the IRGC says it hit a mine. CBS reports the US and Israel are weighing new military action. (UKMTO via Reuters, 20 Nov; CBS via JINSA, 20 Nov)"
+    },
+    {
+      "date": "2026-11-20",
+      "type": "deescalation",
+      "title": "Qatari delegation holds talks in Tehran",
+      "note": "Deputy FM Gharibabadi says the two sides held two hours of talks, no details given. (Iranian state media via Gulf News, 22\u201323 Nov)"
+    },
+    {
+      "date": "2026-11-21",
+      "type": "escalation",
+      "title": "Two tankers hit by projectiles off Khasab",
+      "note": "UKMTO reports an engine-room hit 17 nm east and a stern hit 11 nm north of Khasab; the first may be the Saudi-owned LUJAIN (Starboard). JMIC counts seven tankers hit since 16 Nov. (UKMTO via ISW/CTP Iran Update, 21 Nov; JMIC via Gulf News)"
+    },
+    {
+      "date": "2026-11-21",
+      "type": "escalation",
+      "title": "IRGC strikes Bahrain; Sitra industrial site on fire",
+      "note": "Bahrain's interior ministry says a civilian industrial facility on Sitra was hit, no casualties; IRGC claims it targeted US bases at Sheikh Isa and Juffair. Further Iranian attacks intercepted on 22 Nov, two people injured. CENTCOM denies an IRGC claim of hitting a US F-16. (Bahrain interior ministry and Fars via Gulf News; ABC News)"
+    },
+    {
+      "date": "2026-11-22",
+      "type": "escalation",
+      "title": "Tanker incident 'involving military forces' near Chabahar",
+      "note": "UKMTO reports an incident close to the US blockade line in the Gulf of Oman, investigations ongoing; Tehran talks of 14 tankers at Kharg preparing to run the blockade and threatens Gulf energy sites if the US stops them. (UKMTO via Euronews and ABC News, 22 Nov; Gulf News)"
+    },
+    {
+      "date": "2026-11-22",
+      "type": "escalation",
+      "title": "Trump: military action resumes after New Year without a deal",
+      "note": "Tells Fox News the US will resume military action if there is no deal after the New Year and that blockade-runners will be 'at the bottom of the sea'. (Fox News via Gulf News and Euronews, 22 Nov)"
     }
   ],
   "metrics": {
@@ -454,11 +490,17 @@
           "value": 7,
           "source": "UKMTO weekly overview w/e 13 Nov (window to 11 Nov), via Middle East Eye / gCaptain: 8 incidents incl. 7 tanker attacks (5 Hormuz, 2 Arabian Gulf, 1 Gulf of Oman); none sunk",
           "note": "8th incident not counted as an attack on shipping"
+        },
+        {
+          "period": "2026-11-09",
+          "value": 6,
+          "source": "UKMTO weekly overview w/e 20 Nov (window to 18 Nov), via Middle East Eye / Marine Insight / gCaptain: 6 tanker attacks (4 Hormuz, 2 Arabian Gulf); none sunk, 2 needed assistance, 4 outcomes unknown",
+          "note": "JMIC separately counts 7 tankers hit 16\u201321 Nov"
         }
       ],
-      "latest": 7,
-      "prev": 11,
-      "delta": -4
+      "latest": 6,
+      "prev": 7,
+      "delta": -1
     },
     "transits": {
       "label": "Hormuz transits",
@@ -507,11 +549,16 @@
           "period": "2026-11-02",
           "value": 44.0,
           "source": "UKMTO w/e 13 Nov (window to 11 Nov): 139 out + 169 in = 308; AIS-observed count not given in relays (Middle East Eye, gCaptain, Khaama/Al Jazeera); ~65% below pre-war"
+        },
+        {
+          "period": "2026-11-09",
+          "value": 37.6,
+          "source": "UKMTO w/e 20 Nov (window to 18 Nov), via Marine Insight / Middle East Eye: 115 out + 148 in = 263; 73 AIS-observed (82 the previous week); ~65% below pre-war"
         }
       ],
-      "latest": 44.0,
-      "prev": 46.4,
-      "delta": -2.3999999999999986
+      "latest": 37.6,
+      "prev": 44.0,
+      "delta": -6.399999999999999
     },
     "vlcc": {
       "label": "VLCC completions",
@@ -535,37 +582,33 @@
     "label": "Brent backwardation (M1-M3)",
     "unit": "$",
     "meaning": "Brent term structure snapshot, taken Monday when markets reopen. Backwardation (M1 > deferred) = physical tightness. Backwardation EASING (spread shrinking toward 0 / flipping to contango) = tightness relaxing before any headline says so. Update 'curve' each Monday with front-month settlement out to M6, and append the M1-M3 spread to 'spread_history'. Source used: NYMEX Brent Last Day Financial (BZ) contract closes via Yahoo Finance (tickers BZF27.NYM \u2026 BZM27.NYM), which track ICE Brent settlements; cross-check with ICE / Barchart. Seed history replaced 2026-11-08. Earlier Mondays could not be reconstructed: the Dec-26 contract that was M1 until 30 Oct has expired and its history is no longer served.",
-    "as_of": "2026-11-16",
+    "as_of": "2026-11-23",
     "curve": [
       {
         "month": "M1",
-        "price": 91.77
+        "price": 89.49
       },
       {
         "month": "M2",
-        "price": 89.36
+        "price": 86.84
       },
       {
         "month": "M3",
-        "price": 87.7
+        "price": 84.29
       },
       {
         "month": "M4",
-        "price": 86.02
-      },
-      {
-        "month": "M5",
-        "price": 84.55
+        "price": 83.43
       },
       {
         "month": "M6",
-        "price": 83.28
+        "price": 80.0
       }
     ],
-    "m1_minus_last": 8.489999999999995,
-    "latest": 4.07,
-    "prev": 3.53,
-    "delta": 0.5400000000000005,
+    "m1_minus_last": 9.489999999999995,
+    "latest": 5.2,
+    "prev": 4.07,
+    "delta": 1.13,
     "history": [
       {
         "period": "2026-11-02",
@@ -581,6 +624,11 @@
         "period": "2026-11-16",
         "m1_m3": 4.07,
         "source": "BZF27 91.77 \u2212 BZH27 87.70, Monday 16 Nov close (Yahoo Finance)"
+      },
+      {
+        "period": "2026-11-23",
+        "m1_m3": 5.2,
+        "source": "BZF27 89.49 \u2212 BZH27 84.29, Monday 23 Nov close (Yahoo Finance)"
       }
     ],
     "direction_good": "down"
@@ -590,10 +638,6 @@
       "label": "Brent crude",
       "unit": "$/bbl",
       "series": [
-        {
-          "date": "2026-03-08",
-          "close": 98.96
-        },
         {
           "date": "2026-03-09",
           "close": 87.8
@@ -1308,11 +1352,15 @@
         },
         {
           "date": "2026-11-20",
-          "close": 89.13
+          "close": 92.57
+        },
+        {
+          "date": "2026-11-23",
+          "close": 86.84
         }
       ],
-      "latest": 89.13,
-      "prev": 91.98,
+      "latest": 86.84,
+      "prev": 92.57,
       "source": "live",
       "stale": false
     },
@@ -1320,10 +1368,6 @@
       "label": "US 10Y yield",
       "unit": "%",
       "series": [
-        {
-          "date": "2026-03-09",
-          "close": 4.136
-        },
         {
           "date": "2026-03-10",
           "close": 4.136
@@ -2038,11 +2082,15 @@
         },
         {
           "date": "2026-11-20",
-          "close": 4.944
+          "close": 4.912
+        },
+        {
+          "date": "2026-11-23",
+          "close": 4.918
         }
       ],
-      "latest": 4.944,
-      "prev": 5.052,
+      "latest": 4.918,
+      "prev": 4.912,
       "source": "live",
       "stale": false
     }
@@ -2053,19 +2101,19 @@
       "n": 7
     },
     "interference_vs_brent": {
-      "r": -0.22963259810290226,
-      "n": 6
+      "r": -0.06106539349888802,
+      "n": 7
     },
     "transits_vs_brent": {
-      "r": 0.16643076035007703,
-      "n": 7
+      "r": 0.21640953054309486,
+      "n": 8
     },
     "vlcc_vs_brent": {
       "r": null,
       "n": 0
     },
     "brent_vs_us10y": {
-      "r": 0.13303197305318246,
+      "r": 0.1199326836098027,
       "n": 145
     }
   }

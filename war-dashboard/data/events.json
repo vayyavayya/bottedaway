@@ -278,10 +278,46 @@
       "note": "IRGC says two VLCCs hit mines and exploded in the strait; unverified. Same day a US official claims a war-time high of ~28m barrels through Hormuz. (Iran International; i24 via JINSA, 20 Nov)"
     },
     {
+      "date": "2026-11-19",
+      "type": "neutral",
+      "title": "USS George Washington leaves the Middle East",
+      "note": "Two carrier strike groups remain in the region. (JINSA Iran War Update, 20 Nov)"
+    },
+    {
       "date": "2026-11-20",
       "type": "escalation",
       "title": "Tanker on fire after projectile strike near Hormuz",
       "note": "Outbound tanker struck ~8 nm north of Khasab and catches fire, no casualties; the IRGC says it hit a mine. CBS reports the US and Israel are weighing new military action. (UKMTO via Reuters, 20 Nov; CBS via JINSA, 20 Nov)"
+    },
+    {
+      "date": "2026-11-20",
+      "type": "deescalation",
+      "title": "Qatari delegation holds talks in Tehran",
+      "note": "Deputy FM Gharibabadi says the two sides held two hours of talks, no details given. (Iranian state media via Gulf News, 22–23 Nov)"
+    },
+    {
+      "date": "2026-11-21",
+      "type": "escalation",
+      "title": "Two tankers hit by projectiles off Khasab",
+      "note": "UKMTO reports an engine-room hit 17 nm east and a stern hit 11 nm north of Khasab; the first may be the Saudi-owned LUJAIN (Starboard). JMIC counts seven tankers hit since 16 Nov. (UKMTO via ISW/CTP Iran Update, 21 Nov; JMIC via Gulf News)"
+    },
+    {
+      "date": "2026-11-21",
+      "type": "escalation",
+      "title": "IRGC strikes Bahrain; Sitra industrial site on fire",
+      "note": "Bahrain's interior ministry says a civilian industrial facility on Sitra was hit, no casualties; IRGC claims it targeted US bases at Sheikh Isa and Juffair. Further Iranian attacks intercepted on 22 Nov, two people injured. CENTCOM denies an IRGC claim of hitting a US F-16. (Bahrain interior ministry and Fars via Gulf News; ABC News)"
+    },
+    {
+      "date": "2026-11-22",
+      "type": "escalation",
+      "title": "Tanker incident 'involving military forces' near Chabahar",
+      "note": "UKMTO reports an incident close to the US blockade line in the Gulf of Oman, investigations ongoing; Tehran talks of 14 tankers at Kharg preparing to run the blockade and threatens Gulf energy sites if the US stops them. (UKMTO via Euronews and ABC News, 22 Nov; Gulf News)"
+    },
+    {
+      "date": "2026-11-22",
+      "type": "escalation",
+      "title": "Trump: military action resumes after New Year without a deal",
+      "note": "Tells Fox News the US will resume military action if there is no deal after the New Year and that blockade-runners will be 'at the bottom of the sea'. (Fox News via Gulf News and Euronews, 22 Nov)"
     }
   ]
 }

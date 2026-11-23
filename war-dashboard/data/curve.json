@@ -1,39 +1,34 @@
 {
   "_README": "Brent term structure snapshot, taken Monday when markets reopen. Backwardation (M1 > deferred) = physical tightness. Backwardation EASING (spread shrinking toward 0 / flipping to contango) = tightness relaxing before any headline says so. Update 'curve' each Monday with front-month settlement out to M6, and append the M1-M3 spread to 'spread_history'. Source used: NYMEX Brent Last Day Financial (BZ) contract closes via Yahoo Finance (tickers BZF27.NYM … BZM27.NYM), which track ICE Brent settlements; cross-check with ICE / Barchart. Seed history replaced 2026-11-08. Earlier Mondays could not be reconstructed: the Dec-26 contract that was M1 until 30 Oct has expired and its history is no longer served.",
   "provenance": "sourced",
-  "as_of": "2026-11-16",
+  "as_of": "2026-11-23",
   "contracts": [
     "Jan-27 (F27)",
     "Feb-27 (G27)",
     "Mar-27 (H27)",
     "Apr-27 (J27)",
-    "May-27 (K27)",
     "Jun-27 (M27)"
   ],
   "curve": [
     {
       "month": "M1",
-      "price": 91.77
+      "price": 89.49
     },
     {
       "month": "M2",
-      "price": 89.36
+      "price": 86.84
     },
     {
       "month": "M3",
-      "price": 87.7
+      "price": 84.29
     },
     {
       "month": "M4",
-      "price": 86.02
-    },
-    {
-      "month": "M5",
-      "price": 84.55
+      "price": 83.43
     },
     {
       "month": "M6",
-      "price": 83.28
+      "price": 80.0
     }
   ],
   "spread_history": [
@@ -51,6 +46,11 @@
       "period": "2026-11-16",
       "m1_m3": 4.07,
       "source": "BZF27 91.77 − BZH27 87.70, Monday 16 Nov close (Yahoo Finance)"
+    },
+    {
+      "period": "2026-11-23",
+      "m1_m3": 5.2,
+      "source": "BZF27 89.49 − BZH27 84.29, Monday 23 Nov close (Yahoo Finance)"
     }
   ],
   "context": [
@@ -64,5 +64,6 @@
       "m1_m3": 5.02,
       "note": "Fri 6 Nov (not a Monday): F27 98.32 − H27 93.30"
     }
-  ]
+  ],
+  "curve_note": "23 Nov: May-27 (BZK27, M5) did not trade on Monday on Yahoo/NYMEX and no free settlement was reachable, so M5 is omitted rather than estimated; M6 (BZM27) 80.00 is a thin last trade."
 }

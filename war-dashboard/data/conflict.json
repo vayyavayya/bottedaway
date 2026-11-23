@@ -1,8 +1,8 @@
 {
   "_README": "The four conflict metrics. There is NO free real-time API for these — they are OSINT-fed. Refresh each period from the sources listed in each block. Append a new {period,value,source,note} object per metric per week; do not rewrite old points. The illustrative seed rows were replaced with sourced values on 2026-11-08; history starts where a consistent weekly source exists (late Sep 2026). A metric with no sourced value for a week gets no row for that week.",
   "provenance": "sourced",
-  "sourced_at": "2026-11-08",
-  "cadence_note": "period = Monday of the ISO week that holds most of the source's 7-day window. UKMTO weekly overviews (published Fridays) cover Thu–Wed, so e.g. the overview for the week ending 6 Nov (window 29 Oct–4 Nov) is filed under 2026-10-26. JINSA launch counts are Monday→Monday differences of its cumulative tally, filed under the starting Monday. Latest complete week as of 2026-11-08: week of 2026-10-26.",
+  "sourced_at": "2026-11-23",
+  "cadence_note": "period = Monday of the ISO week that holds most of the source's 7-day window. UKMTO weekly overviews (published Fridays) cover Thu–Wed, so e.g. the overview for the week ending 6 Nov (window 29 Oct–4 Nov) is filed under 2026-10-26. JINSA launch counts are Monday→Monday differences of its cumulative tally, filed under the starting Monday. Latest complete week as of 2026-11-23: week of 2026-11-09 (UKMTO metrics and launches).",
   "launches": {
     "label": "Iranian launches",
     "unit": "/week",
@@ -100,6 +100,12 @@
         "value": 7,
         "source": "UKMTO weekly overview w/e 13 Nov (window to 11 Nov), via Middle East Eye / gCaptain: 8 incidents incl. 7 tanker attacks (5 Hormuz, 2 Arabian Gulf, 1 Gulf of Oman); none sunk",
         "note": "8th incident not counted as an attack on shipping"
+      },
+      {
+        "period": "2026-11-09",
+        "value": 6,
+        "source": "UKMTO weekly overview w/e 20 Nov (window to 18 Nov), via Middle East Eye / Marine Insight / gCaptain: 6 tanker attacks (4 Hormuz, 2 Arabian Gulf); none sunk, 2 needed assistance, 4 outcomes unknown",
+        "note": "JMIC separately counts 7 tankers hit 16–21 Nov"
       }
     ]
   },
@@ -150,6 +156,11 @@
         "period": "2026-11-02",
         "value": 44.0,
         "source": "UKMTO w/e 13 Nov (window to 11 Nov): 139 out + 169 in = 308; AIS-observed count not given in relays (Middle East Eye, gCaptain, Khaama/Al Jazeera); ~65% below pre-war"
+      },
+      {
+        "period": "2026-11-09",
+        "value": 37.6,
+        "source": "UKMTO w/e 20 Nov (window to 18 Nov), via Marine Insight / Middle East Eye: 115 out + 148 in = 263; 73 AIS-observed (82 the previous week); ~65% below pre-war"
       }
     ]
   },
